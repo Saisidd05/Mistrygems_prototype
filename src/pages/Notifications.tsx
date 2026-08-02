@@ -1,7 +1,13 @@
 import { useState } from 'react'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { notifications as initialNotifications, Notification } from '@/lib/data'
-import { Bell, CheckCircle2, AlertTriangle, Info, AlertCircle, Check } from 'lucide-react'
+import { Bell, CheckCircle2, AlertTriangle, Info, AlertCircle, Check, MessageCircle, Smartphone, type LucideIcon } from 'lucide-react'
+
+const channelConfig: Record<string, { icon: LucideIcon; color: string; label: string }> = {
+  whatsapp: { icon: MessageCircle, color: 'text-emerald-500', label: 'WhatsApp' },
+  sms: { icon: Smartphone, color: 'text-blue-500', label: 'SMS' },
+  'in-app': { icon: Bell, color: 'text-slate-400', label: 'In-App' },
+}
 
 export default function Notifications() {
   const [items, setItems] = useState<Notification[]>(initialNotifications)
@@ -59,38 +65,50 @@ export default function Notifications() {
                 {group}
               </h2>
               <div className="space-y-2.5">
-                {groupItems.map((n) => (
-                  <GlassCard
-                    key={n.id}
-                    onClick={() => markRead(n.id)}
-                    className={`p-4 cursor-pointer transition-all ${
-                      !n.read
-                        ? 'border-l-4 border-l-blue-500 bg-blue-50/20 dark:bg-blue-950/10'
-                        : 'opacity-80'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3.5">
-                      <div className="mt-0.5 flex-shrink-0">{getIcon(n.type)}</div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <h3
-                            className={`text-sm font-bold ${
-                              !n.read
-                                ? 'text-slate-900 dark:text-white'
-                                : 'text-slate-700 dark:text-slate-300'
-                            }`}
-                          >
-                            {n.title}
-                          </h3>
-                          <span className="text-[11px] text-slate-400">{n.time}</span>
+                {groupItems.map((n) => {
+                  const channel = channelConfig[n.channel] || channelConfig['in-app']
+                  const ChannelIcon = channel.icon
+
+                  return (
+                    <GlassCard
+                      key={n.id}
+                      onClick={() => markRead(n.id)}
+                      className={`p-4 cursor-pointer transition-all ${
+                        !n.read
+                          ? 'border-l-4 border-l-orange-500 bg-orange-50/20 dark:bg-orange-950/10'
+                          : 'opacity-80'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3.5">
+                        <div className="mt-0.5 flex-shrink-0">{getIcon(n.type)}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <h3
+                                className={`text-sm font-bold ${
+                                  !n.read
+                                    ? 'text-slate-900 dark:text-white'
+                                    : 'text-slate-700 dark:text-slate-300'
+                                }`}
+                              >
+                                {n.title}
+                              </h3>
+                              {/* Channel Badge */}
+                              <span className={`inline-flex items-center gap-1 text-[10px] font-semibold ${channel.color}`}>
+                                <ChannelIcon className="w-3 h-3" />
+                                {channel.label}
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-slate-400 flex-shrink-0">{n.time}</span>
+                          </div>
+                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                            {n.message}
+                          </p>
                         </div>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                          {n.message}
-                        </p>
                       </div>
-                    </div>
-                  </GlassCard>
-                ))}
+                    </GlassCard>
+                  )
+                })}
               </div>
             </div>
           )

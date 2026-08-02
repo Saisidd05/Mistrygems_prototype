@@ -1,7 +1,6 @@
 import { GlassCard } from '@/components/ui/GlassCard'
 import { employees } from '@/lib/data'
-import { formatCurrency } from '@/lib/utils'
-import { Plus, Mail, Phone, Briefcase, Award, CheckCircle2, UserCheck } from 'lucide-react'
+import { Plus, Mail, Phone, Award } from 'lucide-react'
 
 export default function Employees() {
   return (

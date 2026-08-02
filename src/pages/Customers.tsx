@@ -1,7 +1,7 @@
 import { GlassCard } from '@/components/ui/GlassCard'
 import { customers } from '@/lib/data'
 import { formatCurrency } from '@/lib/utils'
-import { Plus, Search, Mail, Phone, MapPin, Briefcase } from 'lucide-react'
+import { Plus, Mail, Phone, MapPin } from 'lucide-react'
 
 export default function Customers() {
   return (

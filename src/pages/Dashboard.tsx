@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { GlassCard } from '@/components/ui/GlassCard'
-import { StatusBadge, PriorityBadge } from '@/components/ui/StatusBadge'
+import { StatusBadge, PriorityBadge, ModeBadge } from '@/components/ui/StatusBadge'
 import { RevenueLineChart, PerformanceBarChart, StatusPieChart } from '@/components/ui/Charts'
 import { jobs, activityData, jobStatusData } from '@/lib/data'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { useAuth } from '@/context/AuthContext'
 import {
   Briefcase,
   Clock,
@@ -14,29 +15,155 @@ import {
   Activity,
   ArrowRight,
   Plus,
-  Filter,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
+// ─── Client Portal View ──────────────────────────────────────────────────────
+function ClientPortal() {
+  const clientJobs = jobs // In a real app, filter by logged-in client
+
+  const statusSteps = ['New', 'Quoted', 'Approved', 'Procuring', 'In Progress', 'Quality Check', 'Completed', 'Invoiced']
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            My Jobs
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Track your manufacturing orders at Mistry Gems
+          </p>
+        </div>
+        <button className="btn-primary text-sm px-6 py-3">
+          <Plus className="w-5 h-5" />
+          <span>Request New Job</span>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {clientJobs.map((job, index) => {
+          const currentStepIndex = statusSteps.indexOf(job.status)
+
+          return (
+            <motion.div
+              key={job.id}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+            >
+              <GlassCard className="p-5" glow="amber">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-mono text-slate-400">{job.id}</span>
+                      <ModeBadge mode={job.mode} />
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1.5 line-clamp-2">
+                      {job.description}
+                    </h3>
+                  </div>
+                  <StatusBadge status={job.status} />
+                </div>
+
+                {/* Progress Stepper */}
+                <div className="mt-4">
+                  <div className="flex items-center gap-0.5">
+                    {statusSteps.map((step, i) => (
+                      <div key={step} className="flex-1 flex items-center">
+                        <div
+                          className={`h-1.5 rounded-full w-full transition-colors ${
+                            i <= currentStepIndex
+                              ? 'bg-orange-500'
+                              : 'bg-slate-200 dark:bg-slate-700'
+                          }`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between mt-1.5">
+                    <span className="text-[9px] text-slate-400">New</span>
+                    <span className="text-[9px] text-slate-400">Invoiced</span>
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                  <span>Expected: {formatDate(job.deadline)}</span>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    {job.assignedTo}
+                  </span>
+                </div>
+              </GlassCard>
+            </motion.div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── KPI icon color mapping ──────────────────────────────────────────────────
+type CardGlow = NonNullable<React.ComponentProps<typeof GlassCard>['glow']>
+type Kpi = {
+  title: string
+  value: string | number
+  change: string
+  icon: React.ComponentType<{ className?: string }>
+  color: CardGlow
+  bg: string
+}
+
+const iconColorMap: Record<CardGlow, string> = {
+  none: 'text-slate-600 dark:text-slate-400',
+  blue: 'text-blue-600 dark:text-blue-400',
+  amber: 'text-amber-600 dark:text-amber-400',
+  emerald: 'text-emerald-600 dark:text-emerald-400',
+  indigo: 'text-indigo-600 dark:text-indigo-400',
+  cyan: 'text-cyan-600 dark:text-cyan-400',
+  rose: 'text-rose-600 dark:text-rose-400',
+}
+
+// ─── Main Dashboard ──────────────────────────────────────────────────────────
 export default function Dashboard() {
-  const [selectedDate, setSelectedDate] = useState('2024-02-15')
+  const { userRole } = useAuth()
+
+  // Client portal
+  if (userRole === 'client') {
+    return <ClientPortal />
+  }
+
+  const isManager = userRole === 'manager'
 
   const totalJobs = jobs.length
-  const pendingJobs = jobs.filter((j) => j.status === 'Pending' || j.status === 'Assigned').length
-  const completedJobs = jobs.filter((j) => j.status === 'Completed' || j.status === 'Delivered').length
+  const pendingJobs = jobs.filter((j) => j.status === 'New' || j.status === 'Quoted').length
+  const completedJobs = jobs.filter((j) => j.status === 'Completed' || j.status === 'Invoiced').length
   const totalRevenue = jobs.reduce((sum, j) => sum + j.revenue, 0)
   const activeEmployees = 5
   const todayTasks = 8
 
-  const kpis = [
+  const revenueKpis: Kpi[] = !isManager
+    ? [{ title: 'Total Revenue', value: formatCurrency(totalRevenue), change: '+18.4% growth', icon: TrendingUp, color: 'indigo', bg: 'kpi-indigo' }]
+    : []
+  const kpis: Kpi[] = [
     { title: 'Total Jobs', value: totalJobs, change: '+12% from last mo', icon: Briefcase, color: 'blue', bg: 'kpi-blue' },
     { title: 'Pending Jobs', value: pendingJobs, change: '3 urgent priority', icon: Clock, color: 'amber', bg: 'kpi-amber' },
     { title: 'Completed Jobs', value: completedJobs, change: '+8% efficiency', icon: CheckCircle2, color: 'emerald', bg: 'kpi-emerald' },
-    { title: 'Total Revenue', value: formatCurrency(totalRevenue), change: '+18.4% growth', icon: TrendingUp, color: 'indigo', bg: 'kpi-indigo' },
+    ...revenueKpis,
     { title: 'Active Employees', value: activeEmployees, change: '100% attendance', icon: Users, color: 'cyan', bg: 'kpi-cyan' },
     { title: "Today's Tasks", value: todayTasks, change: '4 completed', icon: Activity, color: 'rose', bg: 'kpi-rose' },
   ]
+
+  // Upcoming deadlines — jobs due in the next 7 days
+  const now = new Date()
+  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const upcomingDeadlines = jobs
+    .filter((j) => {
+      const d = new Date(j.deadline)
+      return d >= now && d <= sevenDaysFromNow && j.status !== 'Completed' && j.status !== 'Invoiced'
+    })
+    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
+    .slice(0, 4)
 
   return (
     <div className="space-y-8">
@@ -47,7 +174,7 @@ export default function Dashboard() {
             Dashboard Overview
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Welcome back, Sai Mistry! Here is what's happening at your factory today.
+            Welcome back, Workshop Owner! Here is what's happening at Mistry Gems today.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -61,7 +188,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ${isManager ? 'xl:grid-cols-5' : 'xl:grid-cols-6'} gap-4`}>
         {kpis.map((kpi, index) => (
           <motion.div
             key={kpi.title}
@@ -69,13 +196,13 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.05 }}
           >
-            <GlassCard className="p-4 relative overflow-hidden" glow={kpi.color as any}>
+            <GlassCard className="p-4 relative overflow-hidden" glow={kpi.color}>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                   {kpi.title}
                 </span>
                 <div className={`p-2 rounded-xl ${kpi.bg}`}>
-                  <kpi.icon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <kpi.icon className={`w-4 h-4 ${iconColorMap[kpi.color] || 'text-blue-600 dark:text-blue-400'}`} />
                 </div>
               </div>
               <p className="text-xl font-bold text-slate-900 dark:text-white mt-2">
@@ -102,7 +229,7 @@ export default function Dashboard() {
                 Monthly revenue performance in INR
               </p>
             </div>
-            <button className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+            <button className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1">
               <span>View Report</span>
               <ArrowRight className="w-3 h-3" />
             </button>
@@ -155,14 +282,14 @@ export default function Dashboard() {
             <h2 className="text-base font-bold text-slate-900 dark:text-white">
               Activity Timeline
             </h2>
-            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+            <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">
               Live Updates
             </span>
           </div>
           <div className="space-y-4">
             {activityData.slice(0, 5).map((act, index) => (
               <div key={index} className="flex items-start gap-3 text-xs">
-                <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-orange-500 mt-1.5 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="font-semibold text-slate-800 dark:text-slate-200">
                     {act.event}
@@ -176,43 +303,48 @@ export default function Dashboard() {
           </div>
         </GlassCard>
 
-        {/* Calendar Widget */}
+        {/* Upcoming Deadlines Widget */}
         <GlassCard>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              Schedule & Deadlines
+              Upcoming Deadlines
             </h2>
             <CalendarIcon className="w-4 h-4 text-slate-400" />
           </div>
-          <div className="bg-slate-50/80 dark:bg-slate-800/40 p-4 rounded-xl text-center mb-4 border border-slate-200/50 dark:border-slate-700/30">
-            <p className="text-xs text-slate-400">Selected Date</p>
-            <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">
-              Thursday, 15 Feb 2024
-            </p>
-          </div>
           <div className="space-y-2.5">
-            <div className="p-2.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 text-xs flex justify-between items-center">
-              <div>
-                <p className="font-semibold text-amber-900 dark:text-amber-300">
-                  JOB-001 Polishing
-                </p>
-                <p className="text-[10px] text-amber-700 dark:text-amber-400">
-                  Ramesh Kumar
-                </p>
+            {upcomingDeadlines.length > 0 ? (
+              upcomingDeadlines.map((job) => {
+                const daysUntil = Math.ceil((new Date(job.deadline).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+                const isUrgent = daysUntil <= 2
+                return (
+                  <div
+                    key={job.id}
+                    className={`p-2.5 rounded-xl text-xs flex justify-between items-center ${
+                      isUrgent
+                        ? 'bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30'
+                        : 'bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/30'
+                    }`}
+                  >
+                    <div>
+                      <p className={`font-semibold ${isUrgent ? 'text-amber-900 dark:text-amber-300' : 'text-blue-900 dark:text-blue-300'}`}>
+                        {job.id} — {job.description.split('—')[0].trim().slice(0, 30)}
+                      </p>
+                      <p className={`text-[10px] ${isUrgent ? 'text-amber-700 dark:text-amber-400' : 'text-blue-700 dark:text-blue-400'}`}>
+                        {job.assignedTo}
+                      </p>
+                    </div>
+                    <span className={`text-[10px] font-bold ${isUrgent ? 'text-amber-600' : 'text-blue-600'}`}>
+                      {daysUntil === 0 ? 'DUE TODAY' : daysUntil === 1 ? 'IN 1 DAY' : `IN ${daysUntil} DAYS`}
+                    </span>
+                  </div>
+                )
+              })
+            ) : (
+              <div className="text-center py-6 text-xs text-slate-400">
+                <CalendarIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p>No upcoming deadlines this week</p>
               </div>
-              <span className="text-[10px] font-bold text-amber-600">DUE TODAY</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/30 text-xs flex justify-between items-center">
-              <div>
-                <p className="font-semibold text-blue-900 dark:text-blue-300">
-                  JOB-012 Setting
-                </p>
-                <p className="text-[10px] text-blue-700 dark:text-blue-400">
-                  Sunita Mehta
-                </p>
-              </div>
-              <span className="text-[10px] font-bold text-blue-600">IN 1 DAY</span>
-            </div>
+            )}
           </div>
         </GlassCard>
       </div>
@@ -225,11 +357,11 @@ export default function Dashboard() {
               Recent Jobs
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Latest manufacturing and repair jobs in progress
+              Latest manufacturing jobs in progress
             </p>
           </div>
           <Link to="/jobs">
-            <button className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+            <button className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1">
               <span>View All Jobs</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -242,21 +374,25 @@ export default function Dashboard() {
               <tr className="border-b border-slate-200/60 dark:border-slate-800 text-slate-400 text-[11px] uppercase tracking-wider font-semibold">
                 <th className="pb-3 px-3">Job ID</th>
                 <th className="pb-3 px-3">Customer</th>
+                <th className="pb-3 px-3">Mode</th>
                 <th className="pb-3 px-3">Priority</th>
                 <th className="pb-3 px-3">Assigned To</th>
                 <th className="pb-3 px-3">Deadline</th>
                 <th className="pb-3 px-3">Status</th>
-                <th className="pb-3 px-3 text-right">Revenue</th>
+                {!isManager && <th className="pb-3 px-3 text-right">Revenue</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
               {jobs.slice(0, 5).map((job) => (
                 <tr key={job.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                  <td className="py-3 px-3 font-semibold text-blue-600 dark:text-blue-400">
+                  <td className="py-3 px-3 font-semibold text-orange-600 dark:text-orange-400">
                     {job.id}
                   </td>
                   <td className="py-3 px-3 font-medium text-slate-800 dark:text-slate-200">
                     {job.customer}
+                  </td>
+                  <td className="py-3 px-3">
+                    <ModeBadge mode={job.mode} />
                   </td>
                   <td className="py-3 px-3">
                     <PriorityBadge priority={job.priority} />
@@ -270,9 +406,11 @@ export default function Dashboard() {
                   <td className="py-3 px-3">
                     <StatusBadge status={job.status} />
                   </td>
-                  <td className="py-3 px-3 text-right font-bold text-slate-900 dark:text-white">
-                    {formatCurrency(job.revenue)}
-                  </td>
+                  {!isManager && (
+                    <td className="py-3 px-3 text-right font-bold text-slate-900 dark:text-white">
+                      {formatCurrency(job.revenue)}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
