@@ -12,7 +12,7 @@ export default function Reports() {
             Analytics & Reports
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Deep dive into monthly revenue, job completion velocity, and employee efficiency
+            Deep dive into monthly revenue, job completion velocity, and worker efficiency
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -30,20 +30,21 @@ export default function Reports() {
       {/* Filter Bar */}
       <GlassCard className="p-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Calendar className="w-4 h-4 text-blue-600" />
+          <Calendar className="w-4 h-4 text-orange-600" />
           <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
             Date Range: Last 6 Months (Aug 2023 - Jan 2024)
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span className="text-slate-400">Filter Department:</span>
-          <select className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium">
+          <select className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium text-slate-700 dark:text-slate-200">
             <option>All Departments</option>
+            <option>CNC Machining</option>
             <option>Fabrication</option>
-            <option>Setting</option>
             <option>QC</option>
-            <option>Design</option>
-            <option>Finishing</option>
+            <option>Lathe Turning</option>
+            <option>Welding</option>
+            <option>Production</option>
           </select>
         </div>
       </GlassCard>
@@ -86,9 +87,9 @@ export default function Reports() {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/30">
-              <span className="text-xs text-blue-700 dark:text-blue-300 font-medium">On-Time Delivery Rate</span>
-              <p className="text-2xl font-extrabold text-blue-900 dark:text-blue-200 mt-1">94.2%</p>
+            <div className="p-4 rounded-xl bg-orange-50/60 dark:bg-orange-950/20 border border-orange-200/50 dark:border-orange-900/30">
+              <span className="text-xs text-orange-700 dark:text-orange-300 font-medium">On-Time Delivery Rate</span>
+              <p className="text-2xl font-extrabold text-orange-900 dark:text-orange-200 mt-1">94.2%</p>
               <span className="text-[10px] text-emerald-600 font-bold">+2.4% vs last month</span>
             </div>
 
