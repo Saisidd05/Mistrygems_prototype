@@ -12,26 +12,35 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Gem,
+  Package,
+  Receipt,
 } from 'lucide-react'
 import { useSidebar } from '@/context/SidebarContext'
+import { useAuth, UserRole } from '@/context/AuthContext'
 import { cn } from '@/lib/utils'
 
-const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/jobs', icon: Briefcase, label: 'Jobs' },
-  { to: '/quotations', icon: FileText, label: 'Quotations' },
-  { to: '/customers', icon: Users, label: 'Customers' },
-  { to: '/employees', icon: UserCheck, label: 'Employees' },
-  { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
-  { to: '/reports', icon: BarChart3, label: 'Reports' },
-  { to: '/notifications', icon: Bell, label: 'Notifications' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
+const allNavItems = [
+  { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: ['owner', 'manager', 'client'] as UserRole[] },
+  { to: '/jobs', icon: Briefcase, label: 'Jobs', roles: ['owner', 'manager'] as UserRole[] },
+  { to: '/quotations', icon: FileText, label: 'Quotations', roles: ['owner', 'manager'] as UserRole[] },
+  { to: '/customers', icon: Users, label: 'Customers', roles: ['owner'] as UserRole[] },
+  { to: '/employees', icon: UserCheck, label: 'Employees', roles: ['owner', 'manager'] as UserRole[] },
+  { to: '/tasks', icon: CheckSquare, label: 'Tasks', roles: ['owner', 'manager', 'employee'] as UserRole[] },
+  { to: '/inventory', icon: Package, label: 'Inventory', roles: ['owner', 'manager'] as UserRole[] },
+  { to: '/invoices', icon: Receipt, label: 'Invoices', roles: ['owner'] as UserRole[] },
+  { to: '/reports', icon: BarChart3, label: 'Reports', roles: ['owner'] as UserRole[] },
+  { to: '/notifications', icon: Bell, label: 'Notifications', roles: ['owner', 'manager', 'employee', 'client'] as UserRole[] },
+  { to: '/settings', icon: Settings, label: 'Settings', roles: ['owner'] as UserRole[] },
 ]
 
 export default function Sidebar() {
   const { collapsed, toggleSidebar } = useSidebar()
+  const { userRole } = useAuth()
   const location = useLocation()
+
+  const navItems = allNavItems.filter((item) =>
+    userRole ? item.roles.includes(userRole) : true
+  )
 
   return (
     <motion.aside
@@ -41,8 +50,12 @@ export default function Sidebar() {
     >
       {/* Logo Area */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-white/20 dark:border-white/5">
-        <div className="relative flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/25">
-          <Gem className="w-5 h-5 text-white" />
+        <div className="relative flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500 to-amber-600 shadow-lg shadow-orange-500/25">
+          <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
           <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/20 to-transparent" />
         </div>
         <AnimatePresence>
@@ -54,11 +67,11 @@ export default function Sidebar() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <p className="font-bold text-[15px] tracking-tight text-slate-800 dark:text-white leading-none">
+              <p className="font-bold text-[15px] tracking-tight text-orange-600 dark:text-orange-400 leading-none">
                 Mistry Gems
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                Workflow Platform
+                Workshop Platform
               </p>
             </motion.div>
           )}
@@ -70,7 +83,7 @@ export default function Sidebar() {
         {navItems.map((item) => {
           const isActive =
             item.to === '/'
-              ? location.pathname === '/'
+              ? location.pathname === '/' || location.pathname === '/dashboard'
               : location.pathname.startsWith(item.to)
 
           return (
@@ -79,7 +92,7 @@ export default function Sidebar() {
                 whileHover={{ x: collapsed ? 0 : 2 }}
                 whileTap={{ scale: 0.98 }}
                 className={cn(
-                  'nav-item relative',
+                  'nav-item relative group',
                   isActive && 'active',
                   collapsed && 'justify-center px-0'
                 )}
@@ -88,7 +101,7 @@ export default function Sidebar() {
                   className={cn(
                     'w-[18px] h-[18px] flex-shrink-0 transition-colors',
                     isActive
-                      ? 'text-blue-600 dark:text-blue-400'
+                      ? 'text-orange-600 dark:text-orange-400'
                       : 'text-slate-500 dark:text-slate-400'
                   )}
                 />
@@ -110,7 +123,7 @@ export default function Sidebar() {
                 {isActive && (
                   <motion.div
                     layoutId="active-pill"
-                    className="absolute right-2 w-1.5 h-1.5 rounded-full bg-blue-500"
+                    className="absolute right-2 w-1.5 h-1.5 rounded-full bg-orange-500"
                   />
                 )}
 

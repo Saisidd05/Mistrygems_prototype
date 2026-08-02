@@ -18,6 +18,7 @@ export default {
     extend: {
       colors: {
         brand: {
+          amber: '#F97316',
           blue: '#2563EB',
           indigo: '#4F46E5',
           cyan: '#06B6D4',
