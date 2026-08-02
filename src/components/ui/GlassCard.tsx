@@ -6,7 +6,7 @@ interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
   className?: string
   hoverEffect?: boolean
-  glow?: 'none' | 'blue' | 'indigo' | 'cyan'
+  glow?: 'none' | 'blue' | 'indigo' | 'cyan' | 'emerald' | 'amber' | 'rose'
 }
 
 export function GlassCard({
@@ -21,11 +21,14 @@ export function GlassCard({
     blue: 'hover:shadow-blue-500/20 hover:border-blue-500/30',
     indigo: 'hover:shadow-indigo-500/20 hover:border-indigo-500/30',
     cyan: 'hover:shadow-cyan-500/20 hover:border-cyan-500/30',
+    emerald: 'hover:shadow-emerald-500/20 hover:border-emerald-500/30',
+    amber: 'hover:shadow-amber-500/20 hover:border-amber-500/30',
+    rose: 'hover:shadow-rose-500/20 hover:border-rose-500/30',
   }
 
   return (
     <motion.div
-      whileHover={hoverEffect ? { y: -3, transition: { duration: 0.2 } } : {}}
+      whileHover={hoverEffect ? { y: -4, scale: 1.005, transition: { duration: 0.24 } } : {}}
       className={cn(
         'glass-card p-6 transition-all duration-200',
         glowClasses[glow],

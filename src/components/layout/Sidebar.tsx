@@ -37,11 +37,11 @@ export default function Sidebar() {
     <motion.aside
       animate={{ width: collapsed ? 72 : 260 }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      className="glass-sidebar fixed left-0 top-0 h-full z-40 flex flex-col overflow-hidden"
+      className="glass-sidebar fixed left-0 top-3 bottom-3 h-auto rounded-r-[28px] z-40 flex flex-col overflow-hidden"
     >
       {/* Logo Area */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-white/20 dark:border-white/5">
-        <div className="relative flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/25">
+      <div className="flex items-center gap-3 px-4 py-5 border-b border-white/35 dark:border-white/5">
+        <div className="relative flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-violet-500 shadow-lg shadow-blue-500/25">
           <Gem className="w-5 h-5 text-white" />
           <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/20 to-transparent" />
         </div>
