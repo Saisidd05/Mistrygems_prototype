@@ -25,6 +25,8 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [selectedRole, setSelectedRole] = useState<UserRole>('owner')
   const [isLoading, setIsLoading] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,6 +35,19 @@ export default function Login() {
       login(selectedRole, email || 'user@mistrygems.com', roleNames[selectedRole])
       navigate('/dashboard')
     }, 600)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    })
+    setIsHovered(true)
+  }
+
+  const handleMouseLeave = () => {
+    setIsHovered(false)
   }
 
   return (
@@ -47,8 +62,23 @@ export default function Login() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
         className="relative w-full max-w-md"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
-        <div className="rounded-[28px] border border-white/70 bg-white/70 backdrop-blur-2xl shadow-[0_30px_80px_rgba(37,99,235,0.12)] p-7 sm:p-8">
+        {/* Hidden Reveal Layer */}
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 rounded-[28px] pointer-events-none z-40"
+            style={{
+              background: `radial-gradient(circle 200px at ${mousePos.x}px ${mousePos.y}px, rgba(37, 99, 235, 0.15), transparent 80%)`,
+            }}
+          />
+        )}
+
+        <div className="rounded-[28px] border border-white/70 bg-white/70 backdrop-blur-2xl shadow-[0_30px_80px_rgba(37,99,235,0.12)] p-7 sm:p-8 relative">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-500/25 mb-4">
               <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
