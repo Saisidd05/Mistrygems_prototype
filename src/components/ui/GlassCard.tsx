@@ -28,14 +28,18 @@ export function GlassCard({
 
   return (
     <motion.div
-      whileHover={hoverEffect ? { y: -3, scale: 1.01, transition: { duration: 0.2 } } : {}}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={hoverEffect ? { y: -3, scale: 1.01, boxShadow: '0 20px 40px rgba(37, 99, 235, 0.12)', transition: { duration: 0.2 } } : {}}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
       className={cn(
-        'glass-card p-6 transition-all duration-200',
+        'glass-card p-6 transition-all duration-200 rounded-[28px] shadow-[0_18px_45px_rgba(37,99,235,0.08)] relative',
         glowClasses[glow],
         className
       )}
       {...props}
     >
+      <div className="absolute inset-x-3 top-2 h-10 rounded-full bg-white/35 blur-2xl pointer-events-none" />
       {children}
     </motion.div>
   )

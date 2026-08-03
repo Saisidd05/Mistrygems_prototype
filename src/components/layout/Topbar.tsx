@@ -46,7 +46,7 @@ export default function Topbar() {
 
   return (
     <header
-      className="glass-nav sticky top-0 z-30 flex items-center gap-4 px-6 h-16"
+      className="glass-nav sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 h-16 rounded-b-[24px]"
       style={{ paddingLeft: collapsed ? '88px' : '276px', transition: 'padding 0.3s ease' }}
     >
       {/* Mobile menu */}
@@ -62,7 +62,7 @@ export default function Topbar() {
         <div className="relative">
           <button
             onClick={() => setCompanyOpen((o) => !o)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all duration-200 group"
+            className="flex items-center gap-2 px-3 py-2 rounded-2xl hover:bg-slate-100/70 dark:hover:bg-slate-800/60 transition-all duration-200 group"
           >
             <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center flex-shrink-0">
               <Building2 className="w-3.5 h-3.5 text-white" />
@@ -112,7 +112,7 @@ export default function Topbar() {
               placeholder="Search jobs, customers, employees…"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl text-sm bg-white/70 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/40 text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all duration-200"
+              className="w-full pl-10 pr-4 py-2 rounded-2xl text-sm bg-white/70 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/40 text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all duration-200"
             />
             <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded">
               ⌘K
@@ -148,7 +148,7 @@ export default function Topbar() {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+          className="relative w-9 h-9 rounded-2xl flex items-center justify-center hover:bg-slate-100/70 dark:hover:bg-slate-800/60 transition-colors"
           onClick={() => navigate('/notifications')}
         >
           <Bell className="w-4.5 h-4.5 text-slate-600 dark:text-slate-300" />
@@ -165,7 +165,7 @@ export default function Topbar() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setProfileOpen((o) => !o)}
-            className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors ml-1"
+            className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-2xl hover:bg-slate-100/70 dark:hover:bg-slate-800/60 transition-colors ml-1"
           >
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center flex-shrink-0 shadow-sm">
               <span className="text-xs font-bold text-white">

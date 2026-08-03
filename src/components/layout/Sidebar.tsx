@@ -49,8 +49,8 @@ export default function Sidebar() {
       className="glass-sidebar fixed left-0 top-0 h-full z-40 flex flex-col overflow-hidden"
     >
       {/* Logo Area */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-white/20 dark:border-white/5">
-        <div className="relative flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-500/25">
+      <div className="flex items-center gap-3 px-4 py-4 border-b border-white/20 dark:border-white/5">
+        <div className="relative flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-500/25">
           <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2L2 7l10 5 10-5-10-5z" />
             <path d="M2 17l10 5 10-5" />
@@ -79,7 +79,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-2.5 py-3 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive =
             item.to === '/'
@@ -92,7 +92,7 @@ export default function Sidebar() {
                 whileHover={{ x: collapsed ? 0 : 2 }}
                 whileTap={{ scale: 0.98 }}
                 className={cn(
-                  'nav-item relative group',
+                  'nav-item relative group rounded-2xl',
                   isActive && 'active',
                   collapsed && 'justify-center px-0'
                 )}
@@ -146,8 +146,8 @@ export default function Sidebar() {
           whileTap={{ scale: 0.95 }}
           onClick={toggleSidebar}
           className={cn(
-            'flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
-            'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60',
+            'flex items-center gap-2.5 w-full px-3 py-2.5 rounded-2xl text-sm font-medium transition-all duration-200',
+            'text-slate-500 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60',
             collapsed && 'justify-center px-0'
           )}
         >

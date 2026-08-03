@@ -27,12 +27,12 @@ export function RevenueLineChart() {
               <stop offset="95%" stopColor="#4F46E5" stopOpacity={0.0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148, 163, 184, 0.24)" />
+          <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
           <YAxis
             tickLine={false}
             axisLine={false}
-            tick={{ fill: '#94A3B8', fontSize: 12 }}
+            tick={{ fill: '#64748B', fontSize: 12 }}
             tickFormatter={(val) => `₹${val / 1000}k`}
           />
           <Tooltip
@@ -41,7 +41,7 @@ export function RevenueLineChart() {
                 return (
                   <div className="glass-card !p-3 shadow-xl border border-white/20">
                     <p className="text-xs font-semibold text-slate-500">{label}</p>
-                    <p className="text-sm font-bold text-blue-600 dark:text-blue-400 mt-1">
+                    <p className="text-sm font-bold text-blue-700 dark:text-sky-300 mt-1">
                       {formatCurrency(payload[0].value as number)}
                     </p>
                   </div>
@@ -69,16 +69,16 @@ export function PerformanceBarChart() {
     <div className="w-full h-[280px]">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={employeePerformanceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
-          <YAxis tickLine={false} axisLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} domain={[0, 100]} />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148, 163, 184, 0.24)" />
+          <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+          <YAxis tickLine={false} axisLine={false} tick={{ fill: '#64748B', fontSize: 12 }} domain={[0, 100]} />
           <Tooltip
             content={({ active, payload, label }) => {
               if (active && payload && payload.length) {
                 return (
                   <div className="glass-card !p-3 shadow-xl border border-white/20">
                     <p className="text-xs font-semibold text-slate-500">{label}</p>
-                    <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-1">
+                    <p className="text-sm font-bold text-indigo-700 dark:text-sky-300 mt-1">
                       Score: {payload[0].value}%
                     </p>
                   </div>
@@ -111,6 +111,8 @@ export function StatusPieChart() {
             outerRadius={85}
             paddingAngle={4}
             dataKey="value"
+            stroke="rgba(255,255,255,0.65)"
+            strokeWidth={2}
           >
             {jobStatusData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" />

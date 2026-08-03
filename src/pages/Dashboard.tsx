@@ -196,7 +196,7 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.05 }}
           >
-            <GlassCard className="p-4 relative overflow-hidden" glow={kpi.color}>
+            <GlassCard className="p-4 relative overflow-hidden rounded-[24px]" glow={kpi.color}>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                   {kpi.title}
@@ -219,7 +219,7 @@ export default function Dashboard() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Line Chart */}
-        <GlassCard className="lg:col-span-2">
+        <GlassCard className="lg:col-span-2 rounded-[28px]">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
@@ -229,7 +229,7 @@ export default function Dashboard() {
                 Monthly revenue performance in INR
               </p>
             </div>
-            <button className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1">
+            <button className="text-xs font-semibold text-blue-700 dark:text-sky-300 hover:underline flex items-center gap-1 transition-colors">
               <span>View Report</span>
               <ArrowRight className="w-3 h-3" />
             </button>
@@ -238,7 +238,7 @@ export default function Dashboard() {
         </GlassCard>
 
         {/* Pie Chart / Job Status */}
-        <GlassCard>
+        <GlassCard className="rounded-[28px]">
           <div className="mb-4">
             <h2 className="text-base font-bold text-slate-900 dark:text-white">
               Job Status Breakdown
@@ -264,7 +264,7 @@ export default function Dashboard() {
       {/* Middle Row: Bar Chart + Activity Timeline + Calendar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Bar Chart */}
-        <GlassCard>
+        <GlassCard className="rounded-[28px]">
           <div className="mb-4">
             <h2 className="text-base font-bold text-slate-900 dark:text-white">
               Employee Performance
@@ -277,7 +277,7 @@ export default function Dashboard() {
         </GlassCard>
 
         {/* Activity Timeline */}
-        <GlassCard>
+        <GlassCard className="rounded-[28px]">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-slate-900 dark:text-white">
               Activity Timeline
@@ -304,7 +304,7 @@ export default function Dashboard() {
         </GlassCard>
 
         {/* Upcoming Deadlines Widget */}
-        <GlassCard>
+        <GlassCard className="rounded-[28px]">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-slate-900 dark:text-white">
               Upcoming Deadlines
@@ -350,7 +350,7 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Jobs Table */}
-      <GlassCard>
+      <GlassCard className="rounded-[28px]">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-base font-bold text-slate-900 dark:text-white">
@@ -361,7 +361,7 @@ export default function Dashboard() {
             </p>
           </div>
           <Link to="/jobs">
-            <button className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1">
+            <button className="text-xs font-semibold text-blue-700 dark:text-sky-300 hover:underline flex items-center gap-1 transition-colors">
               <span>View All Jobs</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>

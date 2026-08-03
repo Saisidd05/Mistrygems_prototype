@@ -53,9 +53,21 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen gradient-bg">
       {/* Ambient Background Orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-400/12 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 -right-32 w-80 h-80 bg-cyan-400/12 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-sky-400/10 rounded-full blur-3xl" />
+        <motion.div
+          animate={{ x: [0, 20, 0], y: [0, -12, 0], scale: [1, 1.04, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute -top-40 -left-40 w-96 h-96 bg-blue-400/12 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ x: [0, -18, 0], y: [0, 10, 0], scale: [1, 1.05, 1] }}
+          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute top-1/3 -right-32 w-80 h-80 bg-cyan-400/12 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ x: [0, 12, 0], y: [0, -8, 0], scale: [1, 1.03, 1] }}
+          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute bottom-0 left-1/3 w-64 h-64 bg-sky-400/10 rounded-full blur-3xl"
+        />
       </div>
 
       <Sidebar />
