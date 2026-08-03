@@ -13,6 +13,7 @@ const Jobs = React.lazy(() => import('@/pages/Jobs'))
 const Quotations = React.lazy(() => import('@/pages/Quotations'))
 const Customers = React.lazy(() => import('@/pages/Customers'))
 const Employees = React.lazy(() => import('@/pages/Employees'))
+const AddEmployee = React.lazy(() => import('@/pages/AddEmployee'))
 const Tasks = React.lazy(() => import('@/pages/Tasks'))
 const Reports = React.lazy(() => import('@/pages/Reports'))
 const Notifications = React.lazy(() => import('@/pages/Notifications'))
@@ -81,6 +82,7 @@ function AppRoutes() {
                   <Route path="/quotations" element={<Quotations />} />
                   <Route path="/customers" element={<Customers />} />
                   <Route path="/employees" element={<Employees />} />
+                  <Route path="/employees/add" element={<AddEmployee />} />
                   <Route path="/tasks" element={<Tasks />} />
                   <Route path="/inventory" element={<Inventory />} />
                   <Route path="/invoices" element={<Invoices />} />

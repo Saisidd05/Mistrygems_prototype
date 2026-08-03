@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { employees } from '@/lib/data'
 import { Plus, Mail, Phone, Award, Download, X } from 'lucide-react'
@@ -14,31 +15,11 @@ declare module 'jspdf' {
 }
 
 export default function Employees() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    role: '',
-    department: '',
-    email: '',
-    phone: '',
-    performance: '75',
-  })
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would normally send to API
-    console.log('New employee:', formData)
-    setIsModalOpen(false)
-    setFormData({ name: '', role: '', department: '', email: '', phone: '', performance: '75' })
-  }
+  const navigate = useNavigate()
+  const [employees_list] = useState(employees)
 
   const exportToExcel = () => {
-    const data = employees.map(emp => ({
+    const data = employees_list.map(emp => ({
       'Employee Name': emp.name,
       'Role': emp.role,
       'Department': emp.department,
@@ -110,7 +91,7 @@ export default function Employees() {
             <span>Export PDF</span>
           </button>
           <button 
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => navigate('/employees/add')}
             className="btn-primary text-xs"
           >
             <Plus className="w-4 h-4" />
@@ -118,121 +99,6 @@ export default function Employees() {
           </button>
         </div>
       </div>
-
-      {/* Add Employee Modal */}
-      {isModalOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
-          onClick={() => setIsModalOpen(false)}
-        >
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white/90 backdrop-blur-xl rounded-[24px] p-6 w-full max-w-md border border-white/70 shadow-2xl"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-slate-900">Add New Employee</h2>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 hover:bg-slate-100/70 rounded-xl transition-colors"
-              >
-                <X className="w-5 h-5 text-slate-600" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <input
-                type="text"
-                name="name"
-                placeholder="Employee Name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 rounded-lg bg-white/70 border border-slate-200/70 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-              />
-              
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  name="role"
-                  placeholder="Role"
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  required
-                  className="px-3 py-2 rounded-lg bg-white/70 border border-slate-200/70 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-                />
-                <select
-                  name="department"
-                  value={formData.department}
-                  onChange={handleInputChange}
-                  required
-                  className="px-3 py-2 rounded-lg bg-white/70 border border-slate-200/70 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-                >
-                  <option value="">Select Department</option>
-                  <option value="Production">Production</option>
-                  <option value="Quality">Quality</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Logistics">Logistics</option>
-                </select>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  className="px-3 py-2 rounded-lg bg-white/70 border border-slate-200/70 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-                />
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                  className="px-3 py-2 rounded-lg bg-white/70 border border-slate-200/70 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Performance Score: {formData.performance}%</label>
-                <input
-                  type="range"
-                  name="performance"
-                  min="0"
-                  max="100"
-                  value={formData.performance}
-                  onChange={handleInputChange}
-                  className="w-full accent-blue-600"
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-3 py-2 rounded-lg bg-slate-100/70 text-slate-700 font-medium text-sm hover:bg-slate-200/70 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-3 py-2 rounded-lg bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 transition-colors"
-                >
-                  Add Employee
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </motion.div>
-      )}
 
       {/* Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
