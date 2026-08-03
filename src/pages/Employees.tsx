@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { employees, type Employee } from '@/lib/data'
@@ -6,6 +6,7 @@ import { Plus, Mail, Phone, Award, Download } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
+import { database } from '@/lib/database'
 
 declare module 'jspdf' {
   interface jsPDF {
@@ -15,14 +16,15 @@ declare module 'jspdf' {
 
 export default function Employees() {
   const navigate = useNavigate()
-  const [employeeList] = useState<Employee[]>(() => {
-    try {
-      const savedEmployees: Employee[] = JSON.parse(localStorage.getItem('employees') || '[]')
-      return [...employees, ...savedEmployees]
-    } catch {
-      return employees
-    }
-  })
+  const [employeeList, setEmployeeList] = useState<Employee[]>(employees)
+
+  useEffect(() => {
+    database.list<Employee>('employees')
+      .then((storedEmployees) => {
+        if (storedEmployees.length) setEmployeeList(storedEmployees)
+      })
+      .catch(() => undefined)
+  }, [])
 
   const exportToExcel = () => {
     const data = employeeList.map(emp => ({

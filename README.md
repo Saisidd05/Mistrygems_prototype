@@ -139,6 +139,18 @@ npm run build
 
 ---
 
+## 🗄️ MongoDB data storage
+
+The application exposes a server-side MongoDB API at `/api/data`. It supports the `customers`, `employees`, `finishedGoods`, `invoices`, `jobs`, `notifications`, `rawMaterials`, and `tasks` collections. MongoDB credentials are used only by the Vercel serverless function and are never sent to the browser.
+
+1. Create a MongoDB Atlas database and a database user with read/write access.
+2. Copy `.env.example` to `.env.local` and set `MONGODB_URI`. Optionally set `MONGODB_DB`; it defaults to `mistry_gems`.
+3. For Vercel, the project owner must add the same values under **Project Settings → Environment Variables**, for Production (and Preview if needed), then redeploy.
+
+The employee, invoice, and raw-material inventory flows are connected to this API. The remaining collections are available through the same endpoint, ready to be used as their screens move from sample data to live records.
+
+---
+
 ## 🛠️ Technology Stack
 
 * **Frontend Framework**: [React 18](https://reactjs.org/) + [TypeScript](https://www.typescriptlang.org/)

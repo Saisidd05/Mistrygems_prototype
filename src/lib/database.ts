@@ -1,0 +1,36 @@
+export type DatabaseCollection =
+  | 'customers'
+  | 'employees'
+  | 'finishedGoods'
+  | 'invoices'
+  | 'jobs'
+  | 'notifications'
+  | 'rawMaterials'
+  | 'tasks'
+
+const endpoint = (collection: DatabaseCollection) =>
+  `/api/data?collection=${encodeURIComponent(collection)}`
+
+async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    ...init,
+  })
+
+  if (!response.ok) {
+    const message = await response.json().catch(() => ({ error: 'Database request failed.' }))
+    throw new Error(message.error || 'Database request failed.')
+  }
+
+  return response.status === 204 ? (undefined as T) : response.json() as Promise<T>
+}
+
+export const database = {
+  list: <T>(collection: DatabaseCollection) => request<T[]>(endpoint(collection)),
+  create: <T>(collection: DatabaseCollection, document: T) =>
+    request<T>(endpoint(collection), { method: 'POST', body: JSON.stringify({ document }) }),
+  update: <T extends { id: string }>(collection: DatabaseCollection, id: string, updates: Partial<T>) =>
+    request<T>(endpoint(collection), { method: 'PUT', body: JSON.stringify({ id, updates }) }),
+  remove: (collection: DatabaseCollection, id: string) =>
+    request<void>(`${endpoint(collection)}&id=${encodeURIComponent(id)}`, { method: 'DELETE' }),
+}

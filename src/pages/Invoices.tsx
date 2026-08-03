@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { invoices, Invoice, InvoiceStatus, jobs } from '@/lib/data'
 import { formatCurrency, formatDate, cn } from '@/lib/utils'
 import { Receipt, Plus, FileDown, X, Send, CheckCircle2, Clock, AlertTriangle, type LucideIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import jsPDF from 'jspdf'
+import { database } from '@/lib/database'
 
 const statusConfig: Record<InvoiceStatus, { color: string; icon: LucideIcon }> = {
   Draft: {
@@ -31,7 +32,7 @@ function InvoiceModal({
   onSave,
 }: {
   onClose: () => void
-  onSave: (data: Omit<Invoice, 'id' | 'createdAt'>) => void
+  onSave: (data: Omit<Invoice, 'id' | 'createdAt'>) => void | Promise<void>
 }) {
   const [selectedJobId, setSelectedJobId] = useState(jobs[0]?.id || '')
   const selectedJob = jobs.find((j) => j.id === selectedJobId)
@@ -44,9 +45,9 @@ function InvoiceModal({
     if (job) setAmount(job.revenue)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSave({
+    await onSave({
       jobId: selectedJobId,
       customer: selectedJob?.customer || '',
       amount,
@@ -128,9 +129,24 @@ export default function Invoices() {
   const [invoiceList, setInvoiceList] = useState<Invoice[]>(invoices)
   const [showModal, setShowModal] = useState(false)
 
-  const handleSaveInvoice = (data: Omit<Invoice, 'id' | 'createdAt'>) => {
+  useEffect(() => {
+    database.list<Invoice>('invoices')
+      .then((storedInvoices) => {
+        if (storedInvoices.length) setInvoiceList(storedInvoices)
+      })
+      .catch(() => undefined)
+  }, [])
+
+  const handleSaveInvoice = async (data: Omit<Invoice, 'id' | 'createdAt'>) => {
     const newId = `INV-2024-${String(invoiceList.length + 1).padStart(3, '0')}`
-    setInvoiceList((prev) => [...prev, { ...data, id: newId, createdAt: new Date().toISOString().split('T')[0] }])
+    const invoice = { ...data, id: newId, createdAt: new Date().toISOString().split('T')[0] }
+    try {
+      await database.create('invoices', invoice)
+      setInvoiceList((prev) => [...prev, invoice])
+    } catch {
+      // Keep the modal open so the user can try again once the database is available.
+      throw new Error('Unable to save invoice')
+    }
   }
 
   const exportInvoicePDF = (invoice: Invoice) => {

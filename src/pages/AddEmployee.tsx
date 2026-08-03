@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { User, Phone, Award, Save, X } from 'lucide-react'
 import type { Employee } from '@/lib/data'
+import { database } from '@/lib/database'
 
 export default function AddEmployee() {
   const navigate = useNavigate()
@@ -27,7 +28,7 @@ export default function AddEmployee() {
     setError('')
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // Validation
@@ -57,12 +58,11 @@ export default function AddEmployee() {
       joinDate: new Date().toISOString().slice(0, 10),
     }
 
-    // Save to localStorage
     try {
-      const savedEmployees: Employee[] = JSON.parse(localStorage.getItem('employees') || '[]')
-      localStorage.setItem('employees', JSON.stringify([...savedEmployees, newEmployee]))
+      await database.create('employees', newEmployee)
     } catch {
-      localStorage.setItem('employees', JSON.stringify([newEmployee]))
+      setError('Unable to save the employee. Check the database connection and try again.')
+      return
     }
 
     setSuccess(true)

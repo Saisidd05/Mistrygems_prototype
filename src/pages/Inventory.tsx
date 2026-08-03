@@ -4,6 +4,7 @@ import { rawMaterials, finishedGoods, RawMaterial, FinishedGood, jobs } from '@/
 import { formatCurrency, formatDate, cn } from '@/lib/utils'
 import { Package, Boxes, Plus, Minus, X, AlertTriangle, CheckCircle2, AlertCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { database } from '@/lib/database'
 
 const stockStatusConfig = {
   'OK': { color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800', icon: CheckCircle2 },
@@ -104,17 +105,7 @@ function StockModal({
 export default function Inventory() {
   const [activeTab, setActiveTab] = useState<'raw' | 'finished'>('raw')
   const [stockModal, setStockModal] = useState<'in' | 'out' | null>(null)
-  const [rmList, setRmList] = useState<RawMaterial[]>(() => {
-    try {
-      const savedInventory = localStorage.getItem('inventoryRawMaterials')
-      if (savedInventory) return JSON.parse(savedInventory) as RawMaterial[]
-
-      const addedItems = JSON.parse(localStorage.getItem('inventoryItems') || '[]') as RawMaterial[]
-      return [...rawMaterials, ...addedItems]
-    } catch {
-      return rawMaterials
-    }
-  })
+  const [rmList, setRmList] = useState<RawMaterial[]>(rawMaterials)
   const [fgList] = useState<FinishedGood[]>(finishedGoods)
   const [addItemModal, setAddItemModal] = useState(false)
   const [newItemData, setNewItemData] = useState({
@@ -125,8 +116,12 @@ export default function Inventory() {
   })
 
   useEffect(() => {
-    localStorage.setItem('inventoryRawMaterials', JSON.stringify(rmList))
-  }, [rmList])
+    database.list<RawMaterial>('rawMaterials')
+      .then((storedMaterials) => {
+        if (storedMaterials.length) setRmList(storedMaterials)
+      })
+      .catch(() => undefined)
+  }, [])
 
   const handleStockUpdate = (itemId: string, quantity: number, jobRef: string) => {
     void jobRef
@@ -137,14 +132,16 @@ export default function Inventory() {
             ? item.currentStock + quantity
             : Math.max(0, item.currentStock - quantity)
           const newStatus = newStock <= 0 ? 'Out of Stock' : newStock < item.reorderLevel ? 'Low Stock' : 'OK'
-          return { ...item, currentStock: newStock, status: newStatus as RawMaterial['status'] }
+          const updatedItem = { ...item, currentStock: newStock, status: newStatus as RawMaterial['status'] }
+          void database.update('rawMaterials', item.id, updatedItem).catch(() => undefined)
+          return updatedItem
         }
         return item
       })
     )
   }
 
-  const handleAddItem = (e: React.FormEvent) => {
+  const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newItemData.name || newItemData.unitCost <= 0) return
 
@@ -159,7 +156,12 @@ export default function Inventory() {
       status: 'Low Stock' as const,
     }
 
-    setRmList((items) => [...items, newItem])
+    try {
+      await database.create('rawMaterials', newItem)
+      setRmList((items) => [...items, newItem])
+    } catch {
+      return
+    }
 
     setAddItemModal(false)
     setNewItemData({ name: '', unit: 'kg', unitCost: 0, reorderLevel: 50 })

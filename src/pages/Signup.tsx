@@ -29,7 +29,7 @@ export default function Signup() {
     setError('')
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     // Validation
@@ -49,12 +49,20 @@ export default function Signup() {
     }
 
     setIsLoading(true)
-    setTimeout(() => {
-      // Here you would normally send this to a backend API
-      console.log('Signup data:', formData)
-      // For now, just navigate to login
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'signup', ...formData }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Unable to create account.')
       navigate('/login')
-    }, 800)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unable to create account.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {

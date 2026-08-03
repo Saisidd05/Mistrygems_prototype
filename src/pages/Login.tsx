@@ -10,16 +10,29 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
   const [isHovered, setIsHovered] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setTimeout(() => {
-      login('owner', email || 'user@mistrygems.com', 'Workshop Owner')
+    setError('')
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', email, password }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Unable to sign in.')
+      login(result.user.role, result.user.email, result.user.name)
       navigate('/dashboard')
-    }, 600)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unable to sign in.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -81,6 +94,11 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 rounded-xl bg-red-50/80 border border-red-200/70 text-sm text-red-700">
+                {error}
+              </div>
+            )}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Email Address
