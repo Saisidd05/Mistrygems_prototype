@@ -4,6 +4,7 @@ import { invoices, Invoice, InvoiceStatus, jobs } from '@/lib/data'
 import { formatCurrency, formatDate, cn } from '@/lib/utils'
 import { Receipt, Plus, FileDown, X, Send, CheckCircle2, Clock, AlertTriangle, type LucideIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import jsPDF from 'jspdf'
 
 const statusConfig: Record<InvoiceStatus, { color: string; icon: LucideIcon }> = {
   Draft: {
@@ -132,6 +133,57 @@ export default function Invoices() {
     setInvoiceList((prev) => [...prev, { ...data, id: newId, createdAt: new Date().toISOString().split('T')[0] }])
   }
 
+  const exportInvoicePDF = (invoice: Invoice) => {
+    const doc = new jsPDF()
+    const amount = `INR ${invoice.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+
+    doc.setFillColor(234, 88, 12)
+    doc.rect(0, 0, 210, 38, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(22)
+    doc.text('Mistry Gems', 14, 18)
+    doc.setFontSize(10)
+    doc.text('Manufacturing Invoice', 14, 27)
+
+    doc.setTextColor(30, 41, 59)
+    doc.setFontSize(16)
+    doc.text('INVOICE', 14, 54)
+    doc.setFontSize(11)
+    doc.text(`Invoice No: ${invoice.id}`, 14, 64)
+    doc.text(`Issue Date: ${formatDate(invoice.createdAt)}`, 14, 71)
+    doc.text(`Due Date: ${formatDate(invoice.dueDate)}`, 14, 78)
+    doc.text(`Status: ${invoice.status}`, 14, 85)
+
+    doc.setDrawColor(226, 232, 240)
+    doc.line(14, 94, 196, 94)
+    doc.setFontSize(12)
+    doc.text('Bill To', 14, 106)
+    doc.setFontSize(11)
+    doc.text(invoice.customer, 14, 114)
+
+    doc.setFillColor(248, 250, 252)
+    doc.roundedRect(14, 126, 182, 12, 2, 2, 'F')
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Description', 18, 134)
+    doc.text('Amount', 190, 134, { align: 'right' })
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(11)
+    doc.text(`Manufacturing work for job ${invoice.jobId}`, 18, 149)
+    doc.text(amount, 190, 149, { align: 'right' })
+    doc.line(14, 157, 196, 157)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(13)
+    doc.text('Total', 135, 170)
+    doc.text(amount, 190, 170, { align: 'right' })
+
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(100, 116, 139)
+    doc.setFontSize(9)
+    doc.text('Thank you for your business.', 14, 275)
+    doc.save(`${invoice.id}.pdf`)
+  }
+
   const totalAmount = invoiceList.reduce((sum, inv) => sum + inv.amount, 0)
   const paidAmount = invoiceList.filter((i) => i.status === 'Paid').reduce((sum, inv) => sum + inv.amount, 0)
   const overdueAmount = invoiceList.filter((i) => i.status === 'Overdue').reduce((sum, inv) => sum + inv.amount, 0)
@@ -230,7 +282,11 @@ export default function Invoices() {
                     </td>
                     <td className="py-3.5 px-4 text-slate-500 font-medium">{formatDate(inv.dueDate)}</td>
                     <td className="py-3.5 px-4 text-center">
-                      <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-slate-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
+                      <button
+                        type="button"
+                        onClick={() => exportInvoicePDF(inv)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-slate-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                      >
                         <FileDown className="w-3.5 h-3.5" />
                         Export PDF
                       </button>

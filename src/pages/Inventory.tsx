@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { rawMaterials, finishedGoods, RawMaterial, FinishedGood, jobs } from '@/lib/data'
 import { formatCurrency, formatDate, cn } from '@/lib/utils'
@@ -104,7 +104,17 @@ function StockModal({
 export default function Inventory() {
   const [activeTab, setActiveTab] = useState<'raw' | 'finished'>('raw')
   const [stockModal, setStockModal] = useState<'in' | 'out' | null>(null)
-  const [rmList, setRmList] = useState<RawMaterial[]>(rawMaterials)
+  const [rmList, setRmList] = useState<RawMaterial[]>(() => {
+    try {
+      const savedInventory = localStorage.getItem('inventoryRawMaterials')
+      if (savedInventory) return JSON.parse(savedInventory) as RawMaterial[]
+
+      const addedItems = JSON.parse(localStorage.getItem('inventoryItems') || '[]') as RawMaterial[]
+      return [...rawMaterials, ...addedItems]
+    } catch {
+      return rawMaterials
+    }
+  })
   const [fgList] = useState<FinishedGood[]>(finishedGoods)
   const [addItemModal, setAddItemModal] = useState(false)
   const [newItemData, setNewItemData] = useState({
@@ -113,6 +123,10 @@ export default function Inventory() {
     unitCost: 0,
     reorderLevel: 50,
   })
+
+  useEffect(() => {
+    localStorage.setItem('inventoryRawMaterials', JSON.stringify(rmList))
+  }, [rmList])
 
   const handleStockUpdate = (itemId: string, quantity: number, jobRef: string) => {
     void jobRef
@@ -145,12 +159,7 @@ export default function Inventory() {
       status: 'Low Stock' as const,
     }
 
-    setRmList([...rmList, newItem])
-    
-    // Save to localStorage
-    const savedItems = JSON.parse(localStorage.getItem('inventoryItems') || '[]')
-    savedItems.push(newItem)
-    localStorage.setItem('inventoryItems', JSON.stringify(savedItems))
+    setRmList((items) => [...items, newItem])
 
     setAddItemModal(false)
     setNewItemData({ name: '', unit: 'kg', unitCost: 0, reorderLevel: 50 })

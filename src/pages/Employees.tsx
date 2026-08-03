@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GlassCard } from '@/components/ui/GlassCard'
-import { employees } from '@/lib/data'
-import { Plus, Mail, Phone, Award, Download, X } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { employees, type Employee } from '@/lib/data'
+import { Plus, Mail, Phone, Award, Download } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
@@ -16,10 +15,17 @@ declare module 'jspdf' {
 
 export default function Employees() {
   const navigate = useNavigate()
-  const [employees_list] = useState(employees)
+  const [employeeList] = useState<Employee[]>(() => {
+    try {
+      const savedEmployees: Employee[] = JSON.parse(localStorage.getItem('employees') || '[]')
+      return [...employees, ...savedEmployees]
+    } catch {
+      return employees
+    }
+  })
 
   const exportToExcel = () => {
-    const data = employees_list.map(emp => ({
+    const data = employeeList.map(emp => ({
       'Employee Name': emp.name,
       'Role': emp.role,
       'Department': emp.department,
@@ -41,7 +47,7 @@ export default function Employees() {
     doc.text('Employee Directory', 14, 15)
     doc.setFontSize(10)
     
-    const tableData = employees.map(emp => [
+    const tableData = employeeList.map(emp => [
       emp.name,
       emp.role,
       emp.department,
@@ -102,7 +108,7 @@ export default function Employees() {
 
       {/* Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {employees.map((emp) => (
+        {employeeList.map((emp) => (
           <GlassCard key={emp.id} className="p-6 relative group" glow="indigo">
             <div className="flex items-start gap-4">
               {/* Avatar */}

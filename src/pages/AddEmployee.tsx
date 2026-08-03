@@ -2,20 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { GlassCard } from '@/components/ui/GlassCard'
-import { User, Building2, Mail, Phone, Award, Save, X } from 'lucide-react'
-
-interface Employee {
-  id: string
-  name: string
-  role: string
-  department: string
-  email: string
-  phone: string
-  status: 'Active' | 'Inactive'
-  performance: number
-  assignedJobs: number
-  avatar: string
-}
+import { User, Phone, Award, Save, X } from 'lucide-react'
+import type { Employee } from '@/lib/data'
 
 export default function AddEmployee() {
   const navigate = useNavigate()
@@ -55,9 +43,9 @@ export default function AddEmployee() {
 
     // Create new employee
     const newEmployee: Employee = {
-      id: `emp-${Date.now()}`,
-      name: formData.name,
-      role: formData.role,
+      id: `EMP-${Date.now()}`,
+      name: formData.name.trim(),
+      role: formData.role.trim(),
       department: formData.department,
       email: formData.email,
       phone: formData.phone,
@@ -65,12 +53,17 @@ export default function AddEmployee() {
       performance: formData.performance,
       assignedJobs: 0,
       avatar: formData.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
+      completedJobs: 0,
+      joinDate: new Date().toISOString().slice(0, 10),
     }
 
     // Save to localStorage
-    const employees = JSON.parse(localStorage.getItem('employees') || '[]')
-    employees.push(newEmployee)
-    localStorage.setItem('employees', JSON.stringify(employees))
+    try {
+      const savedEmployees: Employee[] = JSON.parse(localStorage.getItem('employees') || '[]')
+      localStorage.setItem('employees', JSON.stringify([...savedEmployees, newEmployee]))
+    } catch {
+      localStorage.setItem('employees', JSON.stringify([newEmployee]))
+    }
 
     setSuccess(true)
     setTimeout(() => {
