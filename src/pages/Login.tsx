@@ -1,29 +1,14 @@
 import { useState } from 'react'
-import { useAuth, UserRole } from '@/context/AuthContext'
+import { useAuth } from '@/context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Lock, LogIn, Chrome } from 'lucide-react'
-
-const roles: Array<{ id: UserRole; label: string; desc: string }> = [
-  { id: 'owner', label: 'Owner', desc: 'Full access to everything' },
-  { id: 'manager', label: 'Manager', desc: 'Jobs, tasks & team' },
-  { id: 'employee', label: 'Employee', desc: 'Assigned tasks only' },
-  { id: 'client', label: 'Client', desc: 'View your jobs' },
-]
-
-const roleNames: Record<UserRole, string> = {
-  owner: 'Workshop Owner',
-  manager: 'Production Manager',
-  employee: 'Machine Operator',
-  client: 'Client User',
-}
 
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [selectedRole, setSelectedRole] = useState<UserRole>('owner')
   const [isLoading, setIsLoading] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
@@ -32,7 +17,7 @@ export default function Login() {
     e.preventDefault()
     setIsLoading(true)
     setTimeout(() => {
-      login(selectedRole, email || 'user@mistrygems.com', roleNames[selectedRole])
+      login('owner', email || 'user@mistrygems.com', 'Workshop Owner')
       navigate('/dashboard')
     }, 600)
   }
@@ -125,31 +110,6 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none transition-all"
                 />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">
-                Sign in as
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {roles.map((role) => (
-                  <button
-                    key={role.id}
-                    type="button"
-                    onClick={() => setSelectedRole(role.id)}
-                    className={`p-3 rounded-2xl text-left transition-all duration-200 border ${
-                      selectedRole === role.id
-                        ? 'bg-blue-50/80 border-blue-300/70 ring-1 ring-blue-200/80 shadow-sm'
-                        : 'bg-white/70 border-slate-200/80 hover:border-blue-200/80 hover:bg-blue-50/50'
-                    }`}
-                  >
-                    <p className={`text-sm font-bold ${selectedRole === role.id ? 'text-blue-700' : 'text-slate-700'}`}>
-                      {role.label}
-                    </p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">{role.desc}</p>
-                  </button>
-                ))}
               </div>
             </div>
 
