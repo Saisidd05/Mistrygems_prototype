@@ -28,7 +28,7 @@ export function GlassCard({
 
   return (
     <motion.div
-      whileHover={hoverEffect ? { y: -3, transition: { duration: 0.2 } } : {}}
+      whileHover={hoverEffect ? { y: -3, scale: 1.01, transition: { duration: 0.2 } } : {}}
       className={cn(
         'glass-card p-6 transition-all duration-200',
         glowClasses[glow],

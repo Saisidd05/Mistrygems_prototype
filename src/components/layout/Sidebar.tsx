@@ -50,7 +50,7 @@ export default function Sidebar() {
     >
       {/* Logo Area */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-white/20 dark:border-white/5">
-        <div className="relative flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500 to-amber-600 shadow-lg shadow-orange-500/25">
+        <div className="relative flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-500/25">
           <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2L2 7l10 5 10-5-10-5z" />
             <path d="M2 17l10 5 10-5" />
@@ -67,7 +67,7 @@ export default function Sidebar() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <p className="font-bold text-[15px] tracking-tight text-orange-600 dark:text-orange-400 leading-none">
+              <p className="font-bold text-[15px] tracking-tight text-blue-700 dark:text-sky-300 leading-none">
                 Mistry Gems
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -101,7 +101,7 @@ export default function Sidebar() {
                   className={cn(
                     'w-[18px] h-[18px] flex-shrink-0 transition-colors',
                     isActive
-                      ? 'text-orange-600 dark:text-orange-400'
+                      ? 'text-blue-700 dark:text-sky-300'
                       : 'text-slate-500 dark:text-slate-400'
                   )}
                 />
@@ -123,7 +123,7 @@ export default function Sidebar() {
                 {isActive && (
                   <motion.div
                     layoutId="active-pill"
-                    className="absolute right-2 w-1.5 h-1.5 rounded-full bg-orange-500"
+                    className="absolute right-2 w-1.5 h-1.5 rounded-full bg-blue-600"
                   />
                 )}
 

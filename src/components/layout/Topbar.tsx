@@ -64,7 +64,7 @@ export default function Topbar() {
             onClick={() => setCompanyOpen((o) => !o)}
             className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all duration-200 group"
           >
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center flex-shrink-0">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center flex-shrink-0">
               <Building2 className="w-3.5 h-3.5 text-white" />
             </div>
             <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 max-w-36 truncate hidden sm:block">
@@ -89,7 +89,7 @@ export default function Topbar() {
                     className={cn(
                       'w-full text-left px-4 py-2.5 text-sm transition-colors',
                       selectedCompany === c
-                        ? 'text-orange-600 dark:text-orange-400 font-medium bg-orange-50/60 dark:bg-orange-900/20'
+                        ? 'text-blue-700 dark:text-sky-300 font-medium bg-blue-50/70 dark:bg-sky-900/20'
                         : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                     )}
                   >
@@ -112,7 +112,7 @@ export default function Topbar() {
               placeholder="Search jobs, customers, employees…"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl text-sm bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/40 text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-400/40 transition-all duration-200"
+              className="w-full pl-10 pr-4 py-2 rounded-xl text-sm bg-white/70 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/40 text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all duration-200"
             />
             <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded">
               ⌘K
@@ -167,7 +167,7 @@ export default function Topbar() {
             onClick={() => setProfileOpen((o) => !o)}
             className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors ml-1"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center flex-shrink-0 shadow-sm">
               <span className="text-xs font-bold text-white">
                 {userName ? getInitials(userName) : 'MG'}
               </span>
@@ -176,7 +176,7 @@ export default function Topbar() {
               <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-none">
                 {userName || 'User'}
               </p>
-              <p className="text-[10px] text-orange-600 dark:text-orange-400 mt-0.5 font-medium">
+              <p className="text-[10px] text-blue-700 dark:text-sky-300 mt-0.5 font-medium">
                 {userRole ? roleLabels[userRole] : 'Admin'}
               </p>
             </div>
