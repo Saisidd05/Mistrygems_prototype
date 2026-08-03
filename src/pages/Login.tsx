@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Lock, LogIn, Chrome } from 'lucide-react'
 
@@ -148,6 +148,24 @@ export default function Login() {
               <Chrome className="w-4 h-4 text-slate-500" />
               <span>Continue with Google</span>
             </button>
+
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center text-[10px]">
+                <span className="bg-white/70 px-3 text-slate-500 uppercase tracking-wider font-medium">
+                  don't have account?
+                </span>
+              </div>
+            </div>
+
+            <Link
+              to="/signup"
+              className="w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200"
+            >
+              <span>Create Workshop Account</span>
+            </Link>
           </form>
         </div>
 

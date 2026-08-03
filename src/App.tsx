@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/context/AuthContext'
 
 // Lazy load all pages
 const Login = React.lazy(() => import('@/pages/Login'))
+const Signup = React.lazy(() => import('@/pages/Signup'))
 const Dashboard = React.lazy(() => import('@/pages/Dashboard'))
 const Jobs = React.lazy(() => import('@/pages/Jobs'))
 const Quotations = React.lazy(() => import('@/pages/Quotations'))
@@ -51,6 +52,18 @@ function AppRoutes() {
           ) : (
             <Suspense fallback={<LoadingSpinner />}>
               <Login />
+            </Suspense>
+          )
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Suspense fallback={<LoadingSpinner />}>
+              <Signup />
             </Suspense>
           )
         }
