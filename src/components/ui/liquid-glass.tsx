@@ -17,21 +17,21 @@ interface LiquidGlassCardProps extends HTMLMotionProps<'div'> {
 }
 
 const glowMap: Record<GlowIntensity, string> = {
-  sm: 'shadow-[0_0_24px_rgba(255,255,255,0.16)]',
-  md: 'shadow-[0_0_32px_rgba(255,255,255,0.2)]',
-  lg: 'shadow-[0_0_40px_rgba(255,255,255,0.24)]',
+  sm: 'shadow-[0_0_12px_rgba(255,255,255,0.12)]',
+  md: 'shadow-[0_0_18px_rgba(255,255,255,0.14)]',
+  lg: 'shadow-[0_0_24px_rgba(255,255,255,0.16)]',
 }
 
 const shadowMap: Record<ShadowIntensity, string> = {
-  sm: 'shadow-[0_16px_36px_rgba(15,23,42,0.18)]',
-  md: 'shadow-[0_20px_44px_rgba(15,23,42,0.24)]',
-  lg: 'shadow-[0_24px_56px_rgba(15,23,42,0.3)]',
+  sm: 'shadow-[0_8px_20px_rgba(15,23,42,0.12)]',
+  md: 'shadow-[0_12px_28px_rgba(15,23,42,0.16)]',
+  lg: 'shadow-[0_16px_36px_rgba(15,23,42,0.2)]',
 }
 
 const blurMap: Record<BlurIntensity, string> = {
-  sm: '20px',
-  md: '28px',
-  lg: '36px',
+  sm: '10px',
+  md: '16px',
+  lg: '22px',
 }
 
 export function LiquidGlassCard({
@@ -46,12 +46,12 @@ export function LiquidGlassCard({
 }: LiquidGlassCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2, scale: 1.01, transition: { duration: 0.2 } }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
+      whileHover={{ y: -1, transition: { duration: 0.18 } }}
+      transition={{ duration: 0.22, ease: 'easeOut' }}
       className={cn(
-        'relative overflow-hidden border border-white/30 bg-white/15 text-white backdrop-blur-xl',
+        'relative overflow-hidden border border-white/20 bg-white/10 text-slate-800 dark:text-white backdrop-blur-md',
         glowMap[glowIntensity],
         shadowMap[shadowIntensity],
         className
@@ -64,8 +64,8 @@ export function LiquidGlassCard({
       draggable={draggable}
       {...props}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-white/12 to-transparent" />
-      <div className="absolute inset-x-6 top-2 h-10 rounded-full bg-white/25 blur-2xl" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-white/8 to-transparent opacity-80 pointer-events-none" />
+      <div className="absolute inset-x-6 top-2 h-8 rounded-full bg-white/20 blur-xl pointer-events-none" />
       <div className="relative z-10">{children}</div>
     </motion.div>
   )

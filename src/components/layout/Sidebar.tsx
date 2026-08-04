@@ -64,7 +64,7 @@ export default function Sidebar() {
         className="flex h-full flex-col overflow-hidden p-3"
       >
         <div className="flex items-center gap-3 px-2 py-3 border-b border-white/20">
-          <div className="relative flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-600 via-cyan-500 to-sky-400 shadow-lg shadow-blue-500/25">
+            <div className="relative flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-600 via-cyan-500 to-sky-400 shadow-md">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <AnimatePresence>
@@ -76,10 +76,10 @@ export default function Sidebar() {
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <p className="font-semibold text-[15px] tracking-tight text-white leading-none">
+                <p className="font-semibold text-[15px] tracking-tight text-slate-800 dark:text-white leading-none">
                   Mistry Gems
                 </p>
-                <p className="text-[11px] text-slate-100/80 mt-0.5">
+                <p className="text-[11px] text-slate-500 dark:text-slate-100/80 mt-0.5">
                   Workshop Platform
                 </p>
               </motion.div>
@@ -97,7 +97,7 @@ export default function Sidebar() {
             return (
               <NavLink key={item.to} to={item.to}>
                 <motion.div
-                  whileHover={{ x: collapsed ? 0 : 2, scale: 1.01 }}
+                  whileHover={{ x: collapsed ? 0 : 2 }}
                   whileTap={{ scale: 0.98 }}
                   className={cn(
                     'nav-item relative group rounded-2xl px-3 py-3',
@@ -108,7 +108,7 @@ export default function Sidebar() {
                   <item.icon
                     className={cn(
                       'w-[18px] h-[18px] flex-shrink-0 transition-colors',
-                      isActive ? 'text-white' : 'text-slate-100/85'
+                      isActive ? 'text-blue-700 dark:text-sky-300' : 'text-slate-600 dark:text-slate-300'
                     )}
                   />
                   <AnimatePresence>
@@ -118,7 +118,7 @@ export default function Sidebar() {
                         animate={{ opacity: 1, width: 'auto' }}
                         exit={{ opacity: 0, width: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="whitespace-nowrap overflow-hidden text-white/90"
+                        className="whitespace-nowrap overflow-hidden text-slate-700 dark:text-white/90"
                       >
                         {item.label}
                       </motion.span>
@@ -138,11 +138,11 @@ export default function Sidebar() {
 
         <div className="px-1 py-2 border-t border-white/20">
           <motion.button
-            whileHover={{ scale: 1.03 }}
+            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             onClick={toggleSidebar}
             className={cn(
-              'flex items-center gap-2.5 w-full px-3 py-2.5 rounded-2xl text-sm font-medium transition-all duration-200 text-slate-100/90 hover:bg-white/15',
+              'flex items-center gap-2.5 w-full px-3 py-2.5 rounded-2xl text-sm font-medium transition-all duration-200 text-slate-700 dark:text-slate-100/90 hover:bg-white/10 dark:hover:bg-slate-800/60',
               collapsed && 'justify-center px-0'
             )}
           >
