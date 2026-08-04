@@ -38,7 +38,7 @@ const allNavItems = [
 ]
 
 export default function Sidebar() {
-  const { collapsed, toggleSidebar } = useSidebar()
+  const { collapsed, toggleSidebar, setCollapsed } = useSidebar()
   const { userRole } = useAuth()
   const location = useLocation()
 
@@ -48,6 +48,10 @@ export default function Sidebar() {
 
   return (
     <motion.aside
+      onMouseEnter={() => setCollapsed(false)}
+      onMouseLeave={() => setCollapsed(true)}
+      onFocus={() => setCollapsed(false)}
+      onBlur={() => setCollapsed(true)}
       animate={{ width: collapsed ? 88 : 280 }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       className="glass-sidebar fixed left-0 top-0 h-full z-40 flex flex-col overflow-hidden p-3"
