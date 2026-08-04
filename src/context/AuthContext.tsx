@@ -7,10 +7,11 @@ interface AuthState {
   userRole: UserRole | null
   userName: string
   userEmail: string
+  userId?: string
 }
 
 interface AuthContextType extends AuthState {
-  login: (role: UserRole, email: string, name: string) => void
+  login: (role: UserRole, email: string, name: string, id?: string) => void
   logout: () => void
 }
 
@@ -43,13 +44,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('mistry-auth', JSON.stringify(auth))
   }, [auth])
 
-  const login = (role: UserRole, email: string, name: string) => {
-    setAuth({
+  const login = (role: UserRole, email: string, name: string, id?: string) => {
+    const next = {
       isAuthenticated: true,
       userRole: role,
       userName: name,
       userEmail: email,
-    })
+      userId: id,
+    }
+    setAuth(next)
   }
 
   const logout = () => {

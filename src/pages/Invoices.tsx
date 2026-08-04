@@ -166,8 +166,8 @@ export default function Invoices() {
     doc.text('INVOICE', 14, 54)
     doc.setFontSize(11)
     doc.text(`Invoice No: ${invoice.id}`, 14, 64)
-    doc.text(`Issue Date: ${formatDate(invoice.createdAt)}`, 14, 71)
-    doc.text(`Due Date: ${formatDate(invoice.dueDate)}`, 14, 78)
+    doc.text(`Issue Date: ${invoice.createdAt ? formatDate(invoice.createdAt) : '-'}`, 14, 71)
+    doc.text(`Due Date: ${invoice.dueDate ? formatDate(invoice.dueDate) : '-'}`, 14, 78)
     doc.text(`Status: ${invoice.status}`, 14, 85)
 
     doc.setDrawColor(226, 232, 240)

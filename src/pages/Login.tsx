@@ -26,7 +26,7 @@ export default function Login() {
       })
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || 'Unable to sign in.')
-      login(result.user.role, result.user.email, result.user.name)
+      login(result.user.role, result.user.email, result.user.name, result.user.id)
       navigate('/dashboard')
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Unable to sign in.')

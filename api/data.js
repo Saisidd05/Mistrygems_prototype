@@ -32,12 +32,21 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'A valid collection query parameter is required.' })
   }
 
+  // Require an authenticated user id header so all data is scoped per-user.
+  const userId = req.headers['x-user-id'] || (req.headers['x-user-id'] === 0 ? 0 : undefined)
+  if (!userId || typeof userId !== 'string') {
+    return res.status(401).json({ error: 'Missing authentication header: x-user-id' })
+  }
+
   try {
     const database = await getDatabase()
     const collection = database.collection(collectionName)
+    await collection.createIndex({ ownerId: 1 })
+    await collection.createIndex({ id: 1 }, { unique: true })
 
     if (req.method === 'GET') {
-      const documents = await collection.find({}).sort({ createdAt: -1 }).toArray()
+      // Return only documents owned by the authenticated user.
+      const documents = await collection.find({ ownerId: String(userId) }).sort({ createdAt: -1 }).toArray()
       return res.status(200).json(documents.map(withoutMongoId))
     }
 
@@ -48,6 +57,9 @@ export default async function handler(req, res) {
       }
 
       const { _id, ...safeDocument } = document
+      // Enforce ownership so shared/sample documents are not created.
+      safeDocument.ownerId = String(userId)
+      safeDocument.createdAt = new Date().toISOString()
       await collection.insertOne(safeDocument)
       return res.status(201).json(safeDocument)
     }
@@ -59,20 +71,21 @@ export default async function handler(req, res) {
       }
 
       const { _id, id: ignoredId, ...safeUpdates } = updates
+      // Only allow updates for documents belonging to this user
       const result = await collection.findOneAndUpdate(
-        { id },
+        { id, ownerId: String(userId) },
         { $set: safeUpdates },
         { returnDocument: 'after' },
       )
-      if (!result) return res.status(404).json({ error: 'Document not found.' })
-      return res.status(200).json(withoutMongoId(result))
+      if (!result.value) return res.status(404).json({ error: 'Document not found or not owned by user.' })
+      return res.status(200).json(withoutMongoId(result.value))
     }
 
     if (req.method === 'DELETE') {
       const id = typeof req.query.id === 'string' ? req.query.id : ''
       if (!id) return res.status(400).json({ error: 'An id query parameter is required.' })
-      const result = await collection.deleteOne({ id })
-      if (!result.deletedCount) return res.status(404).json({ error: 'Document not found.' })
+      const result = await collection.deleteOne({ id, ownerId: String(userId) })
+      if (!result.deletedCount) return res.status(404).json({ error: 'Document not found or not owned by user.' })
       return res.status(204).end()
     }
 
