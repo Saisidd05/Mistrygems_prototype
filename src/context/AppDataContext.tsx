@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import {
   seedJobs, seedEmployees, seedCustomers, seedTasks, seedNotifications, seedInvoices,
-  type Job, type Employee, type Customer, type Task, type Notification, type Invoice
+  rawMaterials as seedRawMaterials, type Job, type Employee, type Customer, type Task, type Notification, type Invoice, type RawMaterial
 } from '../lib/data'
 import { generateId } from '../lib/utils'
 
@@ -41,6 +41,11 @@ interface AppDataContextType {
   invoices: Invoice[]
   addInvoice: (inv: Omit<Invoice, 'id' | 'createdAt'>) => void
   updateInvoice: (id: string, updates: Partial<Invoice>) => void
+
+  // Inventory
+  rawMaterials: RawMaterial[]
+  addRawMaterial: (material: Omit<RawMaterial, 'id' | 'status'>) => void
+  updateRawMaterial: (id: string, updates: Partial<RawMaterial>) => void
 }
 
 const AppDataContext = createContext<AppDataContextType | undefined>(undefined)
@@ -65,6 +70,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>(() => loadData('mg_tasks', seedTasks))
   const [notifications, setNotifications] = useState<Notification[]>(() => loadData('mg_notifications', seedNotifications))
   const [invoices, setInvoices] = useState<Invoice[]>(() => loadData('mg_invoices', seedInvoices))
+  const [rawMaterials, setRawMaterials] = useState<RawMaterial[]>(() => loadData('mg_raw_materials', seedRawMaterials))
 
   useEffect(() => { saveData('mg_jobs', jobs) }, [jobs])
   useEffect(() => { saveData('mg_employees', employees) }, [employees])
@@ -72,6 +78,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { saveData('mg_tasks', tasks) }, [tasks])
   useEffect(() => { saveData('mg_notifications', notifications) }, [notifications])
   useEffect(() => { saveData('mg_invoices', invoices) }, [invoices])
+  useEffect(() => { saveData('mg_raw_materials', rawMaterials) }, [rawMaterials])
 
   // ── Jobs ──
   const addJob = useCallback((j: Omit<Job, 'id' | 'createdAt'>) => {
@@ -139,6 +146,19 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setInvoices(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))
   }, [])
 
+  const addRawMaterial = useCallback((material: Omit<RawMaterial, 'id' | 'status'>) => {
+    const status = material.currentStock <= 0 ? 'Out of Stock' : material.currentStock < material.reorderLevel ? 'Low Stock' : 'OK'
+    setRawMaterials(prev => [...prev, { ...material, id: generateId('RM'), status }])
+  }, [])
+  const updateRawMaterial = useCallback((id: string, updates: Partial<RawMaterial>) => {
+    setRawMaterials(prev => prev.map(material => {
+      if (material.id !== id) return material
+      const next = { ...material, ...updates }
+      const status = next.currentStock <= 0 ? 'Out of Stock' : next.currentStock < next.reorderLevel ? 'Low Stock' : 'OK'
+      return { ...next, status }
+    }))
+  }, [])
+
   return (
     <AppDataContext.Provider value={{
       jobs, addJob, updateJob, deleteJob,
@@ -147,6 +167,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       tasks, addTask, updateTask, deleteTask, moveTask,
       notifications, markNotificationRead, markAllRead, deleteNotification,
       invoices, addInvoice, updateInvoice,
+      rawMaterials, addRawMaterial, updateRawMaterial,
     }}>
       {children}
     </AppDataContext.Provider>
