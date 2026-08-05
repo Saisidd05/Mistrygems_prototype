@@ -6,7 +6,7 @@ interface GlassCardProps {
   className?: string
   hover?: boolean
   tilt?: boolean
-  glow?: boolean
+  glow?: boolean | 'blue' | 'cyan' | 'indigo' | 'emerald' | 'amber' | 'rose'
   onClick?: () => void
   id?: string
 }
