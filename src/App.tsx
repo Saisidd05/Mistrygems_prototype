@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/context/AuthContext'
 // Lazy load all pages
 const Login = React.lazy(() => import('@/pages/Login'))
 const Signup = React.lazy(() => import('@/pages/Signup'))
+const Home = React.lazy(() => import('@/pages/Home'))
 const Dashboard = React.lazy(() => import('@/pages/Dashboard'))
 const Jobs = React.lazy(() => import('@/pages/Jobs'))
 const Quotations = React.lazy(() => import('@/pages/Quotations'))
@@ -67,6 +68,14 @@ function AppRoutes() {
               <Signup />
             </Suspense>
           )
+        }
+      />
+      <Route
+        path="/"
+        element={
+          <Suspense fallback={<LoadingSpinner />}>
+            <Home />
+          </Suspense>
         }
       />
       <Route
