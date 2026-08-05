@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Receipt, Plus, Download, Printer, CheckCircle, Search } from 'lucide-react'
+import { Receipt, Plus, Download, CheckCircle, Search } from 'lucide-react'
 import { useAppData } from '../context/AppDataContext'
+import type { Invoice } from '../lib/data'
 import { GlassCard } from '../components/ui/GlassCard'
 import { GlowButton } from '../components/ui/GlowButton'
 import { StatusBadge } from '../components/ui/StatusBadge'
@@ -27,6 +28,22 @@ export function Invoices() {
   const handleExport = () => {
     downloadCSV(filtered as unknown as Record<string, unknown>[], 'mistry_gems_invoices')
     showToast('Exported invoices to CSV!', 'info')
+  }
+
+  const handleDownloadInvoice = (invoice: Invoice) => {
+    const invoiceDocument = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>${invoice.id}</title>
+<style>body{font-family:Arial,sans-serif;color:#0f172a;margin:48px;max-width:720px}header{display:flex;justify-content:space-between;border-bottom:2px solid #0077B6;padding-bottom:24px}h1{color:#0077B6;margin:0}.muted{color:#64748b}.card{margin-top:28px;padding:24px;background:#f8fafc;border-radius:12px}.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e2e8f0}.total{font-size:22px;font-weight:700;color:#0077B6;border:0}@media print{body{margin:24px}}</style>
+</head><body><header><div><h1>Mistry Gems</h1><p class="muted">Manufacturing Workshop Platform</p></div><div><strong>INVOICE</strong><p>${invoice.id}</p></div></header>
+<section class="card"><div class="row"><span>Bill To</span><strong>${invoice.customer}</strong></div><div class="row"><span>Job Reference</span><strong>${invoice.jobId}</strong></div><div class="row"><span>Issued</span><strong>${formatDate(invoice.createdAt)}</strong></div><div class="row"><span>Due Date</span><strong>${formatDate(invoice.dueDate)}</strong></div><div class="row"><span>Status</span><strong>${invoice.status}</strong></div><div class="row total"><span>Total Amount</span><span>${formatCurrency(invoice.amount)}</span></div></section>
+<p class="muted" style="margin-top:32px">Thank you for choosing Mistry Gems.</p></body></html>`
+    const url = URL.createObjectURL(new Blob([invoiceDocument], { type: 'text/html;charset=utf-8' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${invoice.id}.html`
+    link.click()
+    URL.revokeObjectURL(url)
+    showToast(`${invoice.id} downloaded!`, 'success')
   }
 
   return (
@@ -78,6 +95,9 @@ export function Invoices() {
                 <td className="text-xs">{formatDate(inv.createdAt)}</td>
                 <td className="text-xs">{formatDate(inv.dueDate)}</td>
                 <td className="text-right">
+                  <GlowButton size="sm" variant="ghost" className="mr-1 text-xs text-accent" icon={<Download size={13} />} onClick={() => handleDownloadInvoice(inv)}>
+                    Download
+                  </GlowButton>
                   {inv.status !== 'Paid' && (
                     <GlowButton size="sm" variant="ghost" className="text-xs text-emerald-400" onClick={() => handleMarkPaid(inv.id)}>
                       Mark Paid
