@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { Receipt, Plus, Download, CheckCircle, Search } from 'lucide-react'
 import { useAppData } from '../context/AppDataContext'
 import type { Invoice } from '../lib/data'
+import { Modal } from '../components/ui/Modal'
+import { jsPDF } from 'jspdf'
 import { GlassCard } from '../components/ui/GlassCard'
 import { GlowButton } from '../components/ui/GlowButton'
 import { StatusBadge } from '../components/ui/StatusBadge'
@@ -9,10 +11,12 @@ import { useToast } from '../components/ui/Toast'
 import { formatCurrency, formatDate, downloadCSV } from '../lib/utils'
 
 export function Invoices() {
-  const { invoices, updateInvoice } = useAppData()
+  const { invoices, updateInvoice, addInvoice, customers, jobs } = useAppData()
   const { showToast } = useToast()
 
   const [search, setSearch] = useState('')
+  const [createOpen, setCreateOpen] = useState(false)
+  const [newInvoice, setNewInvoice] = useState({ customer: '', jobId: '', amount: 0, status: 'Draft' as Invoice['status'], dueDate: '' })
 
   const filtered = invoices.filter(inv =>
     inv.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -31,19 +35,53 @@ export function Invoices() {
   }
 
   const handleDownloadInvoice = (invoice: Invoice) => {
-    const invoiceDocument = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>${invoice.id}</title>
-<style>body{font-family:Arial,sans-serif;color:#0f172a;margin:48px;max-width:720px}header{display:flex;justify-content:space-between;border-bottom:2px solid #0077B6;padding-bottom:24px}h1{color:#0077B6;margin:0}.muted{color:#64748b}.card{margin-top:28px;padding:24px;background:#f8fafc;border-radius:12px}.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e2e8f0}.total{font-size:22px;font-weight:700;color:#0077B6;border:0}@media print{body{margin:24px}}</style>
-</head><body><header><div><h1>Mistry Gems</h1><p class="muted">Manufacturing Workshop Platform</p></div><div><strong>INVOICE</strong><p>${invoice.id}</p></div></header>
-<section class="card"><div class="row"><span>Bill To</span><strong>${invoice.customer}</strong></div><div class="row"><span>Job Reference</span><strong>${invoice.jobId}</strong></div><div class="row"><span>Issued</span><strong>${formatDate(invoice.createdAt)}</strong></div><div class="row"><span>Due Date</span><strong>${formatDate(invoice.dueDate)}</strong></div><div class="row"><span>Status</span><strong>${invoice.status}</strong></div><div class="row total"><span>Total Amount</span><span>${formatCurrency(invoice.amount)}</span></div></section>
-<p class="muted" style="margin-top:32px">Thank you for choosing Mistry Gems.</p></body></html>`
-    const url = URL.createObjectURL(new Blob([invoiceDocument], { type: 'text/html;charset=utf-8' }))
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${invoice.id}.html`
-    link.click()
-    URL.revokeObjectURL(url)
-    showToast(`${invoice.id} downloaded!`, 'success')
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4' })
+    const money = `INR ${invoice.amount.toLocaleString('en-IN')}`
+    pdf.setFillColor(3, 4, 94)
+    pdf.rect(0, 0, 210, 42, 'F')
+    pdf.setTextColor(202, 240, 248)
+    pdf.setFontSize(23)
+    pdf.text('MISTRY GEMS', 18, 20)
+    pdf.setFontSize(10)
+    pdf.text('Manufacturing Workshop Platform', 18, 28)
+    pdf.setFontSize(16)
+    pdf.text('INVOICE', 192, 20, { align: 'right' })
+    pdf.setFontSize(10)
+    pdf.text(invoice.id, 192, 28, { align: 'right' })
+
+    const rows = [
+      ['Bill To', invoice.customer], ['Job Reference', invoice.jobId], ['Issue Date', formatDate(invoice.createdAt)],
+      ['Due Date', formatDate(invoice.dueDate)], ['Status', invoice.status], ['Total Amount', money],
+    ]
+    let y = 60
+    rows.forEach(([label, value], index) => {
+      pdf.setDrawColor(210, 225, 235)
+      pdf.line(18, y + 8, 192, y + 8)
+      pdf.setTextColor(88, 113, 138)
+      pdf.setFontSize(10)
+      pdf.text(label, 22, y)
+      pdf.setTextColor(index === rows.length - 1 ? 0 : 23, index === rows.length - 1 ? 119 : 32, index === rows.length - 1 ? 182 : 51)
+      pdf.setFontSize(index === rows.length - 1 ? 15 : 11)
+      pdf.text(value, 188, y, { align: 'right' })
+      y += 17
+    })
+    pdf.setTextColor(88, 113, 138)
+    pdf.setFontSize(9)
+    pdf.text('Thank you for choosing Mistry Gems.', 18, 178)
+    pdf.text('This is a computer-generated invoice.', 18, 184)
+    pdf.save(`${invoice.id}.pdf`)
+    showToast(`${invoice.id}.pdf downloaded!`, 'success')
+  }
+
+  const handleCreateInvoice = () => {
+    if (!newInvoice.customer || !newInvoice.jobId || newInvoice.amount <= 0 || !newInvoice.dueDate) {
+      showToast('Please complete customer, job, amount, and due date.', 'warning')
+      return
+    }
+    addInvoice(newInvoice)
+    setNewInvoice({ customer: '', jobId: '', amount: 0, status: 'Draft', dueDate: '' })
+    setCreateOpen(false)
+    showToast('New invoice created successfully.', 'success')
   }
 
   return (
@@ -53,9 +91,7 @@ export function Invoices() {
           <h1 className="page-title">Invoices & Billing</h1>
           <p className="page-subtitle">Track payments, issue billing invoices, and monitor outstanding receivables.</p>
         </div>
-        <GlowButton variant="outline" size="sm" icon={<Download size={14} />} onClick={handleExport}>
-          Export CSV
-        </GlowButton>
+        <div className="flex gap-2"><GlowButton size="sm" icon={<Plus size={14} />} onClick={() => setCreateOpen(true)}>Create Invoice</GlowButton><GlowButton variant="outline" size="sm" icon={<Download size={14} />} onClick={handleExport}>Export CSV</GlowButton></div>
       </div>
 
       <GlassCard className="p-4">
@@ -109,6 +145,10 @@ export function Invoices() {
           </tbody>
         </table>
       </GlassCard>
+
+      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Create Manual Invoice">
+        <div className="grid grid-cols-2 gap-3"><label className="col-span-2 text-xs text-glass-dim">Customer<select className="glass-select mt-1" value={newInvoice.customer} onChange={event => setNewInvoice({ ...newInvoice, customer: event.target.value })}><option value="">Select customer</option>{customers.map(customer => <option key={customer.id} value={customer.company}>{customer.company}</option>)}</select></label><label className="col-span-2 text-xs text-glass-dim">Job<select className="glass-select mt-1" value={newInvoice.jobId} onChange={event => { const job = jobs.find(item => item.id === event.target.value); setNewInvoice({ ...newInvoice, jobId: event.target.value, customer: newInvoice.customer || job?.customer || '', amount: newInvoice.amount || job?.revenue || 0 }) }}><option value="">Select job</option>{jobs.map(job => <option key={job.id} value={job.id}>{job.id} — {job.description}</option>)}</select></label><label className="text-xs text-glass-dim">Amount (₹)<input type="number" min="1" className="glass-input mt-1" value={newInvoice.amount || ''} onChange={event => setNewInvoice({ ...newInvoice, amount: Number(event.target.value) })} /></label><label className="text-xs text-glass-dim">Due Date<input type="date" className="glass-input mt-1" value={newInvoice.dueDate} onChange={event => setNewInvoice({ ...newInvoice, dueDate: event.target.value })} /></label><label className="col-span-2 text-xs text-glass-dim">Status<select className="glass-select mt-1" value={newInvoice.status} onChange={event => setNewInvoice({ ...newInvoice, status: event.target.value as Invoice['status'] })}><option value="Draft">Draft</option><option value="Sent">Sent</option><option value="Paid">Paid</option><option value="Overdue">Overdue</option></select></label><GlowButton className="col-span-2" icon={<Plus size={15} />} onClick={handleCreateInvoice}>Create Invoice</GlowButton></div>
+      </Modal>
     </div>
   )
 }
