@@ -1,4 +1,4 @@
-// ─── Mock Data for Mistry Gems — MSME Manufacturing Workshop ─────────────────
+// ─── Mistry Gems — All App Data (Seed) ────────────────────────────────────────
 
 export type JobStatus = 'New' | 'Quoted' | 'Approved' | 'Procuring' | 'In Progress' | 'Quality Check' | 'Completed' | 'Invoiced'
 export type Priority = 'High' | 'Medium' | 'Low'
@@ -101,34 +101,48 @@ export interface FinishedGood {
   lastUpdated: string
 }
 
-// ─── Jobs Data ────────────────────────────────────────────────────────────────
-export const jobs: Job[] = [
-  { id: 'JOB-001', customer: 'Shree Auto Parts', description: 'CNC turning of 50 flanges — MS grade', priority: 'High', assignedTo: 'Ravi Sharma', deadline: '2024-02-15', status: 'In Progress', revenue: 85000, createdAt: '2024-01-20', mode: 'Workshop Procures' },
-  { id: 'JOB-002', customer: 'Bharat Fabricators', description: 'Sheet metal bending batch — 200 units', priority: 'High', assignedTo: 'Deepak Yadav', deadline: '2024-02-10', status: 'Quality Check', revenue: 120000, createdAt: '2024-01-18', mode: 'Client Supplies' },
-  { id: 'JOB-003', customer: 'Precision Engineers Pvt Ltd', description: 'Surface grinding of 80 bearing housings', priority: 'Medium', assignedTo: 'Sunil Verma', deadline: '2024-02-20', status: 'Approved', revenue: 45000, createdAt: '2024-01-22', mode: 'Client Supplies' },
-  { id: 'JOB-004', customer: 'Kumar Machine Works', description: 'Welding MS frame assembly — 10 units', priority: 'Low', assignedTo: 'Manoj Tiwari', deadline: '2024-02-25', status: 'New', revenue: 32000, createdAt: '2024-01-24', mode: 'Workshop Procures' },
-  { id: 'JOB-005', customer: 'Anand Sheet Metal Co.', description: 'Powder coating of 300 brackets', priority: 'High', assignedTo: 'Ravi Sharma', deadline: '2024-02-08', status: 'Completed', revenue: 55000, createdAt: '2024-01-15', mode: 'Client Supplies' },
-  { id: 'JOB-006', customer: 'Rajesh Industrial Supplies', description: 'Lathe turning of 100 shafts — EN8 steel', priority: 'Medium', assignedTo: 'Amit Patel', deadline: '2024-02-18', status: 'Invoiced', revenue: 195000, createdAt: '2024-01-19', mode: 'Workshop Procures' },
-  { id: 'JOB-007', customer: 'Shree Auto Parts', description: 'Drilling and tapping of engine blocks — batch of 25', priority: 'High', assignedTo: 'Deepak Yadav', deadline: '2024-02-12', status: 'In Progress', revenue: 78000, createdAt: '2024-01-21', mode: 'Client Supplies' },
-  { id: 'JOB-008', customer: 'Bharat Fabricators', description: 'Casting of aluminium pulleys — 150 pcs', priority: 'Medium', assignedTo: 'Sunil Verma', deadline: '2024-02-22', status: 'Procuring', revenue: 110000, createdAt: '2024-01-23', mode: 'Workshop Procures' },
-  { id: 'JOB-009', customer: 'Precision Engineers Pvt Ltd', description: 'CNC machining of hydraulic valve bodies', priority: 'Low', assignedTo: 'Manoj Tiwari', deadline: '2024-02-28', status: 'Quoted', revenue: 67000, createdAt: '2024-01-25', mode: 'Workshop Procures' },
-  { id: 'JOB-010', customer: 'Kumar Machine Works', description: 'Welding and fabrication of conveyor frame', priority: 'Medium', assignedTo: 'Amit Patel', deadline: '2024-03-01', status: 'Quality Check', revenue: 145000, createdAt: '2024-01-26', mode: 'Client Supplies' },
-  { id: 'JOB-011', customer: 'Anand Sheet Metal Co.', description: 'Sheet metal cutting and bending — custom enclosures', priority: 'Low', assignedTo: 'Ravi Sharma', deadline: '2024-03-05', status: 'In Progress', revenue: 28000, createdAt: '2024-01-27', mode: 'Workshop Procures' },
-  { id: 'JOB-012', customer: 'Rajesh Industrial Supplies', description: 'Surface grinding of die plates — precision tolerance', priority: 'High', assignedTo: 'Deepak Yadav', deadline: '2024-02-14', status: 'New', revenue: 38000, createdAt: '2024-01-28', mode: 'Client Supplies' },
+export interface UserAccount {
+  username: string
+  password: string
+  role: 'Owner' | 'Manager' | 'Employee' | 'Client'
+  name: string
+  avatar: string
+  email: string
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+export const seedUsers: UserAccount[] = [
+  { username: 'admin', password: 'mistry123', role: 'Owner', name: 'Vikram Mistry', avatar: 'VM', email: 'vikram@mistrygems.com' },
+  { username: 'manager', password: 'pass123', role: 'Manager', name: 'Rahul Kapoor', avatar: 'RK', email: 'rahul@mistrygems.com' },
+  { username: 'ramesh', password: 'pass123', role: 'Employee', name: 'Ramesh Sharma', avatar: 'RS', email: 'ramesh@mistrygems.com' },
 ]
 
-// ─── Employees Data ───────────────────────────────────────────────────────────
-export const employees: Employee[] = [
+// ─── Jobs ─────────────────────────────────────────────────────────────────────
+export const seedJobs: Job[] = [
+  { id: 'JOB-001', customer: 'Shree Auto Parts', description: 'CNC turning of 50 flanges — MS grade', priority: 'High', assignedTo: 'Ravi Sharma', deadline: '2024-03-15', status: 'In Progress', revenue: 85000, createdAt: '2024-01-20', mode: 'Workshop Procures' },
+  { id: 'JOB-002', customer: 'Bharat Fabricators', description: 'Sheet metal bending batch — 200 units', priority: 'High', assignedTo: 'Deepak Yadav', deadline: '2024-03-10', status: 'Quality Check', revenue: 120000, createdAt: '2024-01-18', mode: 'Client Supplies' },
+  { id: 'JOB-003', customer: 'Precision Engineers Pvt Ltd', description: 'Surface grinding of 80 bearing housings', priority: 'Medium', assignedTo: 'Sunil Verma', deadline: '2024-03-20', status: 'Approved', revenue: 45000, createdAt: '2024-01-22', mode: 'Client Supplies' },
+  { id: 'JOB-004', customer: 'Kumar Machine Works', description: 'Welding MS frame assembly — 10 units', priority: 'Low', assignedTo: 'Manoj Tiwari', deadline: '2024-03-25', status: 'New', revenue: 32000, createdAt: '2024-01-24', mode: 'Workshop Procures' },
+  { id: 'JOB-005', customer: 'Anand Sheet Metal Co.', description: 'Powder coating of 300 brackets', priority: 'High', assignedTo: 'Ravi Sharma', deadline: '2024-02-08', status: 'Completed', revenue: 55000, createdAt: '2024-01-15', mode: 'Client Supplies' },
+  { id: 'JOB-006', customer: 'Rajesh Industrial Supplies', description: 'Lathe turning of 100 shafts — EN8 steel', priority: 'Medium', assignedTo: 'Amit Patel', deadline: '2024-03-18', status: 'Invoiced', revenue: 195000, createdAt: '2024-01-19', mode: 'Workshop Procures' },
+  { id: 'JOB-007', customer: 'Shree Auto Parts', description: 'Drilling and tapping of engine blocks — batch of 25', priority: 'High', assignedTo: 'Deepak Yadav', deadline: '2024-03-12', status: 'In Progress', revenue: 78000, createdAt: '2024-01-21', mode: 'Client Supplies' },
+  { id: 'JOB-008', customer: 'Bharat Fabricators', description: 'Casting of aluminium pulleys — 150 pcs', priority: 'Medium', assignedTo: 'Sunil Verma', deadline: '2024-03-22', status: 'Procuring', revenue: 110000, createdAt: '2024-01-23', mode: 'Workshop Procures' },
+  { id: 'JOB-009', customer: 'Precision Engineers Pvt Ltd', description: 'CNC machining of hydraulic valve bodies', priority: 'Low', assignedTo: 'Manoj Tiwari', deadline: '2024-03-28', status: 'Quoted', revenue: 67000, createdAt: '2024-01-25', mode: 'Workshop Procures' },
+  { id: 'JOB-010', customer: 'Kumar Machine Works', description: 'Welding and fabrication of conveyor frame', priority: 'Medium', assignedTo: 'Amit Patel', deadline: '2024-04-01', status: 'Quality Check', revenue: 145000, createdAt: '2024-01-26', mode: 'Client Supplies' },
+]
+
+// ─── Employees ────────────────────────────────────────────────────────────────
+export const seedEmployees: Employee[] = [
   { id: 'EMP-001', name: 'Ravi Sharma', role: 'Machine Operator', department: 'CNC', email: 'ravi.sharma@mistrygems.com', phone: '+91 98765 43210', avatar: 'RS', assignedJobs: 3, completedJobs: 47, performance: 94, status: 'Active', joinDate: '2020-03-15' },
   { id: 'EMP-002', name: 'Deepak Yadav', role: 'Fabrication Lead', department: 'Fabrication', email: 'deepak.yadav@mistrygems.com', phone: '+91 98765 43211', avatar: 'DY', assignedJobs: 3, completedJobs: 38, performance: 89, status: 'Active', joinDate: '2021-06-01' },
   { id: 'EMP-003', name: 'Sunil Verma', role: 'Quality Inspector', department: 'QC', email: 'sunil.verma@mistrygems.com', phone: '+91 98765 43212', avatar: 'SV', assignedJobs: 2, completedJobs: 31, performance: 92, status: 'Active', joinDate: '2019-11-20' },
   { id: 'EMP-004', name: 'Manoj Tiwari', role: 'Welding Specialist', department: 'Welding', email: 'manoj.tiwari@mistrygems.com', phone: '+91 98765 43213', avatar: 'MT', assignedJobs: 2, completedJobs: 29, performance: 87, status: 'Active', joinDate: '2022-01-10' },
   { id: 'EMP-005', name: 'Amit Patel', role: 'Lathe Operator', department: 'Lathe', email: 'amit.patel@mistrygems.com', phone: '+91 98765 43214', avatar: 'AP', assignedJobs: 2, completedJobs: 52, performance: 96, status: 'Active', joinDate: '2018-07-01' },
-  { id: 'EMP-006', name: 'Vikram Singh', role: 'Production Manager', department: 'Production', email: 'vikram.singh@mistrygems.com', phone: '+91 98765 43215', avatar: 'VK', assignedJobs: 0, completedJobs: 0, performance: 91, status: 'On Leave', joinDate: '2023-02-14' },
+  { id: 'EMP-006', name: 'Vikram Singh', role: 'Production Manager', department: 'Production', email: 'vikram.singh@mistrygems.com', phone: '+91 98765 43215', avatar: 'VS', assignedJobs: 0, completedJobs: 0, performance: 91, status: 'On Leave', joinDate: '2023-02-14' },
 ]
 
-// ─── Customers Data ───────────────────────────────────────────────────────────
-export const customers: Customer[] = [
+// ─── Customers ────────────────────────────────────────────────────────────────
+export const seedCustomers: Customer[] = [
   { id: 'CUST-001', name: 'Ramesh Agarwal', company: 'Shree Auto Parts', email: 'ramesh@shreeautoparts.com', phone: '+91 98000 11111', city: 'Rajkot', totalJobs: 12, totalRevenue: 480000, status: 'Active', avatar: 'RA' },
   { id: 'CUST-002', name: 'Dinesh Mehta', company: 'Bharat Fabricators', email: 'dinesh@bharatfab.com', phone: '+91 98000 22222', city: 'Ahmedabad', totalJobs: 8, totalRevenue: 320000, status: 'Active', avatar: 'DM' },
   { id: 'CUST-003', name: 'Rakesh Gupta', company: 'Precision Engineers Pvt Ltd', email: 'rakesh@precisioneng.com', phone: '+91 98000 33333', city: 'Pune', totalJobs: 15, totalRevenue: 560000, status: 'Active', avatar: 'RG' },
@@ -137,44 +151,40 @@ export const customers: Customer[] = [
   { id: 'CUST-006', name: 'Rajesh Joshi', company: 'Rajesh Industrial Supplies', email: 'rajesh@rajeshind.com', phone: '+91 98000 66666', city: 'Jaipur', totalJobs: 3, totalRevenue: 95000, status: 'Inactive', avatar: 'RJ' },
 ]
 
-// ─── Tasks Data ───────────────────────────────────────────────────────────────
-export const initialTasks: Task[] = [
-  { id: 'TASK-001', title: 'Set up CNC program for flanges', description: 'Program G-code and set tooling for JOB-001 flange batch', assignee: 'Ravi Sharma', priority: 'High', dueDate: '2024-02-15', column: 'In Progress', tags: ['CNC', 'Setup'] },
-  { id: 'TASK-002', title: 'QC inspection — sheet metal batch', description: 'Inspect all 200 bent units for dimensional accuracy', assignee: 'Sunil Verma', priority: 'High', dueDate: '2024-02-10', column: 'Review', tags: ['QC', 'Sheet Metal'] },
-  { id: 'TASK-003', title: 'Prepare welding jig for MS frames', description: 'Design and fabricate welding jig for frame assembly', assignee: 'Manoj Tiwari', priority: 'Medium', dueDate: '2024-02-20', column: 'Pending', tags: ['Welding', 'Jig'] },
-  { id: 'TASK-004', title: 'Order raw material — EN8 steel rods', description: 'Place order with supplier for 500kg EN8 round bars', assignee: 'Vikram Singh', priority: 'High', dueDate: '2024-02-08', column: 'Completed', tags: ['Procurement'] },
-  { id: 'TASK-005', title: 'Update job progress reports', description: 'Weekly report for all active manufacturing jobs', assignee: 'Amit Patel', priority: 'Low', dueDate: '2024-02-16', column: 'Pending', tags: ['Reporting'] },
-  { id: 'TASK-006', title: 'CNC machine maintenance check', description: 'Monthly maintenance of CNC lathe and milling machines', assignee: 'Ravi Sharma', priority: 'Medium', dueDate: '2024-02-18', column: 'In Progress', tags: ['Maintenance'] },
-  { id: 'TASK-007', title: 'Client meeting prep — Precision Engineers', description: 'Prepare cost estimates and timeline for hydraulic valve job', assignee: 'Vikram Singh', priority: 'High', dueDate: '2024-02-12', column: 'Review', tags: ['Client', 'Meeting'] },
-  { id: 'TASK-008', title: 'Inventory audit — raw materials', description: 'Monthly stock count of steel, aluminium, and consumables', assignee: 'Deepak Yadav', priority: 'Medium', dueDate: '2024-02-22', column: 'Completed', tags: ['Inventory'] },
+// ─── Tasks ────────────────────────────────────────────────────────────────────
+export const seedTasks: Task[] = [
+  { id: 'TASK-001', title: 'Set up CNC program for flanges', description: 'Program G-code and set tooling for JOB-001 flange batch', assignee: 'Ravi Sharma', priority: 'High', dueDate: '2024-03-15', column: 'In Progress', tags: ['CNC', 'Setup'] },
+  { id: 'TASK-002', title: 'QC inspection — sheet metal batch', description: 'Inspect all 200 bent units for dimensional accuracy', assignee: 'Sunil Verma', priority: 'High', dueDate: '2024-03-10', column: 'Review', tags: ['QC', 'Sheet Metal'] },
+  { id: 'TASK-003', title: 'Prepare welding jig for MS frames', description: 'Design and fabricate welding jig for frame assembly', assignee: 'Manoj Tiwari', priority: 'Medium', dueDate: '2024-03-20', column: 'Pending', tags: ['Welding', 'Jig'] },
+  { id: 'TASK-004', title: 'Order raw material — EN8 steel rods', description: 'Place order with supplier for 500kg EN8 round bars', assignee: 'Vikram Singh', priority: 'High', dueDate: '2024-03-08', column: 'Completed', tags: ['Procurement'] },
+  { id: 'TASK-005', title: 'Update job progress reports', description: 'Weekly report for all active manufacturing jobs', assignee: 'Amit Patel', priority: 'Low', dueDate: '2024-03-16', column: 'Pending', tags: ['Reporting'] },
+  { id: 'TASK-006', title: 'CNC machine maintenance check', description: 'Monthly maintenance of CNC lathe and milling machines', assignee: 'Ravi Sharma', priority: 'Medium', dueDate: '2024-03-18', column: 'In Progress', tags: ['Maintenance'] },
+  { id: 'TASK-007', title: 'Client meeting prep — Precision Engineers', description: 'Prepare cost estimates and timeline for hydraulic valve job', assignee: 'Vikram Singh', priority: 'High', dueDate: '2024-03-12', column: 'Review', tags: ['Client', 'Meeting'] },
+  { id: 'TASK-008', title: 'Inventory audit — raw materials', description: 'Monthly stock count of steel, aluminium, and consumables', assignee: 'Deepak Yadav', priority: 'Medium', dueDate: '2024-03-22', column: 'Completed', tags: ['Inventory'] },
 ]
 
-// ─── Notifications Data ───────────────────────────────────────────────────────
-export const notifications: Notification[] = [
+// ─── Notifications ────────────────────────────────────────────────────────────
+export const seedNotifications: Notification[] = [
   { id: 'N-001', title: 'Job Completed', message: 'JOB-005 (Powder coating of 300 brackets) has been marked as completed by Ravi Sharma.', type: 'success', time: '2 hours ago', read: false, group: 'Today', channel: 'in-app' },
   { id: 'N-002', title: 'Deadline Alert', message: 'JOB-002 (Sheet metal bending batch) is due in 2 days. Please review progress.', type: 'warning', time: '4 hours ago', read: false, group: 'Today', channel: 'whatsapp' },
   { id: 'N-003', title: 'New Job Assigned', message: 'JOB-012 (Surface grinding of die plates) has been assigned to Deepak Yadav.', type: 'info', time: '6 hours ago', read: true, group: 'Today', channel: 'sms' },
-  { id: 'N-004', title: 'Quality Check Failed', message: 'JOB-007 (Drilling and tapping of engine blocks) failed QC inspection. Needs rework on 3 units.', type: 'error', time: '8 hours ago', read: false, group: 'Today', channel: 'in-app' },
+  { id: 'N-004', title: 'Quality Check Failed', message: 'JOB-007 failed QC inspection. Needs rework on 3 units.', type: 'error', time: '8 hours ago', read: false, group: 'Today', channel: 'in-app' },
   { id: 'N-005', title: 'Invoice Generated', message: 'Invoice #INV-2024-003 for Rajesh Industrial Supplies has been generated for ₹1,95,000.', type: 'success', time: 'Yesterday, 3:00 PM', read: true, group: 'Yesterday', channel: 'whatsapp' },
   { id: 'N-006', title: 'Raw Material Received', message: 'EN8 steel rods (500kg) received from supplier. Stock updated in inventory.', type: 'info', time: 'Yesterday, 10:00 AM', read: true, group: 'Yesterday', channel: 'in-app' },
-  { id: 'N-007', title: 'Employee On Leave', message: 'Vikram Singh has applied for leave from Feb 26 – Mar 1.', type: 'warning', time: 'Yesterday, 9:00 AM', read: false, group: 'Yesterday', channel: 'sms' },
-  { id: 'N-008', title: 'Monthly Report Ready', message: 'January 2024 workshop performance report is ready for download.', type: 'info', time: 'Jan 28, 5:00 PM', read: true, group: 'Older', channel: 'in-app' },
-  { id: 'N-009', title: 'System Update', message: 'Mistry Gems platform updated to v2.4.1 with inventory tracking features.', type: 'info', time: 'Jan 25, 11:00 AM', read: true, group: 'Older', channel: 'whatsapp' },
 ]
 
-// ─── Invoices Data ────────────────────────────────────────────────────────────
-export const invoices: Invoice[] = [
+// ─── Invoices ─────────────────────────────────────────────────────────────────
+export const seedInvoices: Invoice[] = [
   { id: 'INV-2024-001', jobId: 'JOB-005', customer: 'Anand Sheet Metal Co.', amount: 55000, status: 'Paid', dueDate: '2024-02-20', createdAt: '2024-02-08' },
-  { id: 'INV-2024-002', jobId: 'JOB-006', customer: 'Rajesh Industrial Supplies', amount: 195000, status: 'Sent', dueDate: '2024-02-28', createdAt: '2024-02-18' },
-  { id: 'INV-2024-003', jobId: 'JOB-001', customer: 'Shree Auto Parts', amount: 85000, status: 'Draft', dueDate: '2024-03-01', createdAt: '2024-02-15' },
+  { id: 'INV-2024-002', jobId: 'JOB-006', customer: 'Rajesh Industrial Supplies', amount: 195000, status: 'Sent', dueDate: '2024-03-28', createdAt: '2024-02-18' },
+  { id: 'INV-2024-003', jobId: 'JOB-001', customer: 'Shree Auto Parts', amount: 85000, status: 'Draft', dueDate: '2024-04-01', createdAt: '2024-02-15' },
   { id: 'INV-2024-004', jobId: 'JOB-002', customer: 'Bharat Fabricators', amount: 120000, status: 'Overdue', dueDate: '2024-02-10', createdAt: '2024-02-05' },
-  { id: 'INV-2024-005', jobId: 'JOB-003', customer: 'Precision Engineers Pvt Ltd', amount: 45000, status: 'Draft', dueDate: '2024-03-05', createdAt: '2024-02-20' },
-  { id: 'INV-2024-006', jobId: 'JOB-007', customer: 'Shree Auto Parts', amount: 78000, status: 'Sent', dueDate: '2024-02-25', createdAt: '2024-02-12' },
-  { id: 'INV-2024-007', jobId: 'JOB-010', customer: 'Kumar Machine Works', amount: 145000, status: 'Paid', dueDate: '2024-03-10', createdAt: '2024-03-01' },
-  { id: 'INV-2024-008', jobId: 'JOB-008', customer: 'Bharat Fabricators', amount: 110000, status: 'Draft', dueDate: '2024-03-15', createdAt: '2024-02-22' },
+  { id: 'INV-2024-005', jobId: 'JOB-003', customer: 'Precision Engineers Pvt Ltd', amount: 45000, status: 'Draft', dueDate: '2024-04-05', createdAt: '2024-02-20' },
+  { id: 'INV-2024-006', jobId: 'JOB-007', customer: 'Shree Auto Parts', amount: 78000, status: 'Sent', dueDate: '2024-03-25', createdAt: '2024-02-12' },
+  { id: 'INV-2024-007', jobId: 'JOB-010', customer: 'Kumar Machine Works', amount: 145000, status: 'Paid', dueDate: '2024-04-10', createdAt: '2024-03-01' },
 ]
 
-// ─── Inventory Data ───────────────────────────────────────────────────────────
+// ─── Raw Materials ────────────────────────────────────────────────────────────
 export const rawMaterials: RawMaterial[] = [
   { id: 'RM-001', name: 'MS Flat Bar (50x10mm)', sku: 'RM-MSFLAT-5010', unit: 'kg', currentStock: 250, reorderLevel: 100, unitCost: 65, status: 'OK' },
   { id: 'RM-002', name: 'Aluminium Rod (25mm dia)', sku: 'RM-ALROD-25', unit: 'kg', currentStock: 45, reorderLevel: 50, unitCost: 280, status: 'Low Stock' },
@@ -206,13 +216,11 @@ export const monthlyRevenueData = [
 
 export const jobStatusData = [
   { name: 'New', value: 2, color: '#94A3B8' },
-  { name: 'Quoted', value: 1, color: '#A78BFA' },
-  { name: 'Approved', value: 1, color: '#3B82F6' },
-  { name: 'Procuring', value: 1, color: '#F59E0B' },
-  { name: 'In Progress', value: 3, color: '#4F46E5' },
-  { name: 'Quality Check', value: 2, color: '#06B6D4' },
+  { name: 'In Progress', value: 3, color: '#00B4D8' },
+  { name: 'Quality Check', value: 2, color: '#0077B6' },
   { name: 'Completed', value: 1, color: '#10B981' },
   { name: 'Invoiced', value: 1, color: '#8B5CF6' },
+  { name: 'Procuring', value: 1, color: '#F59E0B' },
 ]
 
 export const employeePerformanceData = [
@@ -221,13 +229,4 @@ export const employeePerformanceData = [
   { name: 'Sunil', performance: 92, jobs: 31 },
   { name: 'Manoj', performance: 87, jobs: 29 },
   { name: 'Amit', performance: 96, jobs: 52 },
-]
-
-export const activityData = [
-  { time: '09:15 AM', event: 'JOB-001 CNC program loaded, machining started', user: 'Ravi Sharma', type: 'job' },
-  { time: '10:30 AM', event: 'New quotation created for Precision Engineers', user: 'Admin', type: 'quotation' },
-  { time: '11:45 AM', event: 'Quality check initiated for JOB-002 sheet metal batch', user: 'Sunil Verma', type: 'qc' },
-  { time: '01:00 PM', event: 'JOB-005 powder coating completed — 300 brackets', user: 'Ravi Sharma', type: 'complete' },
-  { time: '02:30 PM', event: 'Invoice #INV-2024-003 generated for ₹1,95,000', user: 'Vikram Singh', type: 'invoice' },
-  { time: '04:00 PM', event: 'New job JOB-012 created — surface grinding', user: 'Admin', type: 'job' },
 ]

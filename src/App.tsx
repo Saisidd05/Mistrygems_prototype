@@ -1,101 +1,67 @@
-import React, { Suspense } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import Layout from '@/components/layout/Layout'
-import { ThemeProvider } from '@/context/ThemeContext'
-import { SidebarProvider } from '@/context/SidebarContext'
-import { AuthProvider, useAuth } from '@/context/AuthContext'
+import React from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import { AppDataProvider } from './context/AppDataContext'
+import { ThemeProvider } from './context/ThemeContext'
+import { ToastProvider } from './components/ui/Toast'
+import { Layout } from './components/layout/Layout'
+import { CustomCursor } from './components/ui/CustomCursor'
 
-// Lazy load all pages
-const Login = React.lazy(() => import('@/pages/Login'))
-const Dashboard = React.lazy(() => import('@/pages/Dashboard'))
-const Jobs = React.lazy(() => import('@/pages/Jobs'))
-const Quotations = React.lazy(() => import('@/pages/Quotations'))
-const Customers = React.lazy(() => import('@/pages/Customers'))
-const Employees = React.lazy(() => import('@/pages/Employees'))
-const Tasks = React.lazy(() => import('@/pages/Tasks'))
-const Reports = React.lazy(() => import('@/pages/Reports'))
-const Notifications = React.lazy(() => import('@/pages/Notifications'))
-const Settings = React.lazy(() => import('@/pages/Settings'))
-const Inventory = React.lazy(() => import('@/pages/Inventory'))
-const Invoices = React.lazy(() => import('@/pages/Invoices'))
-
-function LoadingSpinner() {
-  return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 border-3 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
-        <span className="text-sm text-slate-400 font-medium">Loading…</span>
-      </div>
-    </div>
-  )
-}
+import { Landing } from './pages/Landing'
+import { Login } from './pages/Login'
+import { Dashboard } from './pages/Dashboard'
+import { Jobs } from './pages/Jobs'
+import { Customers } from './pages/Customers'
+import { Employees } from './pages/Employees'
+import { Tasks } from './pages/Tasks'
+import { Quotations } from './pages/Quotations'
+import { Invoices } from './pages/Invoices'
+import { Inventory } from './pages/Inventory'
+import { Notifications } from './pages/Notifications'
+import { Reports } from './pages/Reports'
+import { Settings } from './pages/Settings'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
-  return <>{children}</>
+  return <Layout>{children}</Layout>
 }
 
-function AppRoutes() {
-  const { isAuthenticated } = useAuth()
-
+export default function App() {
   return (
-    <Routes>
-      <Route
-        path="/login"
-        element={
-          isAuthenticated ? (
-            <Navigate to="/dashboard" replace />
-          ) : (
-            <Suspense fallback={<LoadingSpinner />}>
-              <Login />
-            </Suspense>
-          )
-        }
-      />
-      <Route
-        path="/*"
-        element={
-          <ProtectedRoute>
-            <Layout>
-              <Suspense fallback={<LoadingSpinner />}>
-                <Routes>
-                  <Route index element={<Navigate to="/dashboard" replace />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/jobs" element={<Jobs />} />
-                  <Route path="/quotations" element={<Quotations />} />
-                  <Route path="/customers" element={<Customers />} />
-                  <Route path="/employees" element={<Employees />} />
-                  <Route path="/tasks" element={<Tasks />} />
-                  <Route path="/inventory" element={<Inventory />} />
-                  <Route path="/invoices" element={<Invoices />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/notifications" element={<Notifications />} />
-                  <Route path="/settings" element={<Settings />} />
-                </Routes>
-              </Suspense>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppDataProvider>
+          <ToastProvider>
+            <BrowserRouter>
+              <CustomCursor />
+              <Routes>
+                {/* Public Landing & Login */}
+                <Route path="/" element={<Landing />} />
+                <Route path="/login" element={<Login />} />
+
+                {/* Protected Dashboard Routes */}
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
+                <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+                <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
+                <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
+                <Route path="/quotations" element={<ProtectedRoute><Quotations /></ProtectedRoute>} />
+                <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
+                <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
+                <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+                <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </BrowserRouter>
+          </ToastProvider>
+        </AppDataProvider>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
-
-const App: React.FC = () => {
-  return (
-    <AuthProvider>
-      <ThemeProvider>
-        <SidebarProvider>
-          <Router>
-            <AppRoutes />
-          </Router>
-        </SidebarProvider>
-      </ThemeProvider>
-    </AuthProvider>
-  )
-}
-
-export default App

@@ -1,449 +1,213 @@
-import { useState, useMemo } from 'react'
-import { GlassCard } from '@/components/ui/GlassCard'
-import { StatusBadge, PriorityBadge, ModeBadge } from '@/components/ui/StatusBadge'
-import { jobs as initialJobs, Job, JobStatus, Priority, JobMode, customers, employees } from '@/lib/data'
-import { formatCurrency, formatDate } from '@/lib/utils'
-import { useAuth } from '@/context/AuthContext'
+import React, { useState } from 'react'
 import {
-  Search,
-  Plus,
-  ArrowUpDown,
-  Edit,
-  Trash2,
-  Eye,
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  LayoutGrid,
-  List,
-  X,
-  AlertCircle,
-  Filter as FilterIcon,
+  Briefcase, Plus, Search, Filter, Download, Edit2, Trash2, Eye,
+  Kanban, Table, CheckCircle
 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useAppData } from '../context/AppDataContext'
+import { GlassCard } from '../components/ui/GlassCard'
+import { GlowButton } from '../components/ui/GlowButton'
+import { StatusBadge } from '../components/ui/StatusBadge'
+import { Modal } from '../components/ui/Modal'
+import { ConfirmDialog } from '../components/ui/ConfirmDialog'
+import { JobForm } from '../components/forms/JobForm'
+import { useToast } from '../components/ui/Toast'
+import { formatCurrency, formatDate, downloadCSV } from '../lib/utils'
+import type { Job, JobStatus, Priority } from '../lib/data'
 
-const kanbanStatuses: JobStatus[] = ['New', 'Quoted', 'Approved', 'Procuring', 'In Progress', 'Quality Check', 'Completed', 'Invoiced']
+const statuses: JobStatus[] = ['New', 'Quoted', 'Approved', 'Procuring', 'In Progress', 'Quality Check', 'Completed', 'Invoiced']
 
-// ─── Job Modal ───────────────────────────────────────────────────────────────
-function JobModal({
-  job,
-  onClose,
-  onSave,
-}: {
-  job?: Job
-  onClose: () => void
-  onSave: (data: Omit<Job, 'id' | 'createdAt'>) => void
-}) {
-  const [customer, setCustomer] = useState(job?.customer || customers[0].company)
-  const [description, setDescription] = useState(job?.description || '')
-  const [priority, setPriority] = useState<Priority>(job?.priority || 'Medium')
-  const [mode, setMode] = useState<JobMode>(job?.mode || 'Workshop Procures')
-  const [assignedTo, setAssignedTo] = useState(job?.assignedTo || employees[0].name)
-  const [deadline, setDeadline] = useState(job?.deadline || '')
-  const status: JobStatus = job?.status || 'New'
-  const [revenue, setRevenue] = useState(job?.revenue || 0)
+export function Jobs() {
+  const { jobs, customers, employees, addJob, updateJob, deleteJob } = useAppData()
+  const { showToast } = useToast()
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSave({ customer, description, priority, mode, assignedTo, deadline, status, revenue })
-    onClose()
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="w-full max-w-lg mx-4 glass-card p-6 dark:bg-slate-900/90 max-h-[90vh] overflow-y-auto"
-      >
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            {job ? 'Edit Job' : 'New Job'}
-          </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
-            <X className="w-4 h-4 text-slate-400" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2 sm:col-span-1">
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Customer</label>
-              <select value={customer} onChange={(e) => setCustomer(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/40 font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/40">
-                {customers.map((c) => <option key={c.id} value={c.company}>{c.company}</option>)}
-              </select>
-            </div>
-            <div className="col-span-2 sm:col-span-1">
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Assigned To</label>
-              <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/40 font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/40">
-                {employees.map((e) => <option key={e.id} value={e.name}>{e.name}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Job Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="Describe the job..." className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/40 text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/40 resize-none" required />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Mode</label>
-              <select value={mode} onChange={(e) => setMode(e.target.value as JobMode)} className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/40 font-medium focus:outline-none">
-                <option value="Workshop Procures">Workshop Procures</option>
-                <option value="Client Supplies">Client Supplies</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Priority</label>
-              <select value={priority} onChange={(e) => setPriority(e.target.value as Priority)} className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/40 font-medium focus:outline-none">
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Deadline</label>
-              <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/40 text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/40" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Revenue (₹)</label>
-              <input type="number" value={revenue} onChange={(e) => setRevenue(Number(e.target.value))} className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/40 text-slate-800 dark:text-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500/40" />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary text-xs">Cancel</button>
-            <button type="submit" className="btn-primary text-xs">{job ? 'Update Job' : 'Create Job'}</button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
-  )
-}
-
-// ─── Delete Confirmation ─────────────────────────────────────────────────────
-function DeleteConfirmModal({ jobId, onClose, onConfirm }: { jobId: string; onClose: () => void; onConfirm: () => void }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="w-full max-w-sm mx-4 glass-card p-6 dark:bg-slate-900/90"
-      >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-red-100 dark:bg-red-900/30">
-            <Trash2 className="w-5 h-5 text-red-600" />
-          </div>
-          <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">Delete Job</h2>
-            <p className="text-xs text-slate-500 mt-0.5">This action cannot be undone</p>
-          </div>
-        </div>
-        <p className="text-sm text-slate-600 dark:text-slate-300 mb-5">
-          Are you sure you want to delete <strong>{jobId}</strong>?
-        </p>
-        <div className="flex justify-end gap-3">
-          <button onClick={onClose} className="btn-secondary text-xs">Cancel</button>
-          <button onClick={onConfirm} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors text-xs">Delete</button>
-        </div>
-      </motion.div>
-    </div>
-  )
-}
-
-// ─── Main Jobs Page ──────────────────────────────────────────────────────────
-export default function Jobs() {
-  const { userRole } = useAuth()
-  const isManager = userRole === 'manager'
-
-  const [jobList, setJobList] = useState<Job[]>(initialJobs)
+  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('All')
   const [priorityFilter, setPriorityFilter] = useState<string>('All')
-  const [sortField, setSortField] = useState<keyof Job>('createdAt')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table')
-  const [showJobModal, setShowJobModal] = useState(false)
-  const [editingJob, setEditingJob] = useState<Job | undefined>(undefined)
-  const [deleteJobId, setDeleteJobId] = useState<string | null>(null)
-  const pageSize = 6
 
-  // Filtering & Sorting
-  const filteredJobs = useMemo(() => {
-    return jobList
-      .filter((job) => {
-        const matchesSearch =
-          job.id.toLowerCase().includes(search.toLowerCase()) ||
-          job.customer.toLowerCase().includes(search.toLowerCase()) ||
-          job.description.toLowerCase().includes(search.toLowerCase()) ||
-          job.assignedTo.toLowerCase().includes(search.toLowerCase())
-        const matchesStatus = statusFilter === 'All' || job.status === statusFilter
-        const matchesPriority = priorityFilter === 'All' || job.priority === priorityFilter
-        return matchesSearch && matchesStatus && matchesPriority
-      })
-      .sort((a, b) => {
-        const valA = a[sortField]
-        const valB = b[sortField]
-        if (valA < valB) return sortOrder === 'asc' ? -1 : 1
-        if (valA > valB) return sortOrder === 'asc' ? 1 : -1
-        return 0
-      })
-  }, [jobList, search, statusFilter, priorityFilter, sortField, sortOrder])
+  const [openModal, setOpenModal] = useState(false)
+  const [editingJob, setEditingJob] = useState<Job | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [viewingJob, setViewingJob] = useState<Job | null>(null)
 
-  const totalPages = Math.ceil(filteredJobs.length / pageSize)
-  const paginatedJobs = filteredJobs.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const customerNames = customers.map(c => c.name)
+  const employeeNames = employees.map(e => e.name)
 
-  const toggleSort = (field: keyof Job) => {
-    if (sortField === field) {
-      setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))
-    } else {
-      setSortField(field)
-      setSortOrder('asc')
-    }
-  }
+  const filteredJobs = jobs.filter(j => {
+    const matchSearch = j.id.toLowerCase().includes(search.toLowerCase()) ||
+      j.customer.toLowerCase().includes(search.toLowerCase()) ||
+      j.description.toLowerCase().includes(search.toLowerCase())
+    const matchStatus = statusFilter === 'All' || j.status === statusFilter
+    const matchPriority = priorityFilter === 'All' || j.priority === priorityFilter
+    return matchSearch && matchStatus && matchPriority
+  })
 
-  const handleSaveJob = (data: Omit<Job, 'id' | 'createdAt'>) => {
+  const handleFormSubmit = (data: Omit<Job, 'id' | 'createdAt'>) => {
     if (editingJob) {
-      setJobList((prev) => prev.map((j) => j.id === editingJob.id ? { ...j, ...data } : j))
+      updateJob(editingJob.id, data)
+      showToast(`Job ${editingJob.id} updated successfully!`, 'success')
     } else {
-      const newId = `JOB-${String(jobList.length + 1).padStart(3, '0')}`
-      setJobList((prev) => [...prev, { ...data, id: newId, createdAt: new Date().toISOString().split('T')[0] }])
+      addJob(data)
+      showToast('New job created successfully!', 'success')
     }
-    setEditingJob(undefined)
+    setOpenModal(false)
+    setEditingJob(null)
   }
 
-  const handleDeleteJob = () => {
-    if (deleteJobId) {
-      setJobList((prev) => prev.filter((j) => j.id !== deleteJobId))
-      setDeleteJobId(null)
+  const handleDelete = () => {
+    if (deletingId) {
+      deleteJob(deletingId)
+      showToast(`Job ${deletingId} deleted.`, 'warning')
+      setDeletingId(null)
     }
   }
 
-  const clearFilters = () => {
-    setSearch('')
-    setStatusFilter('All')
-    setPriorityFilter('All')
+  const handleExport = () => {
+    downloadCSV(filteredJobs as unknown as Record<string, unknown>[], 'mistry_gems_jobs')
+    showToast('Exported jobs to CSV!', 'info')
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Job Management
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Track, assign, and manage manufacturing jobs across stages
-          </p>
+          <h1 className="page-title">Manufacturing Jobs</h1>
+          <p className="page-subtitle">Track, manage and assign production jobs across your workshop.</p>
         </div>
-        <div className="flex items-center gap-3">
-          {/* View Toggle */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
-            <button
-              onClick={() => setViewMode('table')}
-              className={`p-2 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 shadow-sm text-orange-600' : 'text-slate-400'}`}
-            >
-              <List className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('kanban')}
-              className={`p-2 rounded-lg transition-colors ${viewMode === 'kanban' ? 'bg-white dark:bg-slate-700 shadow-sm text-orange-600' : 'text-slate-400'}`}
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-          </div>
-          <button className="btn-secondary text-xs">
-            <Download className="w-4 h-4" />
-            <span>Export CSV</span>
-          </button>
-          <button onClick={() => { setEditingJob(undefined); setShowJobModal(true) }} className="btn-primary text-xs">
-            <Plus className="w-4 h-4" />
-            <span>New Job</span>
-          </button>
+        <div className="flex gap-2">
+          <GlowButton variant="outline" size="sm" icon={<Download size={14} />} onClick={handleExport}>
+            Export CSV
+          </GlowButton>
+          <GlowButton size="sm" icon={<Plus size={16} />} onClick={() => { setEditingJob(null); setOpenModal(true); }}>
+            New Job
+          </GlowButton>
         </div>
       </div>
 
       {/* Controls Bar */}
-      <GlassCard className="p-4">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search by ID, customer, assigned worker..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl text-sm bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/40 text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/40 transition-all"
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-500">Status:</span>
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-1.5 rounded-xl text-xs bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/40 font-medium text-slate-700 dark:text-slate-200 focus:outline-none">
-                <option value="All">All Statuses</option>
-                {kanbanStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-500">Priority:</span>
-              <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} className="px-3 py-1.5 rounded-xl text-xs bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/40 font-medium text-slate-700 dark:text-slate-200 focus:outline-none">
-                <option value="All">All Priorities</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
-            </div>
+      <GlassCard className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Search */}
+        <div className="relative w-full md:w-72">
+          <input
+            className="glass-input pl-10"
+            placeholder="Search job ID, customer..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <Search size={16} className="absolute left-3.5 top-3.5 text-glass-dim" />
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <select className="glass-select w-auto text-xs" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+            <option value="All">All Statuses</option>
+            {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+
+          <select className="glass-select w-auto text-xs" value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)}>
+            <option value="All">All Priorities</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+
+          {/* Toggle View */}
+          <div className="flex p-1 rounded-xl bg-black/20 border border-glass/10 ml-auto">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-1.5 rounded-lg text-xs font-medium transition-all ${viewMode === 'table' ? 'bg-[#00B4D8]/20 text-highlight' : 'text-glass-dim'}`}
+            >
+              <Table size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={`p-1.5 rounded-lg text-xs font-medium transition-all ${viewMode === 'kanban' ? 'bg-[#00B4D8]/20 text-highlight' : 'text-glass-dim'}`}
+            >
+              <Kanban size={16} />
+            </button>
           </div>
         </div>
       </GlassCard>
 
-      {/* Empty State */}
-      {filteredJobs.length === 0 && (
-        <GlassCard className="py-16 text-center">
-          <AlertCircle className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">No jobs match your filters</h3>
-          <p className="text-xs text-slate-400 mt-1 mb-4">Try adjusting your search or filter criteria</p>
-          <button onClick={clearFilters} className="btn-primary text-xs">
-            <FilterIcon className="w-4 h-4" />
-            <span>Clear Filters</span>
-          </button>
-        </GlassCard>
-      )}
-
-      {/* Table View */}
-      {viewMode === 'table' && filteredJobs.length > 0 && (
-        <GlassCard className="p-0 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200/60 dark:border-slate-800 text-slate-400 text-[11px] uppercase tracking-wider font-semibold bg-slate-50/50 dark:bg-slate-800/30">
-                  <th className="py-3.5 px-4 cursor-pointer" onClick={() => toggleSort('id')}>
-                    <div className="flex items-center gap-1"><span>Job ID</span><ArrowUpDown className="w-3 h-3" /></div>
-                  </th>
-                  <th className="py-3.5 px-4">Customer</th>
-                  <th className="py-3.5 px-4">Mode</th>
-                  <th className="py-3.5 px-4">Priority</th>
-                  <th className="py-3.5 px-4">Assigned To</th>
-                  <th className="py-3.5 px-4 cursor-pointer" onClick={() => toggleSort('deadline')}>
-                    <div className="flex items-center gap-1"><span>Deadline</span><ArrowUpDown className="w-3 h-3" /></div>
-                  </th>
-                  <th className="py-3.5 px-4">Status</th>
-                  {!isManager && (
-                    <th className="py-3.5 px-4 cursor-pointer text-right" onClick={() => toggleSort('revenue')}>
-                      <div className="flex items-center justify-end gap-1"><span>Revenue</span><ArrowUpDown className="w-3 h-3" /></div>
-                    </th>
-                  )}
-                  <th className="py-3.5 px-4 text-center">Actions</th>
+      {/* Content View */}
+      {viewMode === 'table' ? (
+        <GlassCard className="p-4 overflow-x-auto">
+          <table className="glass-table">
+            <thead>
+              <tr>
+                <th>Job ID</th>
+                <th>Customer</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Assigned To</th>
+                <th>Deadline</th>
+                <th>Revenue</th>
+                <th className="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredJobs.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="text-center py-8 text-glass-dim">No jobs match your filter.</td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
-                <AnimatePresence>
-                  {paginatedJobs.map((job) => (
-                    <motion.tr
-                      key={job.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
-                    >
-                      <td className="py-3.5 px-4 font-bold text-orange-600 dark:text-orange-400">{job.id}</td>
-                      <td className="py-3.5 px-4">
-                        <p className="font-semibold text-slate-800 dark:text-slate-200">{job.customer}</p>
-                        <p className="text-[10px] text-slate-400 truncate max-w-[180px]">{job.description}</p>
-                      </td>
-                      <td className="py-3.5 px-4"><ModeBadge mode={job.mode} /></td>
-                      <td className="py-3.5 px-4"><PriorityBadge priority={job.priority} /></td>
-                      <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300 font-medium">{job.assignedTo}</td>
-                      <td className="py-3.5 px-4 text-slate-500 font-medium">{formatDate(job.deadline)}</td>
-                      <td className="py-3.5 px-4"><StatusBadge status={job.status} /></td>
-                      {!isManager && (
-                        <td className="py-3.5 px-4 text-right font-bold text-slate-900 dark:text-white">{formatCurrency(job.revenue)}</td>
-                      )}
-                      <td className="py-3.5 px-4 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <button className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-orange-600 transition-colors">
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          <button onClick={() => { setEditingJob(job); setShowJobModal(true) }} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-indigo-600 transition-colors">
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
-                          <button onClick={() => setDeleteJobId(job.id)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-red-600 transition-colors">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </AnimatePresence>
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/10 text-xs text-slate-500">
-            <span>
-              Showing {Math.min((currentPage - 1) * pageSize + 1, filteredJobs.length)} to{' '}
-              {Math.min(currentPage * pageSize, filteredJobs.length)} of {filteredJobs.length} jobs
-            </span>
-            <div className="flex items-center gap-2">
-              <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">Page {currentPage} of {totalPages || 1}</span>
-              <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+              ) : (
+                filteredJobs.map(job => (
+                  <tr key={job.id}>
+                    <td className="font-mono text-xs text-accent font-semibold">{job.id}</td>
+                    <td className="text-highlight font-medium">{job.customer}</td>
+                    <td className="max-w-xs truncate text-xs">{job.description}</td>
+                    <td><StatusBadge status={job.status} dot /></td>
+                    <td><StatusBadge status={job.priority} /></td>
+                    <td className="text-xs">{job.assignedTo || 'Unassigned'}</td>
+                    <td className="text-xs">{formatDate(job.deadline)}</td>
+                    <td className="font-semibold text-highlight">{formatCurrency(job.revenue)}</td>
+                    <td className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => setViewingJob(job)} className="p-1.5 hover:bg-white/10 rounded-lg text-glass-dim hover:text-highlight">
+                          <Eye size={15} />
+                        </button>
+                        <button onClick={() => { setEditingJob(job); setOpenModal(true); }} className="p-1.5 hover:bg-white/10 rounded-lg text-glass-dim hover:text-accent">
+                          <Edit2 size={15} />
+                        </button>
+                        <button onClick={() => setDeletingId(job.id)} className="p-1.5 hover:bg-white/10 rounded-lg text-glass-dim hover:text-red-400">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </GlassCard>
-      )}
-
-      {/* Kanban View */}
-      {viewMode === 'kanban' && filteredJobs.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 overflow-x-auto">
-          {kanbanStatuses.map((status) => {
-            const statusJobs = filteredJobs.filter((j) => j.status === status)
+      ) : (
+        /* Kanban View */
+        <div className="kanban-board">
+          {statuses.map(st => {
+            const colJobs = filteredJobs.filter(j => j.status === st)
             return (
-              <div key={status} className="kanban-col flex flex-col min-w-[240px]">
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200/60 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xs font-bold text-slate-900 dark:text-white">{status}</h3>
-                    <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-slate-200/60 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                      {statusJobs.length}
-                    </span>
-                  </div>
+              <div key={st} className="kanban-column flex flex-col gap-3">
+                <div className="flex items-center justify-between p-3 rounded-xl glass-card bg-white/5">
+                  <span className="text-xs font-bold text-highlight">{st}</span>
+                  <span className="text-xs font-mono text-accent bg-[#00B4D8]/10 px-2 py-0.5 rounded-full">{colJobs.length}</span>
                 </div>
-                <div className="space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-320px)]">
-                  {statusJobs.map((job) => (
-                    <motion.div key={job.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                      <GlassCard className="p-3.5 cursor-pointer hover:border-orange-500/40" onClick={() => { setEditingJob(job); setShowJobModal(true) }}>
-                        <div className="flex items-center justify-between gap-2 mb-2">
-                          <span className="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400">{job.id}</span>
-                          <PriorityBadge priority={job.priority} />
-                        </div>
-                        <p className="text-xs font-bold text-slate-800 dark:text-slate-100 line-clamp-2">{job.customer}</p>
-                        <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{job.description}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <ModeBadge mode={job.mode} />
-                        </div>
-                        <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
-                          <span>{job.assignedTo}</span>
-                          <span className="font-medium">{formatDate(job.deadline)}</span>
-                        </div>
-                      </GlassCard>
-                    </motion.div>
+                <div className="flex flex-col gap-3 flex-1">
+                  {colJobs.map(job => (
+                    <GlassCard key={job.id} className="p-4 hover:border-accent/40 flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs text-accent font-semibold">{job.id}</span>
+                        <StatusBadge status={job.priority} />
+                      </div>
+                      <h4 className="text-xs font-bold text-highlight">{job.customer}</h4>
+                      <p className="text-[11px] text-glass-dim line-clamp-2">{job.description}</p>
+                      <div className="flex items-center justify-between pt-2 border-t border-glass/10 text-[11px]">
+                        <span className="text-emerald-400 font-semibold">{formatCurrency(job.revenue)}</span>
+                        <span className="text-glass-dim">{formatDate(job.deadline)}</span>
+                      </div>
+                    </GlassCard>
                   ))}
-                  {statusJobs.length === 0 && (
-                    <div className="text-center py-8 text-[10px] text-slate-400">No jobs</div>
-                  )}
                 </div>
               </div>
             )
@@ -451,26 +215,63 @@ export default function Jobs() {
         </div>
       )}
 
-      {/* Modals */}
-      <AnimatePresence>
-        {showJobModal && (
-          <JobModal
-            job={editingJob}
-            onClose={() => { setShowJobModal(false); setEditingJob(undefined) }}
-            onSave={handleSaveJob}
-          />
-        )}
-      </AnimatePresence>
+      {/* Job Create/Edit Modal */}
+      <Modal open={openModal} onClose={() => { setOpenModal(false); setEditingJob(null); }} title={editingJob ? `Edit Job ${editingJob.id}` : 'Create New Job'}>
+        <JobForm
+          initial={editingJob || undefined}
+          onSubmit={handleFormSubmit}
+          onCancel={() => { setOpenModal(false); setEditingJob(null); }}
+          customers={customerNames}
+          employees={employeeNames}
+        />
+      </Modal>
 
-      <AnimatePresence>
-        {deleteJobId && (
-          <DeleteConfirmModal
-            jobId={deleteJobId}
-            onClose={() => setDeleteJobId(null)}
-            onConfirm={handleDeleteJob}
-          />
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={!!deletingId}
+        onClose={() => setDeletingId(null)}
+        onConfirm={handleDelete}
+        title="Delete Job"
+        message={`Are you sure you want to delete ${deletingId}? This action cannot be undone.`}
+      />
+
+      {/* View Drawer */}
+      <Modal open={!!viewingJob} onClose={() => setViewingJob(null)} title={`Job Details: ${viewingJob?.id}`}>
+        {viewingJob && (
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-glass/10">
+              <div>
+                <span className="text-glass-dim block">Customer</span>
+                <span className="text-highlight font-semibold text-sm">{viewingJob.customer}</span>
+              </div>
+              <div>
+                <span className="text-glass-dim block">Revenue</span>
+                <span className="text-emerald-400 font-semibold text-sm">{formatCurrency(viewingJob.revenue)}</span>
+              </div>
+              <div>
+                <span className="text-glass-dim block">Status</span>
+                <StatusBadge status={viewingJob.status} dot />
+              </div>
+              <div>
+                <span className="text-glass-dim block">Priority</span>
+                <StatusBadge status={viewingJob.priority} />
+              </div>
+              <div>
+                <span className="text-glass-dim block">Assigned Operator</span>
+                <span className="text-glass font-medium">{viewingJob.assignedTo || 'Unassigned'}</span>
+              </div>
+              <div>
+                <span className="text-glass-dim block">Deadline</span>
+                <span className="text-glass font-medium">{formatDate(viewingJob.deadline)}</span>
+              </div>
+            </div>
+            <div>
+              <span className="text-glass-dim block mb-1">Description</span>
+              <p className="text-glass bg-black/20 p-3 rounded-xl border border-glass/10">{viewingJob.description}</p>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+      </Modal>
     </div>
   )
 }

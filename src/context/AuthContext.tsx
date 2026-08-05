@@ -1,67 +1,60 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { seedUsers, type UserAccount } from '../lib/data'
 
-export type UserRole = 'owner' | 'manager' | 'employee' | 'client'
-
-interface AuthState {
-  isAuthenticated: boolean
-  userRole: UserRole | null
-  userName: string
-  userEmail: string
-}
-
-interface AuthContextType extends AuthState {
-  login: (role: UserRole, email: string, name: string) => void
+interface AuthContextType {
+  user: UserAccount | null
+  login: (username: string, password: string) => boolean
   logout: () => void
+  isAuthenticated: boolean
 }
 
-const defaultAuthState: AuthState = {
-  isAuthenticated: false,
-  userRole: null,
-  userName: '',
-  userEmail: '',
-}
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const AuthContext = createContext<AuthContextType>({
-  ...defaultAuthState,
-  login: () => {},
-  logout: () => {},
-})
+const AUTH_KEY = 'mg_auth_user'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [auth, setAuth] = useState<AuthState>(() => {
-    const saved = localStorage.getItem('mistry-auth')
-    if (!saved) return defaultAuthState
-
+  const [user, setUser] = useState<UserAccount | null>(() => {
     try {
-      return { ...defaultAuthState, ...JSON.parse(saved) }
+      const stored = localStorage.getItem(AUTH_KEY)
+      return stored ? JSON.parse(stored) : null
     } catch {
-      return defaultAuthState
+      return null
     }
   })
 
+  // Ensure seed users exist in localStorage
   useEffect(() => {
-    localStorage.setItem('mistry-auth', JSON.stringify(auth))
-  }, [auth])
+    const users = JSON.parse(localStorage.getItem('mg_users') || 'null')
+    if (!users) {
+      localStorage.setItem('mg_users', JSON.stringify(seedUsers))
+    }
+  }, [])
 
-  const login = (role: UserRole, email: string, name: string) => {
-    setAuth({
-      isAuthenticated: true,
-      userRole: role,
-      userName: name,
-      userEmail: email,
-    })
-  }
+  const login = useCallback((username: string, password: string): boolean => {
+    const users: UserAccount[] = JSON.parse(localStorage.getItem('mg_users') || JSON.stringify(seedUsers))
+    const found = users.find(u => u.username === username && u.password === password)
+    if (found) {
+      setUser(found)
+      localStorage.setItem(AUTH_KEY, JSON.stringify(found))
+      return true
+    }
+    return false
+  }, [])
 
-  const logout = () => {
-    setAuth(defaultAuthState)
-    localStorage.removeItem('mistry-auth')
-  }
+  const logout = useCallback(() => {
+    setUser(null)
+    localStorage.removeItem(AUTH_KEY)
+  }, [])
 
   return (
-    <AuthContext.Provider value={{ ...auth, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
-export const useAuth = () => useContext(AuthContext)
+export function useAuth() {
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
+  return ctx
+}

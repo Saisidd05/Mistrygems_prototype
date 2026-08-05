@@ -1,118 +1,77 @@
-import { useState } from 'react'
-import { GlassCard } from '@/components/ui/GlassCard'
-import { notifications as initialNotifications, Notification } from '@/lib/data'
-import { Bell, CheckCircle2, AlertTriangle, Info, AlertCircle, Check, MessageCircle, Smartphone, type LucideIcon } from 'lucide-react'
+import React from 'react'
+import { Bell, CheckCheck, Trash2, ShieldAlert, Info, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { useAppData } from '../context/AppDataContext'
+import { GlassCard } from '../components/ui/GlassCard'
+import { GlowButton } from '../components/ui/GlowButton'
+import { useToast } from '../components/ui/Toast'
 
-const channelConfig: Record<string, { icon: LucideIcon; color: string; label: string }> = {
-  whatsapp: { icon: MessageCircle, color: 'text-emerald-500', label: 'WhatsApp' },
-  sms: { icon: Smartphone, color: 'text-blue-500', label: 'SMS' },
-  'in-app': { icon: Bell, color: 'text-slate-400', label: 'In-App' },
-}
+export function Notifications() {
+  const { notifications, markNotificationRead, markAllRead, deleteNotification } = useAppData()
+  const { showToast } = useToast()
 
-export default function Notifications() {
-  const [items, setItems] = useState<Notification[]>(initialNotifications)
-
-  const markAllRead = () => {
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })))
+  const handleMarkAll = () => {
+    markAllRead()
+    showToast('All notifications marked as read.', 'success')
   }
 
-  const markRead = (id: string) => {
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
-  }
-
-  const groups: Array<Notification['group']> = ['Today', 'Yesterday', 'Older']
-
-  const getIcon = (type: Notification['type']) => {
-    switch (type) {
-      case 'success':
-        return <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-      case 'warning':
-        return <AlertTriangle className="w-5 h-5 text-amber-500" />
-      case 'error':
-        return <AlertCircle className="w-5 h-5 text-red-500" />
-      default:
-        return <Info className="w-5 h-5 text-blue-500" />
-    }
+  const handleDelete = (id: string) => {
+    deleteNotification(id)
+    showToast('Notification cleared.', 'info')
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Notification Center
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            System alerts, job status changes, and team updates
-          </p>
+          <h1 className="page-title">Notifications Feed</h1>
+          <p className="page-subtitle">Real-time alerts, job stage transitions, and multi-channel system updates.</p>
         </div>
-        <button onClick={markAllRead} className="btn-secondary text-xs">
-          <Check className="w-4 h-4" />
-          <span>Mark All as Read</span>
-        </button>
+        <GlowButton variant="outline" size="sm" icon={<CheckCheck size={16} />} onClick={handleMarkAll}>
+          Mark All Read
+        </GlowButton>
       </div>
 
-      {/* Grouped Notifications */}
-      <div className="space-y-6">
-        {groups.map((group) => {
-          const groupItems = items.filter((n) => n.group === group)
-          if (groupItems.length === 0) return null
-
-          return (
-            <div key={group} className="space-y-3">
-              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">
-                {group}
-              </h2>
-              <div className="space-y-2.5">
-                {groupItems.map((n) => {
-                  const channel = channelConfig[n.channel] || channelConfig['in-app']
-                  const ChannelIcon = channel.icon
-
-                  return (
-                    <GlassCard
-                      key={n.id}
-                      onClick={() => markRead(n.id)}
-                      className={`p-4 cursor-pointer transition-all ${
-                        !n.read
-                          ? 'border-l-4 border-l-orange-500 bg-orange-50/20 dark:bg-orange-950/10'
-                          : 'opacity-80'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3.5">
-                        <div className="mt-0.5 flex-shrink-0">{getIcon(n.type)}</div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <h3
-                                className={`text-sm font-bold ${
-                                  !n.read
-                                    ? 'text-slate-900 dark:text-white'
-                                    : 'text-slate-700 dark:text-slate-300'
-                                }`}
-                              >
-                                {n.title}
-                              </h3>
-                              {/* Channel Badge */}
-                              <span className={`inline-flex items-center gap-1 text-[10px] font-semibold ${channel.color}`}>
-                                <ChannelIcon className="w-3 h-3" />
-                                {channel.label}
-                              </span>
-                            </div>
-                            <span className="text-[11px] text-slate-400 flex-shrink-0">{n.time}</span>
-                          </div>
-                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                            {n.message}
-                          </p>
-                        </div>
-                      </div>
-                    </GlassCard>
-                  )
-                })}
+      <div className="space-y-3">
+        {notifications.length === 0 ? (
+          <GlassCard className="p-8 text-center text-glass-dim">
+            No notifications available.
+          </GlassCard>
+        ) : (
+          notifications.map(n => (
+            <GlassCard key={n.id} className={`p-4 flex items-start gap-4 ${!n.read ? 'border-accent/40 bg-white/5' : ''}`}>
+              <div className="mt-1">
+                {n.type === 'success' && <CheckCircle2 size={18} className="text-emerald-400" />}
+                {n.type === 'warning' && <AlertTriangle size={18} className="text-amber-400" />}
+                {n.type === 'error' && <ShieldAlert size={18} className="text-red-400" />}
+                {n.type === 'info' && <Info size={18} className="text-[#00B4D8]" />}
               </div>
-            </div>
-          )
-        })}
+
+              <div className="flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="text-xs font-bold text-highlight">{n.title}</h4>
+                  <span className="text-[10px] text-glass-dim">{n.time}</span>
+                </div>
+                <p className="text-xs text-glass mt-1">{n.message}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-[9px] uppercase px-2 py-0.5 rounded bg-white/5 text-glass-dim font-mono border border-glass/10">
+                    {n.channel}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1">
+                {!n.read && (
+                  <button onClick={() => markNotificationRead(n.id)} className="p-1 hover:bg-white/10 rounded text-glass-dim hover:text-accent" title="Mark read">
+                    <CheckCheck size={14} />
+                  </button>
+                )}
+                <button onClick={() => handleDelete(n.id)} className="p-1 hover:bg-white/10 rounded text-glass-dim hover:text-red-400" title="Delete">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </GlassCard>
+          ))
+        )}
       </div>
     </div>
   )

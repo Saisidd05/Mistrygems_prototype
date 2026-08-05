@@ -1,155 +1,136 @@
-# 🛠️ Mistry Gems — MSME Manufacturing Workshop Platform
+# Mistry Gems
 
-> A modern, high-performance workflow management platform for MSME job-work manufacturing workshops. Streamlines job tracking, raw material inventory, quotation building, automated invoicing, task drag-and-drop Kanban, and role-based access control.
+> A futuristic workflow platform for modern manufacturing teams.
 
----
+![React](https://img.shields.io/badge/React-18-00B4D8?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-0077B6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-5-90E0EF?logo=vite&logoColor=03045E)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-CAF0F8?logo=tailwindcss&logoColor=03045E)
 
-## 📐 Platform Architecture & Flow
+Mistry Gems brings jobs, customers, inventory, quotations, invoices, tasks, and team operations into one polished workspace. It is designed for MSME manufacturing and job-work workflows, with a responsive blue-glass interface built for fast everyday use.
 
-```mermaid
-graph TD
-    A[Client User] -->|Request New Job| B(Client Portal)
-    B -->|Submit Job| C[Job Pipeline Engine]
+## Highlights
 
-    D[Workshop Owner] -->|Full System Access| E[Owner Dashboard]
-    F[Production Manager] -->|Jobs & Operations| G[Manager View]
-    H[Machine Operator / Staff] -->|Assigned Tasks| I[Employee Portal]
+- **Unified operations hub** — track jobs, customers, employees, inventory, quotations, invoices, notifications, and reports.
+- **Role-aware experience** — protected routes and navigation tailored to the signed-in user.
+- **Workflow-first UI** — Kanban task management, status badges, data tables, modals, filters, and actionable dashboards.
+- **Liquid Glass design system** — Deep Twilight, teal-blue, and frosted-cyan palette with glass surfaces, plasma background, and motion details.
+- **Responsive by default** — works across desktop, tablet, and mobile layouts.
+- **Frontend performance** — Vite-powered build, TypeScript safety, and reusable React components.
 
-    E --> C
-    G --> C
-    I --> J[Kanban Drag-and-Drop Board]
+## Product Surface
 
-    C --> K[(Central State & Data Store)]
-    K --> L[Inventory Tracking: Raw & Finished]
-    K --> M[Quotation Builder & GST Engine]
-    K --> N[Automated Invoices & PDF Export]
-    K --> O[Analytics & Reports Engine]
-```
+| Area | What it supports |
+| --- | --- |
+| Dashboard | Live operational metrics, revenue, performance, and workflow visibility |
+| Jobs & Tasks | Job tracking, assignments, priorities, progress, and Kanban workflows |
+| Customers & Employees | Relationship records, team information, and operational context |
+| Quotations & Invoices | Commercial workflow from estimate through billing |
+| Inventory | Material and stock visibility for workshop operations |
+| Reports & Notifications | At-a-glance reporting and timely operational alerts |
+| Settings | Workspace preferences and user-facing configuration |
 
----
+## Tech Stack
 
-## 🔒 Role-Based Access Control (RBAC) Matrix
+- **Framework:** React 18 + TypeScript
+- **Build tooling:** Vite
+- **Styling:** Tailwind CSS + centralized CSS design tokens
+- **Motion:** Framer Motion
+- **Charts:** Recharts
+- **Icons:** Lucide React
+- **Interactions:** dnd-kit and Radix UI primitives
 
-| Feature / Module | Owner 👑 | Manager 📊 | Employee 🛠️ | Client 👤 |
-| :--- | :---: | :---: | :---: | :---: |
-| **Full Dashboard & Financial KPIs** | ✅ | ❌ (No Revenue) | ❌ | ❌ |
-| **Client Portal View** | ❌ | ❌ | ❌ | ✅ |
-| **Job Management (Table & Kanban)** | ✅ | ✅ | ❌ | 👁️ (Own Jobs Only) |
-| **Task Board (dnd-kit Drag-and-Drop)**| ✅ | ✅ | ✅ (Assigned Only) | ❌ |
-| **Inventory Management** | ✅ | ✅ | ❌ | ❌ |
-| **Quotation Builder** | ✅ | ✅ | ❌ | ❌ |
-| **Invoice Management** | ✅ | ❌ | ❌ | ❌ |
-| **Analytics & Reports** | ✅ | ❌ | ❌ | ❌ |
-| **System Settings** | ✅ | ❌ | ❌ | ❌ |
+## Design System
 
----
+The interface uses a centralized futuristic color system:
 
-## 🔄 Job Lifecycle Pipeline
+| Token | Value | Purpose |
+| --- | --- | --- |
+| Deep Twilight | `#03045E` | Application background |
+| Bright Teal Blue | `#0077B6` | Primary actions and active states |
+| Turquoise Surf | `#00B4D8` | Hover highlights and glow details |
+| Frosted Blue | `#90E0EF` | Borders and secondary text |
+| Light Cyan | `#CAF0F8` | Primary foreground text |
 
-```
-[ New ] ➔ [ Quoted ] ➔ [ Approved ] ➔ [ Procuring ] ➔ [ In Progress ] ➔ [ Quality Check ] ➔ [ Completed ] ➔ [ Invoiced ]
-```
+## Getting Started
 
-* **Workshop Procures**: Workshop orders raw materials directly for the job.
-* **Client Supplies**: Client provides raw stock for custom machining/job-work.
+### Prerequisites
 
----
+- Node.js 18+
+- npm 9+
 
-## ✨ Feature Highlights
+### Install
 
-* **🎨 VisionOS-Inspired Dark/Light UI**: Built with glassmorphism, dynamic gradients, glowing indicators, and an **Amber (`#F97316`)** primary accent theme.
-* **📋 Dual-View Job Management**: Toggle between a high-density data table and a interactive 8-stage Kanban board.
-* **🎯 Interactive Task Board**: Drag-and-drop tasks seamlessly between status columns (*Pending*, *In Progress*, *Review/QC*, *Completed*) using `@dnd-kit`.
-* **📦 Raw Materials & Finished Goods Inventory**: Real-time stock tracking with status badges (`OK`, `Low Stock`, `Out of Stock`) and Stock In/Out modals.
-* **🧾 Quotation & Invoicing Engine**: Live GST calculation (5% Job Work default, 12%, 18%) and automated invoice generation with PDF export functionality.
-* **💬 Multi-Channel Notifications**: Real-time alert feed tagged by delivery channel (WhatsApp, SMS, In-App).
-
----
-
-## 📁 Repository Directory Structure
-
-```text
-Mistrygems_prototype-main/
-├── src/
-│   ├── components/
-│   │   ├── layout/
-│   │   │   ├── Layout.tsx        # Responsive layout wrapper with Client Portal switch
-│   │   │   ├── Sidebar.tsx       # Role-filtered navigation sidebar
-│   │   │   └── Topbar.tsx        # Company switcher, notification bell, role profile
-│   │   └── ui/
-│   │       ├── Charts.tsx        # Recharts wrappers for revenue & performance
-│   │       ├── GlassCard.tsx     # Glassmorphism container component
-│   │       └── StatusBadge.tsx   # Job status, priority, and mode badges
-│   ├── context/
-│   │   ├── AuthContext.tsx       # Authentication & role state provider
-│   │   ├── SidebarContext.tsx    # Sidebar collapse state
-│   │   └── ThemeContext.tsx      # Dark/Light theme provider
-│   ├── lib/
-│   │   ├── data.ts               # Centralized MSME manufacturing mock data
-│   │   └── utils.ts              # Currency, date, and class merging utilities
-│   ├── pages/
-│   │   ├── Dashboard.tsx         # Role-aware dashboard & Client Portal
-│   │   ├── Employees.tsx         # Staff directory & performance tracking
-│   │   ├── Inventory.tsx         # Raw materials & finished goods stock management
-│   │   ├── Invoices.tsx          # Billing & automated invoice generator
-│   │   ├── Jobs.tsx              # Job-work table & Kanban management
-│   │   ├── Login.tsx            # Role selection login page
-│   │   ├── Notifications.tsx     # Notification center with channel badges
-│   │   ├── Quotations.tsx        # Live quotation calculation tool
-│   │   ├── Reports.tsx          # Analytical department & velocity reports
-│   │   ├── Settings.tsx         # Company profile & RBAC configuration
-│   │   └── Tasks.tsx             # dnd-kit drag-and-drop task board
-│   ├── App.tsx                   # Lazy-loaded router & auth guard
-│   ├── index.css                 # Tailwind design system & custom scrollbars
-│   └── main.tsx                  # React DOM root entry point
-├── public/                       # Static web assets
-├── package.json                  # Dependencies & script configurations
-├── tailwind.config.js            # Tailwind color extensions & animations
-├── vite.config.ts                # Vite build bundler configuration
-└── README.md                     # Project documentation
-```
-
----
-
-## 🚀 Quickstart & Setup Guide
-
-### 1. Prerequisites
-Ensure you have **Node.js** (v18 or higher) and **npm** installed.
-
-### 2. Installation
-Clone the repository and install project dependencies:
 ```bash
 git clone https://github.com/Saisidd05/Mistrygems_prototype.git
 cd Mistrygems_prototype
 npm install
 ```
 
-### 3. Run Local Development Server
-Launch the Vite development server:
+### Run locally
+
 ```bash
 npm run dev
 ```
-Open your browser at `http://localhost:5173/Mistrygems_prototype/`
 
-### 4. Build for Production
-Compile TypeScript and generate optimized production bundle:
+Open the local URL printed by Vite (normally `http://localhost:5173`).
+
+### Production build
+
 ```bash
 npm run build
 ```
 
+### Quality checks
+
+```bash
+npm run lint
+```
+
+## Project Structure
+
+```text
+src/
+├── components/     # Shared UI, layout, forms, modals, and feedback components
+├── context/        # Authentication, application data, theme, and sidebar state
+├── lib/            # Data, utilities, and centralized design tokens
+├── pages/          # Feature pages and route-level screens
+├── App.tsx         # Route and provider composition
+└── index.css       # Global theme, glass system, motion, and responsive styles
+```
+
+## Available Scripts
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the Vite development server |
+| `npm run build` | Type-check and create a production build |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run ESLint across TypeScript source files |
+
+## Deploy on Vercel
+
+This repository includes [vercel.json](./vercel.json), which rewrites client-side routes such as `/dashboard` to the app entry point.
+
+1. Push the repository to GitHub.
+2. In Vercel, select **Add New → Project** and import the repository.
+3. Vercel automatically detects Vite. Keep the framework preset as **Vite** and deploy.
+
+For a manual setup, use:
+
+| Setting | Value |
+| --- | --- |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Node Version | `18` or newer |
+
+## Contributing
+
+1. Create a focused branch.
+2. Keep feature behavior and route contracts intact.
+3. Run `npm run build` before opening a pull request.
+4. Reuse the design tokens and shared UI components for visual consistency.
+
 ---
 
-## 🛠️ Technology Stack
-
-* **Frontend Framework**: [React 18](https://reactjs.org/) + [TypeScript](https://www.typescriptlang.org/)
-* **Build Tool**: [Vite](https://vitejs.dev/)
-* **Styling & Design**: [Tailwind CSS](https://tailwindcss.com/) + Custom Glassmorphism System
-* **Animations**: [Framer Motion](https://www.framer.com/motion/)
-* **Drag and Drop**: [@dnd-kit/core](https://dndkit.com/) + [@dnd-kit/sortable](https://dndkit.com/)
-* **Charts**: [Recharts](https://recharts.org/)
-* **Icons**: [Lucide React](https://lucide.dev/)
-
----
-
-## 📄 License
-Distributed under the MIT License. See `LICENSE` for more details.
+Built for teams that want manufacturing operations to feel as fluid as their craft.
