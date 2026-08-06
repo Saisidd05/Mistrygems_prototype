@@ -69,9 +69,15 @@ export default async function handler(req, res) {
     const database = await getDatabase()
     const users = database.collection('users')
 
-    // Ensure uniqueness indexes are created
-    await users.createIndex({ email: 1 }, { unique: true })
-    await users.createIndex({ username: 1 }, { unique: true })
+    // Create indexes when possible, but do not prevent existing users from
+    // logging in if legacy records contain duplicates from before the index.
+    try {
+      await users.createIndex({ email: 1 }, { unique: true })
+      await users.createIndex({ username: 1 }, { unique: true })
+    } catch (indexError) {
+      if (indexError?.code !== 11000) throw indexError
+      console.warn('User uniqueness indexes could not be created because legacy duplicates exist.')
+    }
 
     // Action 1: Manual Sign Up
     if (action === 'signup') {
@@ -242,7 +248,7 @@ export default async function handler(req, res) {
 
     return res.status(400).json({ error: 'Unsupported authentication action.' })
   } catch (error) {
-    if (error?.code === 11000) {
+    if (error?.code === 11000 && (action === 'signup' || action === 'complete-profile')) {
       return res.status(409).json({ error: 'An account already exists with that email or username.' })
     }
     console.error('Authentication request failed:', error)

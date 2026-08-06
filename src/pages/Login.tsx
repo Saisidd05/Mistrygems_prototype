@@ -135,7 +135,7 @@ export function Login() {
             >
               Username or Email
             </label>
-            <User size={16} className="absolute left-3.5 top-4.5 text-glass-dim peer-focus:text-accent transition-colors" />
+            <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-glass-dim peer-focus:text-accent transition-colors" />
           </div>
 
           {/* Password Field with Floating Label style */}
@@ -158,7 +158,7 @@ export function Login() {
             >
               Password
             </label>
-            <Lock size={16} className="absolute left-3.5 top-4.5 text-glass-dim peer-focus:text-accent transition-colors" />
+            <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-glass-dim peer-focus:text-accent transition-colors" />
           </div>
 
           <div className="flex justify-end">
