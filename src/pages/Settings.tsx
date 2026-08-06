@@ -1,21 +1,29 @@
-import React, { useState } from 'react'
-import { Settings as SettingsIcon, Save, Moon, Sun, Shield, Building } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Save, Sun, Shield, Building } from 'lucide-react'
 import { GlassCard } from '../components/ui/GlassCard'
 import { GlowButton } from '../components/ui/GlowButton'
 import { useTheme } from '../context/ThemeContext'
 import { useToast } from '../components/ui/Toast'
+import { useAuth } from '../context/AuthContext'
 
 export function Settings() {
   const { theme, toggleTheme } = useTheme()
   const { showToast } = useToast()
+  const { user, updateProfile } = useAuth()
 
-  const [companyName, setCompanyName] = useState('Mistry Gems Workshop')
-  const [gstin, setGstin] = useState('24AAAAA0000A1Z5')
-  const [address, setAddress] = useState('Plot 42, GIDC Industrial Estate, Rajkot, Gujarat')
+  const [companyName, setCompanyName] = useState('')
+  const [gstin, setGstin] = useState('')
+  const [address, setAddress] = useState('')
+  const [saving, setSaving] = useState(false)
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => { setCompanyName(user?.workshopName || ''); setAddress(user?.workshopAddress || ''); setGstin(user?.gstin || '') }, [user])
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    showToast('Settings saved to local configuration!', 'success')
+    setSaving(true)
+    const result = await updateProfile({ workshopName: companyName, workshopAddress: address, gstin })
+    setSaving(false)
+    showToast(result.success ? 'Workshop details saved.' : result.error || 'Unable to save workshop details.', result.success ? 'success' : 'error')
   }
 
   return (
@@ -49,7 +57,7 @@ export function Settings() {
               <textarea className="glass-input resize-none" rows={3} value={address} onChange={e => setAddress(e.target.value)} required />
             </div>
 
-            <GlowButton type="submit" size="sm" icon={<Save size={14} />}>
+            <GlowButton type="submit" size="sm" loading={saving} icon={<Save size={14} />}>
               Save Workshop Details
             </GlowButton>
           </form>

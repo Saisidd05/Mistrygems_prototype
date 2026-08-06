@@ -7,6 +7,7 @@ export interface User {
   email: string
   workshopName: string
   workshopAddress: string
+  gstin?: string
   avatar: string
   role: string
   authProvider: 'local' | 'google'
@@ -59,6 +60,7 @@ interface AuthContextType {
   signup: (userData: SignupData) => Promise<{ success: boolean; error?: string }>
   loginWithGoogle: (credential: string) => Promise<{ success: boolean; isNewUser?: boolean; googleDetails?: GoogleDetails; error?: string }>
   completeGoogleProfile: (profileData: GoogleProfileData) => Promise<{ success: boolean; error?: string }>
+  updateProfile: (profileData: Pick<User, 'workshopName' | 'workshopAddress' | 'gstin'>) => Promise<{ success: boolean; error?: string }>
   logout: () => void
   isAuthenticated: boolean
 }
@@ -211,6 +213,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const updateProfile = useCallback(async (profileData: Pick<User, 'workshopName' | 'workshopAddress' | 'gstin'>) => {
+    try {
+      const saved = localStorage.getItem(AUTH_KEY)
+      const token = saved ? JSON.parse(saved)?.token : undefined
+      const response = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` }, body: JSON.stringify({ action: 'update-profile', ...profileData }) })
+      const result = await response.json() as AuthApiResponse
+      if (!response.ok || !result.user) return { success: false, error: result.error || 'Unable to update workshop profile.' }
+      const sessionData = { token, user: result.user, id: result.user.id }
+      localStorage.setItem(AUTH_KEY, JSON.stringify(sessionData)); setUser(result.user)
+      return { success: true }
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unable to update workshop profile.' }
+    }
+  }, [])
+
   const logout = useCallback(() => {
     setUser(null)
     localStorage.removeItem(AUTH_KEY)
@@ -223,6 +240,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signup,
       loginWithGoogle,
       completeGoogleProfile,
+      updateProfile,
       logout,
       isAuthenticated: !!user
     }}>

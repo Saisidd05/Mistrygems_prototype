@@ -43,6 +43,17 @@ function publicUser(user) {
   return safeUser
 }
 
+function authenticatedUserId(req) {
+  const header = req.headers.authorization
+  if (!header?.startsWith('Bearer ')) return null
+  try {
+    const payload = jwt.verify(header.slice(7), JWT_SECRET)
+    return typeof payload.id === 'string' ? payload.id : null
+  } catch {
+    return null
+  }
+}
+
 async function verifyGoogleCredential(credential) {
   if (!credential) return null
   const googleVerifyUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`
@@ -77,6 +88,22 @@ export default async function handler(req, res) {
     } catch (indexError) {
       if (indexError?.code !== 11000) throw indexError
       console.warn('User uniqueness indexes could not be created because legacy duplicates exist.')
+    }
+
+    if (action === 'update-profile') {
+      const userId = authenticatedUserId(req)
+      if (!userId) return res.status(401).json({ error: 'A valid authentication token is required.' })
+      const workshopName = typeof profile.workshopName === 'string' ? profile.workshopName.trim() : ''
+      const workshopAddress = typeof profile.workshopAddress === 'string' ? profile.workshopAddress.trim() : ''
+      const gstin = typeof profile.gstin === 'string' ? profile.gstin.trim() : ''
+      if (!workshopName || !workshopAddress) return res.status(400).json({ error: 'Workshop name and address are required.' })
+      const result = await users.findOneAndUpdate(
+        { id: userId },
+        { $set: { workshopName, workshopAddress, gstin, workshop: { name: workshopName, address: workshopAddress } } },
+        { returnDocument: 'after' }
+      )
+      if (!result.value) return res.status(404).json({ error: 'User profile not found.' })
+      return res.status(200).json({ user: publicUser(result.value) })
     }
 
     // Action 1: Manual Sign Up
