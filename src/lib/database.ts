@@ -14,16 +14,19 @@ const endpoint = (collection: DatabaseCollection) =>
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   // Attach the current user's id to API requests so server can scope data per-user
   let userId: string | undefined
+  let token: string | undefined
   try {
     const saved = localStorage.getItem('mistry-auth')
     if (saved) {
       const parsed = JSON.parse(saved)
-      userId = parsed?.userId || parsed?.userID || parsed?.id
+      userId = parsed?.id || parsed?.userId || parsed?.userID || parsed?.user?.id
+      token = parsed?.token
     }
   } catch {}
 
   const headers = { 'Content-Type': 'application/json', ...(init?.headers || {}) } as Record<string,string>
   if (userId) headers['x-user-id'] = String(userId)
+  if (token) headers['Authorization'] = `Bearer ${token}`
 
   const response = await fetch(url, {
     headers,

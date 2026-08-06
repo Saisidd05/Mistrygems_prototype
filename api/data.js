@@ -1,4 +1,7 @@
+import jwt from 'jsonwebtoken'
 import { getDatabase } from '../db/mongodb.js'
+
+const JWT_SECRET = process.env.JWT_SECRET || 'mistry-gems-local-secret-key-12345'
 
 const allowedCollections = new Set([
   'customers',
@@ -32,10 +35,26 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'A valid collection query parameter is required.' })
   }
 
-  // Require an authenticated user id header so all data is scoped per-user.
-  const userId = req.headers['x-user-id'] || (req.headers['x-user-id'] === 0 ? 0 : undefined)
+  // Authenticate user via JWT or fallback x-user-id header
+  let userId = undefined
+  const authHeader = req.headers['authorization']
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7)
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET)
+      userId = decoded.id
+    } catch (err) {
+      console.warn('JWT verification failed, falling back to x-user-id:', err.message)
+    }
+  }
+
+  // Fallback to x-user-id header for backward compatibility
+  if (!userId) {
+    userId = req.headers['x-user-id'] || (req.headers['x-user-id'] === 0 ? 0 : undefined)
+  }
+
   if (!userId || typeof userId !== 'string') {
-    return res.status(401).json({ error: 'Missing authentication header: x-user-id' })
+    return res.status(401).json({ error: 'Missing or invalid authentication. Provide JWT or x-user-id header.' })
   }
 
   try {

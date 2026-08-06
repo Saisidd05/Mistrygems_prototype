@@ -114,8 +114,12 @@ export function Sidebar() {
       {!collapsed && user && (
         <div className="px-4 py-3 border-b border-glass/10">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 bg-gradient-to-br from-[#0077B6] to-[#00B4D8]">
-              {user.avatar}
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 bg-gradient-to-br from-[#0077B6] to-[#00B4D8] overflow-hidden">
+              {user.avatar && (user.avatar.startsWith('http') || user.avatar.startsWith('/')) ? (
+                <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                user.avatar
+              )}
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-highlight truncate">{user.name}</p>

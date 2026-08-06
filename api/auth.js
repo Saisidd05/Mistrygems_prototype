@@ -1,16 +1,15 @@
 import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto'
 import { promisify } from 'node:util'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 import { getDatabase } from '../db/mongodb.js'
 
 const scrypt = promisify(scryptCallback)
+const JWT_SECRET = process.env.JWT_SECRET || 'mistry-gems-local-secret-key-12345'
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID
 
-async function hashPassword(password) {
-  const salt = randomBytes(16).toString('hex')
-  const hash = await scrypt(password, salt, 64)
-  return `${salt}:${Buffer.from(hash).toString('hex')}`
-}
-
-async function passwordMatches(password, storedPassword) {
+// Legacy scrypt verification helper for existing users in database
+async function verifyScryptPassword(password, storedPassword) {
   const [salt, storedHash] = storedPassword.split(':')
   if (!salt || !storedHash) return false
   const suppliedHash = Buffer.from(await scrypt(password, salt, 64))
@@ -18,9 +17,42 @@ async function passwordMatches(password, storedPassword) {
   return suppliedHash.length === expectedHash.length && timingSafeEqual(suppliedHash, expectedHash)
 }
 
+async function hashPassword(password) {
+  return bcrypt.hash(password, 10)
+}
+
+async function passwordMatches(password, storedPassword) {
+  if (storedPassword.startsWith('$2')) {
+    return bcrypt.compare(password, storedPassword)
+  }
+  return verifyScryptPassword(password, storedPassword)
+}
+
+function generateToken(user) {
+  return jwt.sign(
+    { id: user.id, email: user.email, name: user.name, role: user.role },
+    JWT_SECRET,
+    { expiresIn: '7d' }
+  )
+}
+
 function publicUser(user) {
   const { _id, passwordHash, ...safeUser } = user
+  // Ensure compatibility with frontend avatar rendering
+  safeUser.avatar = safeUser.profileImage || safeUser.avatar || (safeUser.name ? safeUser.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U')
   return safeUser
+}
+
+async function verifyGoogleCredential(credential) {
+  if (!credential) return null
+  const googleVerifyUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`
+  const verifyResponse = await fetch(googleVerifyUrl)
+  if (!verifyResponse.ok) return null
+  const payload = await verifyResponse.json()
+  if (!payload.email || !payload.email_verified || !payload.sub || !GOOGLE_CLIENT_ID || payload.aud !== GOOGLE_CLIENT_ID) {
+    return null
+  }
+  return payload
 }
 
 export default async function handler(req, res) {
@@ -29,55 +61,190 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed.' })
   }
 
-  const { action, email, password, ...profile } = req.body || {}
+  const { action, email, username, password, credential, ...profile } = req.body || {}
   const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
-
-  if (!normalizedEmail || typeof password !== 'string') {
-    return res.status(400).json({ error: 'Email and password are required.' })
-  }
+  const normalizedUsername = typeof username === 'string' ? username.trim().toLowerCase() : ''
 
   try {
     const database = await getDatabase()
     const users = database.collection('users')
-    await users.createIndex({ email: 1 }, { unique: true })
 
+    // Ensure uniqueness indexes are created
+    await users.createIndex({ email: 1 }, { unique: true })
+    await users.createIndex({ username: 1 }, { unique: true })
+
+    // Action 1: Manual Sign Up
     if (action === 'signup') {
-      if (password.length < 6 || !profile.ownerName || !profile.workshopName || !profile.phone || !profile.address) {
+      if (!profile.name || !normalizedUsername || !normalizedEmail || !password || !profile.workshopName || !profile.workshopAddress) {
         return res.status(400).json({ error: 'Please provide all required account details.' })
+      }
+      if (password.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters long.' })
+      }
+
+      // Check unique constraints
+      const emailExists = await users.findOne({ email: normalizedEmail })
+      if (emailExists) {
+        return res.status(409).json({ error: 'An account already exists for this email.' })
+      }
+      const usernameExists = await users.findOne({ username: normalizedUsername })
+      if (usernameExists) {
+        return res.status(409).json({ error: 'This username is already taken.' })
       }
 
       const user = {
         id: `USER-${Date.now()}`,
-        name: String(profile.ownerName).trim(),
+        name: String(profile.name).trim(),
+        username: normalizedUsername,
         email: normalizedEmail,
-        role: 'owner',
-        phone: String(profile.phone).trim(),
+        workshopName: String(profile.workshopName).trim(),
+        workshopAddress: String(profile.workshopAddress).trim(),
         workshop: {
           name: String(profile.workshopName).trim(),
-          address: String(profile.address).trim(),
-          city: String(profile.city || '').trim(),
-          state: String(profile.state || '').trim(),
-          zipCode: String(profile.zipCode || '').trim(),
-          gstNumber: String(profile.gstNumber || '').trim(),
+          address: String(profile.workshopAddress).trim()
         },
         passwordHash: await hashPassword(password),
-        createdAt: new Date().toISOString(),
+        authProvider: 'local',
+        role: 'Owner',
+        createdAt: new Date().toISOString()
       }
+
       await users.insertOne(user)
-      return res.status(201).json({ user: publicUser(user) })
+      const token = generateToken(user)
+      return res.status(201).json({ token, user: publicUser(user) })
     }
 
+    // Action 2: Manual Login
     if (action === 'login') {
-      const user = await users.findOne({ email: normalizedEmail })
-      if (!user || !(await passwordMatches(password, user.passwordHash))) {
-        return res.status(401).json({ error: 'Invalid email or password.' })
+      const loginQuery = normalizedEmail || normalizedUsername
+      if (!loginQuery || !password) {
+        return res.status(400).json({ error: 'Username/Email and password are required.' })
       }
-      return res.status(200).json({ user: publicUser(user) })
+
+      const user = await users.findOne({
+        $or: [
+          { email: loginQuery },
+          { username: loginQuery }
+        ]
+      })
+
+      if (!user || !(await passwordMatches(password, user.passwordHash))) {
+        return res.status(401).json({ error: 'Invalid username/email or password.' })
+      }
+
+      // Migration: transparently upgrade legacy scrypt hashes to bcrypt on login
+      if (!user.passwordHash.startsWith('$2')) {
+        const newHash = await hashPassword(password)
+        await users.updateOne({ id: user.id }, { $set: { passwordHash: newHash } })
+      }
+
+      const token = generateToken(user)
+      return res.status(200).json({ token, user: publicUser(user) })
+    }
+
+    // Action 3: Google Token Authentication
+    if (action === 'google') {
+      if (!credential) {
+        return res.status(400).json({ error: 'Google credential token is required.' })
+      }
+
+      const payload = await verifyGoogleCredential(credential)
+      if (!payload) {
+        return res.status(401).json({ error: 'Invalid Google credential token.' })
+      }
+
+      const googleEmail = payload.email.trim().toLowerCase()
+      const googleId = payload.sub
+
+      // Lookup user in DB
+      let user = await users.findOne({
+        $or: [
+          { googleId: googleId },
+          { email: googleEmail }
+        ]
+      })
+
+      if (user) {
+        // If they already signed up via email/password but now log in with Google,
+        // link their Google Account details to the existing user.
+        if (!user.googleId) {
+          await users.updateOne(
+            { id: user.id },
+            { $set: { googleId: googleId, authProvider: 'google', profileImage: payload.picture } }
+          )
+          user.googleId = googleId
+          user.authProvider = 'google'
+          user.profileImage = payload.picture
+        }
+        const token = generateToken(user)
+        return res.status(200).json({ token, user: publicUser(user) })
+      } else {
+        // Redirect to profile completion
+        return res.status(200).json({
+          isNewUser: true,
+          googleId: googleId,
+          email: googleEmail,
+          name: payload.name || '',
+          profileImage: payload.picture || ''
+        })
+      }
+    }
+
+    // Action 4: Google Signup Profile Completion
+    if (action === 'complete-profile') {
+      const { credential: profileCredential, workshopName, workshopAddress } = req.body || {}
+      const payload = await verifyGoogleCredential(profileCredential)
+      if (!payload || !normalizedUsername || !workshopName || !workshopAddress) {
+        return res.status(400).json({ error: 'Please provide all profile completion fields.' })
+      }
+
+      const googleId = payload.sub
+      const googleEmail = payload.email.trim().toLowerCase()
+      const name = payload.name || ''
+      const profileImage = payload.picture || null
+
+      const existingGoogleUser = await users.findOne({ googleId })
+      if (existingGoogleUser) {
+        return res.status(409).json({ error: 'This Google account is already linked to an existing user.' })
+      }
+
+      const emailExists = await users.findOne({ email: googleEmail })
+      if (emailExists) {
+        return res.status(409).json({ error: 'An account already exists for this email.' })
+      }
+      const usernameExists = await users.findOne({ username: normalizedUsername })
+      if (usernameExists) {
+        return res.status(409).json({ error: 'This username is already taken.' })
+      }
+
+      const user = {
+        id: `USER-${Date.now()}`,
+        name: String(name || '').trim(),
+        username: normalizedUsername,
+        email: googleEmail,
+        workshopName: String(workshopName).trim(),
+        workshopAddress: String(workshopAddress).trim(),
+        workshop: {
+          name: String(workshopName).trim(),
+          address: String(workshopAddress).trim()
+        },
+        googleId: googleId,
+        profileImage: profileImage || null,
+        authProvider: 'google',
+        role: 'Owner',
+        createdAt: new Date().toISOString()
+      }
+
+      await users.insertOne(user)
+      const token = generateToken(user)
+      return res.status(201).json({ token, user: publicUser(user) })
     }
 
     return res.status(400).json({ error: 'Unsupported authentication action.' })
   } catch (error) {
-    if (error?.code === 11000) return res.status(409).json({ error: 'An account already exists for this email.' })
+    if (error?.code === 11000) {
+      return res.status(409).json({ error: 'An account already exists with that email or username.' })
+    }
     console.error('Authentication request failed:', error)
     return res.status(503).json({ error: 'Authentication service is unavailable.' })
   }

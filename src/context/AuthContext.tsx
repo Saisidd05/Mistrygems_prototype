@@ -1,44 +1,214 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { seedUsers, type UserAccount } from '../lib/data'
+import React, { createContext, useContext, useState, useCallback } from 'react'
+
+export interface User {
+  id: string
+  name: string
+  username: string
+  email: string
+  workshopName: string
+  workshopAddress: string
+  avatar: string
+  role: string
+  authProvider: 'local' | 'google'
+  googleId?: string
+  profileImage?: string
+}
+
+export interface SignupData {
+  name: string
+  username: string
+  email: string
+  workshopName: string
+  workshopAddress: string
+  password: string
+}
+
+export interface GoogleProfileData {
+  credential: string
+  googleId: string
+  email: string
+  name: string
+  profileImage?: string
+  username: string
+  workshopName: string
+  workshopAddress: string
+}
+
+export interface GoogleDetails {
+  credential: string
+  googleId: string
+  email: string
+  name: string
+  profileImage?: string
+}
+
+interface AuthApiResponse {
+  token?: string
+  user?: User
+  isNewUser?: boolean
+  googleId?: string
+  email?: string
+  name?: string
+  profileImage?: string
+  error?: string
+}
 
 interface AuthContextType {
-  user: UserAccount | null
-  login: (username: string, password: string) => boolean
+  user: User | null
+  login: (usernameOrEmail: string, password: string) => Promise<{ success: boolean; error?: string }>
+  signup: (userData: SignupData) => Promise<{ success: boolean; error?: string }>
+  loginWithGoogle: (credential: string) => Promise<{ success: boolean; isNewUser?: boolean; googleDetails?: GoogleDetails; error?: string }>
+  completeGoogleProfile: (profileData: GoogleProfileData) => Promise<{ success: boolean; error?: string }>
   logout: () => void
   isAuthenticated: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const AUTH_KEY = 'mg_auth_user'
+const AUTH_KEY = 'mistry-auth'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserAccount | null>(() => {
+  const [user, setUser] = useState<User | null>(() => {
     try {
       const stored = localStorage.getItem(AUTH_KEY)
-      return stored ? JSON.parse(stored) : null
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        return parsed?.user || null
+      }
+      return null
     } catch {
       return null
     }
   })
 
-  // Ensure seed users exist in localStorage
-  useEffect(() => {
-    const users = JSON.parse(localStorage.getItem('mg_users') || 'null')
-    if (!users) {
-      localStorage.setItem('mg_users', JSON.stringify(seedUsers))
+  const login = useCallback(async (usernameOrEmail: string, password: string) => {
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', username: usernameOrEmail, password }),
+      })
+      const result = await response.json() as AuthApiResponse
+      if (!response.ok) {
+        return { success: false, error: result.error || 'Invalid credentials.' }
+      }
+      if (!result.token || !result.user) {
+        return { success: false, error: 'Authentication service returned an invalid response.' }
+      }
+
+      const sessionData = {
+        token: result.token,
+        user: result.user,
+        id: result.user.id
+      }
+      localStorage.setItem(AUTH_KEY, JSON.stringify(sessionData))
+      setUser(result.user)
+      return { success: true }
+    } catch (err: unknown) {
+      console.error('Login error:', err)
+      return { success: false, error: err instanceof Error ? err.message : 'Authentication service is unavailable.' }
     }
   }, [])
 
-  const login = useCallback((username: string, password: string): boolean => {
-    const users: UserAccount[] = JSON.parse(localStorage.getItem('mg_users') || JSON.stringify(seedUsers))
-    const found = users.find(u => u.username === username && u.password === password)
-    if (found) {
-      setUser(found)
-      localStorage.setItem(AUTH_KEY, JSON.stringify(found))
-      return true
+  const signup = useCallback(async (userData: SignupData) => {
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'signup', ...userData }),
+      })
+      const result = await response.json() as AuthApiResponse
+      if (!response.ok) {
+        return { success: false, error: result.error || 'Unable to create account.' }
+      }
+      if (!result.token || !result.user) {
+        return { success: false, error: 'Authentication service returned an invalid response.' }
+      }
+
+      const sessionData = {
+        token: result.token,
+        user: result.user,
+        id: result.user.id
+      }
+      localStorage.setItem(AUTH_KEY, JSON.stringify(sessionData))
+      setUser(result.user)
+      return { success: true }
+    } catch (err: unknown) {
+      console.error('Signup error:', err)
+      return { success: false, error: err instanceof Error ? err.message : 'Authentication service is unavailable.' }
     }
-    return false
+  }, [])
+
+  const loginWithGoogle = useCallback(async (credential: string) => {
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'google', credential }),
+      })
+      const result = await response.json() as AuthApiResponse
+      if (!response.ok) {
+        return { success: false, error: result.error || 'Google sign-in failed.' }
+      }
+
+      if (result.isNewUser && result.googleId && result.email && result.name !== undefined) {
+        return {
+          success: true,
+          isNewUser: true,
+          googleDetails: {
+            credential,
+            googleId: result.googleId,
+            email: result.email,
+            name: result.name,
+            profileImage: result.profileImage,
+          }
+        }
+      }
+      if (!result.token || !result.user) {
+        return { success: false, error: 'Authentication service returned an invalid response.' }
+      }
+
+      const sessionData = {
+        token: result.token,
+        user: result.user,
+        id: result.user.id
+      }
+      localStorage.setItem(AUTH_KEY, JSON.stringify(sessionData))
+      setUser(result.user)
+      return { success: true }
+    } catch (err: unknown) {
+      console.error('Google login error:', err)
+      return { success: false, error: err instanceof Error ? err.message : 'Google authentication is currently unavailable.' }
+    }
+  }, [])
+
+  const completeGoogleProfile = useCallback(async (profileData: GoogleProfileData) => {
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'complete-profile', ...profileData }),
+      })
+      const result = await response.json() as AuthApiResponse
+      if (!response.ok) {
+        return { success: false, error: result.error || 'Unable to complete profile registration.' }
+      }
+      if (!result.token || !result.user) {
+        return { success: false, error: 'Authentication service returned an invalid response.' }
+      }
+
+      const sessionData = {
+        token: result.token,
+        user: result.user,
+        id: result.user.id
+      }
+      localStorage.setItem(AUTH_KEY, JSON.stringify(sessionData))
+      setUser(result.user)
+      return { success: true }
+    } catch (err: unknown) {
+      console.error('Complete profile error:', err)
+      return { success: false, error: err instanceof Error ? err.message : 'Profile completion service failed.' }
+    }
   }, [])
 
   const logout = useCallback(() => {
@@ -47,7 +217,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{
+      user,
+      login,
+      signup,
+      loginWithGoogle,
+      completeGoogleProfile,
+      logout,
+      isAuthenticated: !!user
+    }}>
       {children}
     </AuthContext.Provider>
   )

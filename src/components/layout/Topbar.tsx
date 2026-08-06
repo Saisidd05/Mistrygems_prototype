@@ -84,8 +84,12 @@ export function Topbar() {
             className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-white/5 transition-all"
             id="topbar-profile-btn"
           >
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#0077B6] to-[#00B4D8] flex items-center justify-center text-xs font-bold text-white">
-              {user?.avatar || 'U'}
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#0077B6] to-[#00B4D8] flex items-center justify-center text-xs font-bold text-white overflow-hidden">
+              {user?.avatar && (user.avatar.startsWith('http') || user.avatar.startsWith('/')) ? (
+                <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                user?.avatar || 'U'
+              )}
             </div>
             <span className="text-xs font-medium text-glass hidden sm:block">{user?.name?.split(' ')[0]}</span>
             <ChevronDown size={12} className="text-glass-dim hidden sm:block" />

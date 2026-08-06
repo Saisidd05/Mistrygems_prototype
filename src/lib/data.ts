@@ -101,21 +101,7 @@ export interface FinishedGood {
   lastUpdated: string
 }
 
-export interface UserAccount {
-  username: string
-  password: string
-  role: 'Owner' | 'Manager' | 'Employee' | 'Client'
-  name: string
-  avatar: string
-  email: string
-}
 
-// ─── Users ────────────────────────────────────────────────────────────────────
-export const seedUsers: UserAccount[] = [
-  { username: 'admin', password: 'mistry123', role: 'Owner', name: 'Vikram Mistry', avatar: 'VM', email: 'vikram@mistrygems.com' },
-  { username: 'manager', password: 'pass123', role: 'Manager', name: 'Rahul Kapoor', avatar: 'RK', email: 'rahul@mistrygems.com' },
-  { username: 'ramesh', password: 'pass123', role: 'Employee', name: 'Ramesh Sharma', avatar: 'RS', email: 'ramesh@mistrygems.com' },
-]
 
 // ─── Jobs ─────────────────────────────────────────────────────────────────────
 export const seedJobs: Job[] = [

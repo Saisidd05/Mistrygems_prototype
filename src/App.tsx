@@ -9,6 +9,8 @@ import { CustomCursor } from './components/ui/CustomCursor'
 
 import { Landing } from './pages/Landing'
 import { Login } from './pages/Login'
+import Signup from './pages/Signup'
+import { ProfileCompletion } from './pages/ProfileCompletion'
 import { Dashboard } from './pages/Dashboard'
 import { Jobs } from './pages/Jobs'
 import { Customers } from './pages/Customers'
@@ -41,6 +43,8 @@ export default function App() {
                 {/* Public Landing & Login */}
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/complete-profile" element={<ProfileCompletion />} />
 
                 {/* Protected Dashboard Routes */}
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
