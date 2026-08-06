@@ -339,18 +339,21 @@
   display: block;
 }
 
-/* GPU-only plasma field and particles used behind every protected page. */
-.animated-bg { position: fixed; inset: 0; overflow: hidden; z-index: -1; background: var(--deep); pointer-events: none; }
-.plasma-parallax { position: absolute; inset: -4%; transition: transform .18s ease-out; will-change: transform; }
-.aurora, .blob { position: absolute; border-radius: 50%; filter: blur(74px); will-change: transform, opacity; }
-.aurora { width: 72vw; height: 52vw; left: 16%; top: -18%; background: radial-gradient(circle, rgba(0,180,216,.28), rgba(0,119,182,.14) 42%, transparent 70%); animation: plasma-drift 18s ease-in-out infinite alternate; }
-.blob-1 { width: 34rem; height: 34rem; left: -9rem; bottom: -12rem; background: rgba(0,119,182,.25); animation: plasma-drift 16s ease-in-out infinite alternate-reverse; }
-.blob-2 { width: 28rem; height: 28rem; right: -8rem; top: 18%; background: rgba(0,180,216,.22); animation: plasma-drift 20s ease-in-out infinite alternate; }
-.blob-3 { width: 20rem; height: 20rem; left: 44%; bottom: -10rem; background: rgba(144,224,239,.15); animation: plasma-drift 14s ease-in-out infinite alternate-reverse; }
-.particle { position: absolute; border-radius: 999px; background: var(--accent); box-shadow: 0 0 14px var(--secondary); animation: particle-float linear infinite; will-change: transform, opacity; }
-@keyframes plasma-drift { from { transform: translate3d(-2%, -1%, 0) scale(.96); } to { transform: translate3d(4%, 5%, 0) scale(1.08); } }
-@keyframes particle-float { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(18px,-42px,0); } }
-@media (prefers-reduced-motion: reduce) { .aurora, .blob, .particle { animation: none; } .plasma-parallax { transition: none; } }
+/* One low-opacity, fixed canvas stays behind every app surface. */
+.engineering-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--deep);
+}
+
+.engineering-background canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 
 /* ─── Custom Glowing Blue Cursor ─────────────────────────────── */
 .custom-cursor-ring {
