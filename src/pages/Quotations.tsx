@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { FileText, Download, Send, Plus, Calculator, Printer, CheckCircle } from 'lucide-react'
+import { Send, Calculator, Printer } from 'lucide-react'
 import { useAppData } from '../context/AppDataContext'
 import { GlassCard } from '../components/ui/GlassCard'
 import { GlowButton } from '../components/ui/GlowButton'
@@ -7,13 +7,13 @@ import { useToast } from '../components/ui/Toast'
 import { formatCurrency } from '../lib/utils'
 
 export function Quotations() {
-  const { customers, jobs } = useAppData()
+  const { customers, addQuotation } = useAppData()
   const { showToast } = useToast()
 
   const [customer, setCustomer] = useState('')
   const [description, setDescription] = useState('')
-  const [quantity, setQuantity] = useState<number>(100)
-  const [unitCost, setUnitCost] = useState<number>(450)
+  const [quantity, setQuantity] = useState<number>(0)
+  const [unitCost, setUnitCost] = useState<number>(0)
   const [gstRate, setGstRate] = useState<number>(18)
   const quotationRef = useRef(`QOT-${Date.now().toString().slice(-4)}`)
 
@@ -40,10 +40,11 @@ export function Quotations() {
   }
 
   const handleSendQuotation = () => {
-    if (!customer) {
-      showToast('Please select a customer first', 'warning')
+    if (!customer || !description.trim() || quantity <= 0 || unitCost <= 0) {
+      showToast('Select a customer and complete the quotation details first.', 'warning')
       return
     }
+    addQuotation({ customer, description: description.trim(), quantity, unitCost, gstRate, amount: grandTotal, status: 'Sent' })
     showToast(`Quotation sent to ${customer} via Email & WhatsApp!`, 'success')
   }
 

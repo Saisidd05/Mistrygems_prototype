@@ -142,6 +142,7 @@ export function Invoices() {
                 </td>
               </tr>
             ))}
+            {!filtered.length && <tr><td colSpan={8} className="py-10 text-center text-glass-dim">No invoices yet. Create your first invoice.</td></tr>}
           </tbody>
         </table>
       </GlassCard>

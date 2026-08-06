@@ -120,6 +120,7 @@ export function Customers() {
             </div>
           </GlassCard>
         ))}
+        {!filtered.length && <GlassCard className="p-8 text-center md:col-span-2 lg:col-span-3"><p className="text-sm text-glass-dim">No customers yet. Create your first customer.</p></GlassCard>}
       </div>
 
       {/* Modal */}

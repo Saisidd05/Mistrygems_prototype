@@ -3,8 +3,11 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts'
-import { monthlyRevenueData, jobStatusData, employeePerformanceData } from '../../lib/data'
 import { formatCurrency } from '../../lib/utils'
+
+type RevenuePoint = { month: string; revenue: number; jobs: number }
+type StatusPoint = { name: string; value: number; color: string }
+type PerformancePoint = { name: string; performance: number }
 
 const TOOLTIP_STYLE = {
   backgroundColor: 'rgba(3,4,94,0.9)',
@@ -15,10 +18,10 @@ const TOOLTIP_STYLE = {
   backdropFilter: 'blur(20px)',
 }
 
-export function RevenueChart() {
+export function RevenueChart({ data }: { data: RevenuePoint[] }) {
   return (
     <ResponsiveContainer width="100%" height={220}>
-      <AreaChart data={monthlyRevenueData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+      <AreaChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
         <defs>
           <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="#00B4D8" stopOpacity={0.3} />
@@ -38,10 +41,10 @@ export function RevenueChart() {
   )
 }
 
-export function JobsBarChart() {
+export function JobsBarChart({ data }: { data: RevenuePoint[] }) {
   return (
     <ResponsiveContainer width="100%" height={220}>
-      <BarChart data={monthlyRevenueData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+      <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
         <defs>
           <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="#0077B6" />
@@ -58,12 +61,12 @@ export function JobsBarChart() {
   )
 }
 
-export function StatusPieChart() {
+export function StatusPieChart({ data }: { data: StatusPoint[] }) {
   return (
     <ResponsiveContainer width="100%" height={200}>
       <PieChart>
         <Pie
-          data={jobStatusData}
+          data={data}
           cx="50%"
           cy="50%"
           innerRadius={55}
@@ -71,7 +74,7 @@ export function StatusPieChart() {
           paddingAngle={3}
           dataKey="value"
         >
-          {jobStatusData.map((entry, i) => (
+          {data.map((entry, i) => (
             <Cell key={i} fill={entry.color} opacity={0.85} />
           ))}
         </Pie>
@@ -86,10 +89,10 @@ export function StatusPieChart() {
   )
 }
 
-export function PerformanceChart() {
+export function PerformanceChart({ data }: { data: PerformancePoint[] }) {
   return (
     <ResponsiveContainer width="100%" height={200}>
-      <BarChart data={employeePerformanceData} layout="vertical" margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+      <BarChart data={data} layout="vertical" margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="perfGrad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="5%" stopColor="#03045E" />

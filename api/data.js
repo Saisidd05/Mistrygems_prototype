@@ -10,6 +10,7 @@ const allowedCollections = new Set([
   'invoices',
   'jobs',
   'notifications',
+  'quotations',
   'rawMaterials',
   'tasks',
 ])
@@ -35,33 +36,26 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'A valid collection query parameter is required.' })
   }
 
-  // Authenticate user via JWT or fallback x-user-id header
-  let userId = undefined
+  // Owner identity must only come from a valid, signed JWT.
+  let userId
   const authHeader = req.headers['authorization']
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7)
     try {
       const decoded = jwt.verify(token, JWT_SECRET)
       userId = decoded.id
-    } catch (err) {
-      console.warn('JWT verification failed, falling back to x-user-id:', err.message)
+    } catch {
+      return res.status(401).json({ error: 'Invalid or expired authentication token.' })
     }
   }
 
-  // Fallback to x-user-id header for backward compatibility
-  if (!userId) {
-    userId = req.headers['x-user-id'] || (req.headers['x-user-id'] === 0 ? 0 : undefined)
-  }
-
   if (!userId || typeof userId !== 'string') {
-    return res.status(401).json({ error: 'Missing or invalid authentication. Provide JWT or x-user-id header.' })
+    return res.status(401).json({ error: 'A valid authentication token is required.' })
   }
 
   try {
     const database = await getDatabase()
     const collection = database.collection(collectionName)
-    await collection.createIndex({ ownerId: 1 })
-    await collection.createIndex({ id: 1 }, { unique: true })
 
     if (req.method === 'GET') {
       // Return only documents owned by the authenticated user.
@@ -89,22 +83,28 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'An id and updates object are required.' })
       }
 
-      const { _id, id: ignoredId, ...safeUpdates } = updates
+      const { _id, id: ignoredId, ownerId: ignoredOwnerId, ...safeUpdates } = updates
       // Only allow updates for documents belonging to this user
+      const existing = await collection.findOne({ id })
+      if (!existing) return res.status(404).json({ error: 'Document not found.' })
+      if (existing.ownerId !== String(userId)) return res.status(403).json({ error: 'You do not have permission to modify this record.' })
       const result = await collection.findOneAndUpdate(
         { id, ownerId: String(userId) },
         { $set: safeUpdates },
         { returnDocument: 'after' },
       )
-      if (!result.value) return res.status(404).json({ error: 'Document not found or not owned by user.' })
+      if (!result.value) return res.status(404).json({ error: 'Document not found.' })
       return res.status(200).json(withoutMongoId(result.value))
     }
 
     if (req.method === 'DELETE') {
       const id = typeof req.query.id === 'string' ? req.query.id : ''
       if (!id) return res.status(400).json({ error: 'An id query parameter is required.' })
+      const existing = await collection.findOne({ id })
+      if (!existing) return res.status(404).json({ error: 'Document not found.' })
+      if (existing.ownerId !== String(userId)) return res.status(403).json({ error: 'You do not have permission to delete this record.' })
       const result = await collection.deleteOne({ id, ownerId: String(userId) })
-      if (!result.deletedCount) return res.status(404).json({ error: 'Document not found or not owned by user.' })
+      if (!result.deletedCount) return res.status(404).json({ error: 'Document not found.' })
       return res.status(204).end()
     }
 

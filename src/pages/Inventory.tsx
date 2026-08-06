@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Package, Layers, AlertTriangle, Plus, Search, Minus, Pencil } from 'lucide-react'
-import { finishedGoods } from '../lib/data'
 import { GlassCard } from '../components/ui/GlassCard'
 import { GlowButton } from '../components/ui/GlowButton'
 import { StatusBadge } from '../components/ui/StatusBadge'
@@ -11,7 +10,7 @@ import { Modal } from '../components/ui/Modal'
 
 export function Inventory() {
   const { showToast } = useToast()
-  const { rawMaterials, addRawMaterial, updateRawMaterial } = useAppData()
+  const { rawMaterials, finishedGoods, addRawMaterial, updateRawMaterial } = useAppData()
   const [tab, setTab] = useState<'raw' | 'finished'>('raw')
   const [search, setSearch] = useState('')
   const [stockModal, setStockModal] = useState<'in' | 'out' | null>(null)
@@ -103,6 +102,7 @@ export function Inventory() {
                   <td className="text-right"><button onClick={() => { setSelectedMaterial(rm.id); setStockModal('in') }} className="text-xs text-accent hover:text-highlight">Stock In / Out</button></td>
                 </tr>
               ))}
+              {!filteredRaw.length && <tr><td colSpan={7} className="py-10 text-center text-glass-dim">No raw materials yet. Add your first material.</td></tr>}
             </tbody>
           </table>
         ) : (
@@ -124,6 +124,7 @@ export function Inventory() {
                   <td className="text-xs">{fg.lastUpdated}</td>
                 </tr>
               ))}
+              {!filteredFinished.length && <tr><td colSpan={4} className="py-10 text-center text-glass-dim">No finished goods available.</td></tr>}
             </tbody>
           </table>
         )}

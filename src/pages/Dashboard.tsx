@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext'
 import { StatCard, GlassCard } from '../components/ui/GlassCard'
 import { GlowButton } from '../components/ui/GlowButton'
 import { StatusBadge } from '../components/ui/StatusBadge'
-import { RevenueChart, JobsBarChart, StatusPieChart, PerformanceChart } from '../components/ui/Charts'
+import { RevenueChart, StatusPieChart, PerformanceChart } from '../components/ui/Charts'
 import { Modal } from '../components/ui/Modal'
 import { JobForm } from '../components/forms/JobForm'
 import { useToast } from '../components/ui/Toast'
@@ -28,6 +28,15 @@ export function Dashboard() {
   const activeJobs = jobs.filter(j => j.status !== 'Completed' && j.status !== 'Invoiced')
   const completedJobs = jobs.filter(j => j.status === 'Completed' || j.status === 'Invoiced')
   const totalRevenue = jobs.reduce((acc, j) => acc + (j.revenue || 0), 0)
+  const monthlyData = jobs.reduce<{ month: string; revenue: number; jobs: number }[]>((result, job) => {
+    const month = new Date(job.createdAt).toLocaleString('en', { month: 'short' })
+    const entry = result.find(item => item.month === month)
+    if (entry) { entry.revenue += job.revenue || 0; entry.jobs += 1 } else result.push({ month, revenue: job.revenue || 0, jobs: 1 })
+    return result
+  }, [])
+  const statusColors: Record<string, string> = { New: '#94A3B8', 'In Progress': '#00B4D8', 'Quality Check': '#0077B6', Completed: '#10B981', Invoiced: '#8B5CF6', Procuring: '#F59E0B', Approved: '#00B4D8', Quoted: '#0077B6' }
+  const statusData = Object.entries(jobs.reduce<Record<string, number>>((counts, job) => ({ ...counts, [job.status]: (counts[job.status] || 0) + 1 }), {})).map(([name, value]) => ({ name, value, color: statusColors[name] || '#94A3B8' }))
+  const performanceData = employees.map(employee => ({ name: employee.name.split(' ')[0], performance: employee.performance }))
 
   const customerNames = customers.map(c => c.name)
   const employeeNames = employees.map(e => e.name)
@@ -100,14 +109,14 @@ export function Dashboard() {
               <TrendingUp size={16} className="text-accent" /> Revenue & Performance Analytics
             </h3>
           </div>
-          <RevenueChart />
+          {monthlyData.length ? <RevenueChart data={monthlyData} /> : <p className="py-20 text-center text-sm text-glass-dim">No revenue data yet. Create your first order to see analytics.</p>}
         </GlassCard>
 
         <GlassCard className="p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold font-sora text-highlight">Job Status Pipeline</h3>
           </div>
-          <StatusPieChart />
+          {statusData.length ? <StatusPieChart data={statusData} /> : <p className="py-20 text-center text-sm text-glass-dim">No orders available.</p>}
         </GlassCard>
       </div>
 
@@ -145,6 +154,7 @@ export function Dashboard() {
                     <td className="font-semibold text-highlight">{formatCurrency(job.revenue)}</td>
                   </tr>
                 ))}
+                {!jobs.length && <tr><td colSpan={6} className="py-10 text-center text-glass-dim">No orders available. Create your first order.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -154,7 +164,7 @@ export function Dashboard() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold font-sora text-highlight">Top Performers</h3>
           </div>
-          <PerformanceChart />
+          {performanceData.length ? <PerformanceChart data={performanceData} /> : <p className="py-20 text-center text-sm text-glass-dim">No team members yet.</p>}
         </GlassCard>
       </div>
 
