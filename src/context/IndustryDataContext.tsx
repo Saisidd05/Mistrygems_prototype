@@ -8,7 +8,7 @@ export interface IndustryRequirement {
 type Collection = 'industryRequirements' | 'industryQuotations' | 'industryPurchaseOrders' | 'industryVendors' | 'industryNotifications'
 const api = async <T,>(collection: Collection, init?: RequestInit): Promise<T> => {
   const saved = localStorage.getItem('mistry-auth'); const token = saved ? JSON.parse(saved)?.token : ''
-  const response = await fetch(`/api/data?collection=${collection}`, { ...init, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
+  const response = await fetch(`/api/industry-data?collection=${collection.replace('industry', '').replace(/^./, char => char.toLowerCase())}`, { ...init, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
   if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.error || 'Industry data request failed.') }
   return response.status === 204 ? undefined as T : response.json()
 }
@@ -23,7 +23,7 @@ export function IndustryDataProvider({ children }: { children: React.ReactNode }
   useEffect(() => { if (isAuthenticated && getAccountType(user) === 'industry') void refresh(); else setRequirements([]) }, [isAuthenticated, user, refresh])
   const createRequirement = useCallback(async (value: Omit<IndustryRequirement, 'id' | 'createdAt' | 'status' | 'quotationsReceived'>) => { const created = await api<IndustryRequirement>('industryRequirements', { method: 'POST', body: JSON.stringify({ document: { ...value, id: makeId(), status: 'Open', quotationsReceived: 0 } }) }); setRequirements(current => [created, ...current]) }, [])
   const updateRequirement = useCallback(async (id: string, value: Partial<IndustryRequirement>) => { const updated = await api<IndustryRequirement>('industryRequirements', { method: 'PUT', body: JSON.stringify({ id, updates: value }) }); setRequirements(current => current.map(item => item.id === id ? updated : item)) }, [])
-  const deleteRequirement = useCallback(async (id: string) => { const saved = localStorage.getItem('mistry-auth'); const token = saved ? JSON.parse(saved)?.token : ''; const response = await fetch(`/api/data?collection=industryRequirements&id=${encodeURIComponent(id)}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (!response.ok) throw new Error('Unable to delete requirement.'); setRequirements(current => current.filter(item => item.id !== id)) }, [])
+  const deleteRequirement = useCallback(async (id: string) => { const saved = localStorage.getItem('mistry-auth'); const token = saved ? JSON.parse(saved)?.token : ''; const response = await fetch(`/api/industry-data?collection=requirements&id=${encodeURIComponent(id)}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (!response.ok) throw new Error('Unable to delete requirement.'); setRequirements(current => current.filter(item => item.id !== id)) }, [])
   return <IndustryDataContext.Provider value={{ requirements, loading, createRequirement, updateRequirement, deleteRequirement }}>{children}</IndustryDataContext.Provider>
 }
 export function useIndustryData() { const context = useContext(IndustryDataContext); if (!context) throw new Error('useIndustryData must be used inside IndustryDataProvider'); return context }

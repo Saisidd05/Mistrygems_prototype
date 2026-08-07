@@ -42,6 +42,7 @@ function generateToken(user) {
 
 function publicUser(user) {
   const { _id, passwordHash, ...safeUser } = user
+  safeUser.accountType = accountTypeForUser(user)
   // Ensure compatibility with frontend avatar rendering
   safeUser.avatar = safeUser.profileImage || safeUser.avatar || (safeUser.name ? safeUser.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U')
   return safeUser
