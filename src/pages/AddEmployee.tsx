@@ -67,7 +67,7 @@ export default function AddEmployee() {
 
     setSuccess(true)
     setTimeout(() => {
-      navigate('/employees')
+      navigate('/workshop/employees')
     }, 1500)
   }
 
@@ -81,7 +81,7 @@ export default function AddEmployee() {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => navigate('/employees')}
+            onClick={() => navigate('/workshop/employees')}
             className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 mb-4 transition-colors"
           >
             <X className="w-4 h-4" />
@@ -245,7 +245,7 @@ export default function AddEmployee() {
             <div className="flex gap-3 pt-4">
               <button
                 type="button"
-                onClick={() => navigate('/employees')}
+                onClick={() => navigate('/workshop/employees')}
                 className="flex-1 px-6 py-3 rounded-xl bg-slate-100/70 text-slate-700 font-semibold hover:bg-slate-200/70 transition-colors"
               >
                 Cancel

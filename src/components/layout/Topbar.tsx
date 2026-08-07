@@ -7,17 +7,17 @@ import { useTheme } from '../../context/ThemeContext'
 import { useAppData } from '../../context/AppDataContext'
 
 const pageNames: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/jobs': 'Job Management',
-  '/customers': 'Customers',
-  '/employees': 'Employees',
-  '/tasks': 'Task Board',
-  '/quotations': 'Quotations',
-  '/invoices': 'Invoices',
-  '/inventory': 'Inventory',
-  '/reports': 'Reports & Analytics',
-  '/notifications': 'Notifications',
-  '/settings': 'Settings',
+  '/workshop/dashboard': 'Dashboard',
+  '/workshop/jobs': 'Job Management',
+  '/workshop/customers': 'Customers',
+  '/workshop/employees': 'Employees',
+  '/workshop/tasks': 'Task Board',
+  '/workshop/quotations': 'Quotations',
+  '/workshop/invoices': 'Invoices',
+  '/workshop/inventory': 'Inventory',
+  '/workshop/reports': 'Reports & Analytics',
+  '/workshop/notifications': 'Notifications',
+  '/workshop/settings': 'Settings',
 }
 
 export function Topbar() {
@@ -67,7 +67,7 @@ export function Topbar() {
 
         {/* Notifications */}
         <button
-          onClick={() => navigate('/notifications')}
+          onClick={() => navigate('/workshop/notifications')}
           className="relative p-2 rounded-xl text-glass-dim hover:text-highlight hover:bg-white/5 transition-all"
           aria-label="Notifications"
         >

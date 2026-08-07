@@ -90,7 +90,7 @@ export default function Signup() {
       })
 
       if (result.success) {
-        navigate('/dashboard')
+        navigate(result.redirectTo || '/login')
       } else {
         const errMsg = result.error || ''
         if (errMsg.toLowerCase().includes('email')) {

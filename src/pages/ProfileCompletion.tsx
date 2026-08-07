@@ -68,7 +68,7 @@ export function ProfileCompletion() {
 
       if (result.success) {
         sessionStorage.removeItem('mg_google_temp')
-        navigate('/dashboard')
+        navigate(result.redirectTo || '/login')
       } else {
         setError(result.error || 'Failed to complete profile registration.')
       }

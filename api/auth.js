@@ -28,9 +28,13 @@ async function passwordMatches(password, storedPassword) {
   return verifyScryptPassword(password, storedPassword)
 }
 
+function accountTypeForUser(user) {
+  return user.accountType === 'industry' || String(user.role || '').toLowerCase().includes('industry') ? 'industry' : 'workshop'
+}
+
 function generateToken(user) {
   return jwt.sign(
-    { id: user.id, email: user.email, name: user.name, role: user.role },
+    { id: user.id, companyId: user.companyId || user.id, email: user.email, name: user.name, role: user.role, accountType: accountTypeForUser(user) },
     JWT_SECRET,
     { expiresIn: '7d' }
   )
@@ -161,7 +165,7 @@ export default async function handler(req, res) {
         },
         passwordHash: await hashPassword(password),
         authProvider: 'local',
-        role: 'Owner',
+        role: normalizedAccountType === 'industry' ? 'Industry' : 'Owner',
         accountType: normalizedAccountType,
         createdAt: new Date().toISOString()
       }
@@ -190,7 +194,7 @@ export default async function handler(req, res) {
       }
 
       // Existing accounts without an accountType remain workshop accounts.
-      const userAccountType = user.accountType || 'workshop'
+      const userAccountType = accountTypeForUser(user)
       if (userAccountType !== normalizedAccountType) {
         return res.status(403).json({ error: `This account is registered for ${userAccountType === 'industry' ? 'Industry' : 'Workshop'} Login.` })
       }
@@ -228,7 +232,7 @@ export default async function handler(req, res) {
       })
 
       if (user) {
-        const userAccountType = user.accountType || 'workshop'
+        const userAccountType = accountTypeForUser(user)
         if (userAccountType !== normalizedAccountType) {
           return res.status(403).json({ error: `This account is registered for ${userAccountType === 'industry' ? 'Industry' : 'Workshop'} Login.` })
         }
@@ -298,7 +302,7 @@ export default async function handler(req, res) {
         googleId: googleId,
         profileImage: profileImage || null,
         authProvider: 'google',
-        role: 'Owner',
+        role: profileAccountType === 'industry' ? 'Industry' : 'Owner',
         accountType: profileAccountType === 'industry' ? 'industry' : 'workshop',
         createdAt: new Date().toISOString()
       }

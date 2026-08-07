@@ -57,7 +57,7 @@ export function Dashboard() {
           <p className="text-xs text-glass-dim mt-1">Real-time production pipeline and key business operational metrics.</p>
         </div>
         <div className="flex gap-3">
-          <GlowButton variant="outline" size="sm" onClick={() => navigate('/reports')}>
+          <GlowButton variant="outline" size="sm" onClick={() => navigate('/workshop/reports')}>
             View Reports
           </GlowButton>
           <GlowButton size="sm" icon={<Plus size={16} />} onClick={() => setOpenNewJobModal(true)}>
@@ -127,7 +127,7 @@ export function Dashboard() {
             <h3 className="text-sm font-bold font-sora text-highlight flex items-center gap-2">
               <Briefcase size={16} className="text-accent" /> Active Jobs Overview
             </h3>
-            <Link to="/jobs" className="text-xs text-accent hover:underline flex items-center gap-1">
+            <Link to="/workshop/jobs" className="text-xs text-accent hover:underline flex items-center gap-1">
               View All <ChevronRight size={12} />
             </Link>
           </div>

@@ -19,17 +19,17 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={18} /> },
-  { label: 'Jobs', path: '/jobs', icon: <Briefcase size={18} /> },
-  { label: 'Customers', path: '/customers', icon: <Users size={18} /> },
-  { label: 'Employees', path: '/employees', icon: <UserCheck size={18} /> },
-  { label: 'Tasks', path: '/tasks', icon: <ClipboardList size={18} /> },
-  { label: 'Quotations', path: '/quotations', icon: <FileText size={18} /> },
-  { label: 'Invoices', path: '/invoices', icon: <Receipt size={18} /> },
-  { label: 'Inventory', path: '/inventory', icon: <Package size={18} /> },
-  { label: 'Reports', path: '/reports', icon: <BarChart2 size={18} />, roles: ['Owner', 'Manager'] },
-  { label: 'Notifications', path: '/notifications', icon: <Bell size={18} /> },
-  { label: 'Settings', path: '/settings', icon: <Settings size={18} /> },
+  { label: 'Dashboard', path: '/workshop/dashboard', icon: <LayoutDashboard size={18} /> },
+  { label: 'Jobs', path: '/workshop/jobs', icon: <Briefcase size={18} /> },
+  { label: 'Customers', path: '/workshop/customers', icon: <Users size={18} /> },
+  { label: 'Employees', path: '/workshop/employees', icon: <UserCheck size={18} /> },
+  { label: 'Tasks', path: '/workshop/tasks', icon: <ClipboardList size={18} /> },
+  { label: 'Quotations', path: '/workshop/quotations', icon: <FileText size={18} /> },
+  { label: 'Invoices', path: '/workshop/invoices', icon: <Receipt size={18} /> },
+  { label: 'Inventory', path: '/workshop/inventory', icon: <Package size={18} /> },
+  { label: 'Reports', path: '/workshop/reports', icon: <BarChart2 size={18} />, roles: ['Owner', 'Manager'] },
+  { label: 'Notifications', path: '/workshop/notifications', icon: <Bell size={18} /> },
+  { label: 'Settings', path: '/workshop/settings', icon: <Settings size={18} /> },
 ]
 
 export function Sidebar() {
@@ -133,7 +133,7 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto no-scrollbar py-3 px-2 space-y-0.5">
         {navItems.map(item => {
           if (item.roles && user && !item.roles.includes(user.role)) return null
-          const isNotif = item.path === '/notifications'
+          const isNotif = item.path === '/workshop/notifications'
           return (
             <NavLink
               key={item.path}

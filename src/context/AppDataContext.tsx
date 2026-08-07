@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { useAuth } from './AuthContext'
+import { getAccountType, useAuth } from './AuthContext'
 import { database } from '../lib/database'
 import { generateId } from '../lib/utils'
 import type { Customer, Employee, FinishedGood, Invoice, Job, Notification, Quotation, RawMaterial, Task } from '../lib/data'
@@ -21,14 +21,14 @@ const id = (prefix: string) => generateId(prefix)
 const stockStatus = (value: Pick<RawMaterial, 'currentStock' | 'reorderLevel'>): RawMaterial['status'] => value.currentStock <= 0 ? 'Out of Stock' : value.currentStock < value.reorderLevel ? 'Low Stock' : 'OK'
 
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [jobs, setJobs] = useState<Job[]>([]); const [employees, setEmployees] = useState<Employee[]>([]); const [customers, setCustomers] = useState<Customer[]>([])
   const [tasks, setTasks] = useState<Task[]>([]); const [notifications, setNotifications] = useState<Notification[]>([]); const [invoices, setInvoices] = useState<Invoice[]>([])
   const [rawMaterials, setRawMaterials] = useState<RawMaterial[]>([]); const [finishedGoods, setFinishedGoods] = useState<FinishedGood[]>([]); const [quotations, setQuotations] = useState<Quotation[]>([])
 
   useEffect(() => {
-    if (!isAuthenticated) { setJobs([]); setEmployees([]); setCustomers([]); setTasks([]); setNotifications([]); setInvoices([]); setRawMaterials([]); setFinishedGoods([]); setQuotations([]); return }
+    if (!isAuthenticated || getAccountType(user) !== 'workshop') { setJobs([]); setEmployees([]); setCustomers([]); setTasks([]); setNotifications([]); setInvoices([]); setRawMaterials([]); setFinishedGoods([]); setQuotations([]); return }
     let active = true; setLoading(true)
     Promise.all([
       database.list<Job>('jobs'), database.list<Employee>('employees'), database.list<Customer>('customers'), database.list<Task>('tasks'),
@@ -37,7 +37,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       if (!active) return; setJobs(nextJobs); setEmployees(nextEmployees); setCustomers(nextCustomers); setTasks(nextTasks); setNotifications(nextNotifications); setInvoices(nextInvoices); setRawMaterials(nextMaterials); setFinishedGoods(nextGoods); setQuotations(nextQuotations)
     }).catch(error => console.error('Unable to load private workspace data:', error)).finally(() => active && setLoading(false))
     return () => { active = false }
-  }, [isAuthenticated])
+  }, [isAuthenticated, user])
 
   const create = <T extends { id: string }>(collection: Parameters<typeof database.create>[0], value: T, setter: React.Dispatch<React.SetStateAction<T[]>>) => { void database.create(collection, value).then(saved => setter(current => [...current, saved])).catch(error => console.error(`Unable to create ${collection}:`, error)) }
   const update = <T extends { id: string }>(collection: Parameters<typeof database.update>[0], recordId: string, value: Partial<T>, setter: React.Dispatch<React.SetStateAction<T[]>>) => { void database.update(collection, recordId, value).then(saved => setter(current => current.map(item => item.id === recordId ? saved : item))).catch(error => console.error(`Unable to update ${collection}:`, error)) }

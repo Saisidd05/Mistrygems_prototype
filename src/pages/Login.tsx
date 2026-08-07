@@ -74,7 +74,7 @@ export function Login() {
             sessionStorage.setItem('mg_google_temp', JSON.stringify(result.googleDetails))
             navigate('/complete-profile')
           } else {
-            navigate('/dashboard')
+            navigate(result.redirectTo || '/login')
           }
         },
       })
@@ -118,7 +118,7 @@ export function Login() {
         sessionStorage.setItem('mg_google_temp', JSON.stringify(result.googleDetails))
         navigate('/complete-profile')
       } else {
-        navigate('/dashboard')
+        navigate(result.redirectTo || '/login')
       }
     } catch (err: unknown) {
       setLoading(false)
@@ -134,7 +134,7 @@ export function Login() {
     try {
       const result = await login(username, password, accountType)
       if (result.success) {
-        navigate('/dashboard')
+        navigate(result.redirectTo || '/login')
       } else {
         setError(result.error || 'Invalid username or password')
         setLoading(false)

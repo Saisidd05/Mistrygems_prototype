@@ -16,6 +16,14 @@ export interface User {
   profileImage?: string
 }
 
+export type AccountType = 'workshop' | 'industry'
+
+export const getAccountType = (user: Pick<User, 'accountType' | 'role'> | null | undefined): AccountType =>
+  user?.accountType === 'industry' || user?.role?.toLowerCase().includes('industry') ? 'industry' : 'workshop'
+
+export const getDashboardPath = (user: Pick<User, 'accountType' | 'role'> | null | undefined) =>
+  getAccountType(user) === 'industry' ? '/industry/dashboard' : '/workshop/dashboard'
+
 export interface SignupData {
   name: string
   username: string
@@ -60,10 +68,10 @@ interface AuthApiResponse {
 
 interface AuthContextType {
   user: User | null
-  login: (usernameOrEmail: string, password: string, accountType?: 'workshop' | 'industry') => Promise<{ success: boolean; error?: string }>
-  signup: (userData: SignupData) => Promise<{ success: boolean; error?: string }>
-  loginWithGoogle: (credential: string, accountType?: 'workshop' | 'industry') => Promise<{ success: boolean; isNewUser?: boolean; googleDetails?: GoogleDetails; error?: string }>
-  completeGoogleProfile: (profileData: GoogleProfileData) => Promise<{ success: boolean; error?: string }>
+  login: (usernameOrEmail: string, password: string, accountType?: AccountType) => Promise<{ success: boolean; redirectTo?: string; error?: string }>
+  signup: (userData: SignupData) => Promise<{ success: boolean; redirectTo?: string; error?: string }>
+  loginWithGoogle: (credential: string, accountType?: AccountType) => Promise<{ success: boolean; redirectTo?: string; isNewUser?: boolean; googleDetails?: GoogleDetails; error?: string }>
+  completeGoogleProfile: (profileData: GoogleProfileData) => Promise<{ success: boolean; redirectTo?: string; error?: string }>
   updateProfile: (profileData: Pick<User, 'workshopName' | 'workshopAddress' | 'gstin'>) => Promise<{ success: boolean; error?: string }>
   logout: () => void
   isAuthenticated: boolean
@@ -109,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       localStorage.setItem(AUTH_KEY, JSON.stringify(sessionData))
       setUser(result.user)
-      return { success: true }
+      return { success: true, redirectTo: getDashboardPath(result.user) }
     } catch (err: unknown) {
       console.error('Login error:', err)
       return { success: false, error: err instanceof Error ? err.message : 'Authentication service is unavailable.' }
@@ -138,7 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       localStorage.setItem(AUTH_KEY, JSON.stringify(sessionData))
       setUser(result.user)
-      return { success: true }
+      return { success: true, redirectTo: getDashboardPath(result.user) }
     } catch (err: unknown) {
       console.error('Signup error:', err)
       return { success: false, error: err instanceof Error ? err.message : 'Authentication service is unavailable.' }
@@ -182,7 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       localStorage.setItem(AUTH_KEY, JSON.stringify(sessionData))
       setUser(result.user)
-      return { success: true }
+      return { success: true, redirectTo: getDashboardPath(result.user) }
     } catch (err: unknown) {
       console.error('Google login error:', err)
       return { success: false, error: err instanceof Error ? err.message : 'Google authentication is currently unavailable.' }
@@ -211,7 +219,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       localStorage.setItem(AUTH_KEY, JSON.stringify(sessionData))
       setUser(result.user)
-      return { success: true }
+      return { success: true, redirectTo: getDashboardPath(result.user) }
     } catch (err: unknown) {
       console.error('Complete profile error:', err)
       return { success: false, error: err instanceof Error ? err.message : 'Profile completion service failed.' }
