@@ -10,6 +10,7 @@ export interface User {
   gstin?: string
   avatar: string
   role: string
+  accountType?: 'workshop' | 'industry'
   authProvider: 'local' | 'google'
   googleId?: string
   profileImage?: string
@@ -22,6 +23,7 @@ export interface SignupData {
   workshopName: string
   workshopAddress: string
   password: string
+  accountType?: 'workshop' | 'industry'
 }
 
 export interface GoogleProfileData {
@@ -33,6 +35,7 @@ export interface GoogleProfileData {
   username: string
   workshopName: string
   workshopAddress: string
+  accountType?: 'workshop' | 'industry'
 }
 
 export interface GoogleDetails {
@@ -41,6 +44,7 @@ export interface GoogleDetails {
   email: string
   name: string
   profileImage?: string
+  accountType?: 'workshop' | 'industry'
 }
 
 interface AuthApiResponse {
@@ -56,9 +60,9 @@ interface AuthApiResponse {
 
 interface AuthContextType {
   user: User | null
-  login: (usernameOrEmail: string, password: string) => Promise<{ success: boolean; error?: string }>
+  login: (usernameOrEmail: string, password: string, accountType?: 'workshop' | 'industry') => Promise<{ success: boolean; error?: string }>
   signup: (userData: SignupData) => Promise<{ success: boolean; error?: string }>
-  loginWithGoogle: (credential: string) => Promise<{ success: boolean; isNewUser?: boolean; googleDetails?: GoogleDetails; error?: string }>
+  loginWithGoogle: (credential: string, accountType?: 'workshop' | 'industry') => Promise<{ success: boolean; isNewUser?: boolean; googleDetails?: GoogleDetails; error?: string }>
   completeGoogleProfile: (profileData: GoogleProfileData) => Promise<{ success: boolean; error?: string }>
   updateProfile: (profileData: Pick<User, 'workshopName' | 'workshopAddress' | 'gstin'>) => Promise<{ success: boolean; error?: string }>
   logout: () => void
@@ -83,12 +87,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   })
 
-  const login = useCallback(async (usernameOrEmail: string, password: string) => {
+  const login = useCallback(async (usernameOrEmail: string, password: string, accountType: 'workshop' | 'industry' = 'workshop') => {
     try {
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'login', username: usernameOrEmail, password }),
+        body: JSON.stringify({ action: 'login', username: usernameOrEmail, password, accountType }),
       })
       const result = await response.json() as AuthApiResponse
       if (!response.ok) {
@@ -141,12 +145,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const loginWithGoogle = useCallback(async (credential: string) => {
+  const loginWithGoogle = useCallback(async (credential: string, accountType: 'workshop' | 'industry' = 'workshop') => {
     try {
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'google', credential }),
+        body: JSON.stringify({ action: 'google', credential, accountType }),
       })
       const result = await response.json() as AuthApiResponse
       if (!response.ok) {
@@ -163,6 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: result.email,
             name: result.name,
             profileImage: result.profileImage,
+            accountType,
           }
         }
       }

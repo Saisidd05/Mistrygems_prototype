@@ -62,7 +62,8 @@ export function ProfileCompletion() {
         profileImage: googleData.profileImage,
         username: cleanUsername,
         workshopName: workshopName.trim(),
-        workshopAddress: workshopAddress.trim()
+        workshopAddress: workshopAddress.trim(),
+        accountType: googleData.accountType
       })
 
       if (result.success) {

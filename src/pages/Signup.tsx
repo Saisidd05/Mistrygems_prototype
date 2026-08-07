@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Gem, Mail, Lock, User, Building, MapPin, ArrowRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { GlowButton } from '../components/ui/GlowButton'
@@ -7,7 +7,10 @@ import { AnimatedBackground } from '../components/ui/AnimatedBackground'
 
 export default function Signup() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { signup } = useAuth()
+  const accountType = searchParams.get('type') === 'industry' ? 'industry' : 'workshop'
+  const accountLabel = accountType === 'industry' ? 'Industry' : 'Workshop'
 
   const [formData, setFormData] = useState({
     name: '',
@@ -51,8 +54,8 @@ export default function Signup() {
       errors.email = 'Please enter a valid email address.'
     }
 
-    if (!formData.workshopName.trim()) errors.workshopName = 'Workshop Name is required.'
-    if (!formData.workshopAddress.trim()) errors.workshopAddress = 'Workshop Address is required.'
+    if (!formData.workshopName.trim()) errors.workshopName = `${accountLabel} Name is required.`
+    if (!formData.workshopAddress.trim()) errors.workshopAddress = `${accountLabel} Address is required.`
 
     if (!formData.password) {
       errors.password = 'Password is required.'
@@ -82,7 +85,8 @@ export default function Signup() {
         email: formData.email.trim().toLowerCase(),
         workshopName: formData.workshopName.trim(),
         workshopAddress: formData.workshopAddress.trim(),
-        password: formData.password
+        password: formData.password,
+        accountType
       })
 
       if (result.success) {
@@ -114,8 +118,8 @@ export default function Signup() {
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#0077B6] to-[#00B4D8] shadow-glow mb-3">
             <Gem size={28} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold font-sora gradient-text-bright">Create Workshop Account</h1>
-          <p className="text-xs text-glass-dim mt-1">Set up your smart workshop management platform</p>
+          <h1 className="text-2xl font-bold font-sora gradient-text-bright">Create {accountLabel} Account</h1>
+          <p className="text-xs text-glass-dim mt-1">Set up your smart {accountType} management platform</p>
         </div>
 
         {error && (
@@ -147,7 +151,7 @@ export default function Signup() {
             >
               Full Name
             </label>
-            <User size={16} className="absolute left-3.5 top-4.5 text-glass-dim peer-focus:text-accent transition-colors" />
+            <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-glass-dim peer-focus:text-accent transition-colors" />
             {fieldErrors.name && (
               <span className="text-[10px] text-red-400 mt-1 block pl-2">{fieldErrors.name}</span>
             )}
@@ -175,7 +179,7 @@ export default function Signup() {
               >
                 Username
               </label>
-              <User size={16} className="absolute left-3.5 top-4.5 text-glass-dim peer-focus:text-accent transition-colors" />
+              <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-glass-dim peer-focus:text-accent transition-colors" />
               {fieldErrors.username && (
                 <span className="text-[10px] text-red-400 mt-1 block pl-2">{fieldErrors.username}</span>
               )}
@@ -202,7 +206,7 @@ export default function Signup() {
               >
                 Email Address
               </label>
-              <Mail size={16} className="absolute left-3.5 top-4.5 text-glass-dim peer-focus:text-accent transition-colors" />
+              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-glass-dim peer-focus:text-accent transition-colors" />
               {fieldErrors.email && (
                 <span className="text-[10px] text-red-400 mt-1 block pl-2">{fieldErrors.email}</span>
               )}
@@ -229,9 +233,9 @@ export default function Signup() {
                   peer-focus:top-1.5 peer-focus:text-[9px] peer-focus:text-accent
                   peer-[&:not(:placeholder-shown)]:top-1.5 peer-[&:not(:placeholder-shown)]:text-[9px] peer-[&:not(:placeholder-shown)]:text-accent"
               >
-                Workshop Name
+                {accountLabel} Name
               </label>
-              <Building size={16} className="absolute left-3.5 top-4.5 text-glass-dim peer-focus:text-accent transition-colors" />
+              <Building size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-glass-dim peer-focus:text-accent transition-colors" />
               {fieldErrors.workshopName && (
                 <span className="text-[10px] text-red-400 mt-1 block pl-2">{fieldErrors.workshopName}</span>
               )}
@@ -256,9 +260,9 @@ export default function Signup() {
                   peer-focus:top-1.5 peer-focus:text-[9px] peer-focus:text-accent
                   peer-[&:not(:placeholder-shown)]:top-1.5 peer-[&:not(:placeholder-shown)]:text-[9px] peer-[&:not(:placeholder-shown)]:text-accent"
               >
-                Workshop Address
+                {accountLabel} Address
               </label>
-              <MapPin size={16} className="absolute left-3.5 top-4.5 text-glass-dim peer-focus:text-accent transition-colors" />
+              <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-glass-dim peer-focus:text-accent transition-colors" />
               {fieldErrors.workshopAddress && (
                 <span className="text-[10px] text-red-400 mt-1 block pl-2">{fieldErrors.workshopAddress}</span>
               )}
@@ -287,7 +291,7 @@ export default function Signup() {
               >
                 Password
               </label>
-              <Lock size={16} className="absolute left-3.5 top-4.5 text-glass-dim peer-focus:text-accent transition-colors" />
+              <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-glass-dim peer-focus:text-accent transition-colors" />
               {fieldErrors.password && (
                 <span className="text-[10px] text-red-400 mt-1 block pl-2">{fieldErrors.password}</span>
               )}
@@ -314,7 +318,7 @@ export default function Signup() {
               >
                 Confirm Password
               </label>
-              <Lock size={16} className="absolute left-3.5 top-4.5 text-glass-dim peer-focus:text-accent transition-colors" />
+              <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-glass-dim peer-focus:text-accent transition-colors" />
               {fieldErrors.confirmPassword && (
                 <span className="text-[10px] text-red-400 mt-1 block pl-2">{fieldErrors.confirmPassword}</span>
               )}
@@ -336,7 +340,7 @@ export default function Signup() {
 
         {/* Google Authentication Link */}
         <Link
-          to="/login"
+          to={`/login?type=${accountType}`}
           className="w-full py-2.5 px-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white font-medium text-sm flex items-center justify-center transition-all duration-200 shadow-sm hover:border-accent/40"
         >
           <svg className="w-5 h-5 mr-2.5 shrink-0" viewBox="0 0 24 24">
@@ -363,8 +367,8 @@ export default function Signup() {
         {/* Login redirection */}
         <div className="mt-6 text-center border-t border-glass/10 pt-4">
           <p className="text-xs text-glass-dim">
-            Already have a workshop account?{' '}
-            <Link to="/login" className="text-accent font-semibold hover:text-[#90E0EF] transition-colors ml-1">
+            Already have a {accountType} account?{' '}
+            <Link to={`/login?type=${accountType}`} className="text-accent font-semibold hover:text-[#90E0EF] transition-colors ml-1">
               Sign In
             </Link>
           </p>

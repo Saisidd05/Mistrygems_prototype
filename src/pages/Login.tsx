@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { Gem, Lock, User, ArrowRight, Mail, CheckCircle2 } from 'lucide-react'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { Gem, Lock, User, ArrowRight, Mail, CheckCircle2, Building2, Wrench } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { GlowButton } from '../components/ui/GlowButton'
 import { AnimatedBackground } from '../components/ui/AnimatedBackground'
@@ -28,6 +28,8 @@ const GoogleIcon = () => (
 )
 
 export function Login() {
+  const [searchParams] = useSearchParams()
+  const [accountType, setAccountType] = useState<'workshop' | 'industry'>(searchParams.get('type') === 'industry' ? 'industry' : 'workshop')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -64,7 +66,7 @@ export function Login() {
         callback: async ({ credential }) => {
           setError('')
           setLoading(true)
-          const result = await loginWithGoogle(credential)
+          const result = await loginWithGoogle(credential, accountType)
           setLoading(false)
           if (!result.success) {
             setError(result.error || 'Google sign-in failed.')
@@ -91,7 +93,7 @@ export function Login() {
     script.onload = renderGoogleButton
     document.head.appendChild(script)
     return () => { script.onload = null }
-  }, [loginWithGoogle, navigate])
+  }, [loginWithGoogle, navigate, accountType])
 
   const handleGoogleSignInDemo = async (email: string, name: string, picture?: string) => {
     setError('')
@@ -108,7 +110,7 @@ export function Login() {
     const demoCredential = 'demo_google_' + btoa(JSON.stringify(payload))
 
     try {
-      const result = await loginWithGoogle(demoCredential)
+      const result = await loginWithGoogle(demoCredential, accountType)
       setLoading(false)
       if (!result.success) {
         setError(result.error || 'Google authentication failed.')
@@ -130,7 +132,7 @@ export function Login() {
     setLoading(true)
 
     try {
-      const result = await login(username, password)
+      const result = await login(username, password, accountType)
       if (result.success) {
         navigate('/dashboard')
       } else {
@@ -165,7 +167,7 @@ export function Login() {
             <Gem size={28} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold font-sora gradient-text-bright">Mistry Gems</h1>
-          <p className="text-xs text-glass-dim mt-1">MSME Manufacturing Workflow Platform</p>
+          <p className="text-xs text-glass-dim mt-1">Choose how you want to sign in</p>
         </div>
 
         {error && (
@@ -173,6 +175,29 @@ export function Login() {
             {error}
           </div>
         )}
+
+        <div className="grid grid-cols-2 gap-3 mb-6" role="tablist" aria-label="Login type">
+          <button
+            type="button"
+            onClick={() => { setAccountType('workshop'); setError('') }}
+            className={`rounded-xl border p-3 text-left transition-all ${accountType === 'workshop' ? 'border-accent bg-accent/10 shadow-glow' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
+            aria-selected={accountType === 'workshop'}
+          >
+            <Wrench size={18} className="mb-2 text-accent" />
+            <span className="block text-xs font-semibold text-white">Workshop Login</span>
+            <span className="block mt-0.5 text-[10px] text-glass-dim">Manage your workshop</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => { setAccountType('industry'); setError('') }}
+            className={`rounded-xl border p-3 text-left transition-all ${accountType === 'industry' ? 'border-accent bg-accent/10 shadow-glow' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
+            aria-selected={accountType === 'industry'}
+          >
+            <Building2 size={18} className="mb-2 text-accent" />
+            <span className="block text-xs font-semibold text-white">Industry Login</span>
+            <span className="block mt-0.5 text-[10px] text-glass-dim">Access your industry account</span>
+          </button>
+        </div>
 
         {/* Manual Login Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -237,7 +262,7 @@ export function Login() {
           </div>
 
           <GlowButton type="submit" size="lg" className="w-full mt-2" loading={loading} icon={<ArrowRight size={16} />}>
-            Sign In
+            Sign in to {accountType === 'workshop' ? 'Workshop' : 'Industry'}
           </GlowButton>
         </form>
 
@@ -267,8 +292,8 @@ export function Login() {
         <div className="mt-8 text-center border-t border-glass/10 pt-5">
           <p className="text-xs text-glass-dim">
             New to Mistry Gems?{' '}
-            <Link to="/signup" className="text-accent font-semibold hover:text-[#90E0EF] transition-colors ml-1">
-              Create Account
+            <Link to={`/signup?type=${accountType}`} className="text-accent font-semibold hover:text-[#90E0EF] transition-colors ml-1">
+              Create {accountType === 'workshop' ? 'Workshop' : 'Industry'} Account
             </Link>
           </p>
         </div>
@@ -406,4 +431,3 @@ export function Login() {
     </div>
   )
 }
-

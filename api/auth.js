@@ -94,7 +94,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed.' })
   }
 
-  const { action, email, username, password, credential, ...profile } = req.body || {}
+  const { action, email, username, password, credential, accountType, ...profile } = req.body || {}
+  const normalizedAccountType = accountType === 'industry' ? 'industry' : 'workshop'
   const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
   const normalizedUsername = typeof username === 'string' ? username.trim().toLowerCase() : ''
 
@@ -161,6 +162,7 @@ export default async function handler(req, res) {
         passwordHash: await hashPassword(password),
         authProvider: 'local',
         role: 'Owner',
+        accountType: normalizedAccountType,
         createdAt: new Date().toISOString()
       }
 
@@ -185,6 +187,12 @@ export default async function handler(req, res) {
 
       if (!user || !(await passwordMatches(password, user.passwordHash))) {
         return res.status(401).json({ error: 'Invalid username/email or password.' })
+      }
+
+      // Existing accounts without an accountType remain workshop accounts.
+      const userAccountType = user.accountType || 'workshop'
+      if (userAccountType !== normalizedAccountType) {
+        return res.status(403).json({ error: `This account is registered for ${userAccountType === 'industry' ? 'Industry' : 'Workshop'} Login.` })
       }
 
       // Migration: transparently upgrade legacy scrypt hashes to bcrypt on login
@@ -220,6 +228,10 @@ export default async function handler(req, res) {
       })
 
       if (user) {
+        const userAccountType = user.accountType || 'workshop'
+        if (userAccountType !== normalizedAccountType) {
+          return res.status(403).json({ error: `This account is registered for ${userAccountType === 'industry' ? 'Industry' : 'Workshop'} Login.` })
+        }
         // If they already signed up via email/password but now log in with Google,
         // link their Google Account details to the existing user.
         if (!user.googleId) {
@@ -247,7 +259,7 @@ export default async function handler(req, res) {
 
     // Action 4: Google Signup Profile Completion
     if (action === 'complete-profile') {
-      const { credential: profileCredential, workshopName, workshopAddress } = req.body || {}
+      const { credential: profileCredential, workshopName, workshopAddress, accountType: profileAccountType } = req.body || {}
       const payload = await verifyGoogleCredential(profileCredential)
       if (!payload || !normalizedUsername || !workshopName || !workshopAddress) {
         return res.status(400).json({ error: 'Please provide all profile completion fields.' })
@@ -287,6 +299,7 @@ export default async function handler(req, res) {
         profileImage: profileImage || null,
         authProvider: 'google',
         role: 'Owner',
+        accountType: profileAccountType === 'industry' ? 'industry' : 'workshop',
         createdAt: new Date().toISOString()
       }
 
