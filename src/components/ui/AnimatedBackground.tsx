@@ -16,70 +16,6 @@ const RGBA = {
   cyan: (a: number) => `rgba(202, 240, 248, ${Math.max(0, Math.min(1, a))})`,
 }
 
-interface NodePoint {
-  id: number
-  x: number
-  y: number
-  vx: number
-  vy: number
-  baseRadius: number
-  phase: number
-  pulseGlow: number
-  neighbors: number[]
-}
-
-interface CircuitPulse {
-  fromIndex: number
-  toIndex: number
-  progress: number
-  speed: number
-}
-
-interface Spark {
-  x: number
-  y: number
-  vx: number
-  vy: number
-  alpha: number
-  maxAlpha: number
-  life: number
-  decay: number
-  size: number
-}
-
-interface Particle {
-  x: number
-  y: number
-  vx: number
-  vy: number
-  size: number
-  alpha: number
-  phase: number
-  layer: number
-}
-
-interface BlueprintItem {
-  id: number
-  x: number
-  y: number
-  size: number
-  kind: number
-  rotation: number
-  rotSpeed: number
-  progress: number
-  duration: number
-  state: 'drawing' | 'holding' | 'fading'
-  alpha: number
-  label1: string
-  label2: string
-}
-
-interface GridIntersection {
-  x: number
-  y: number
-  glow: number
-}
-
 const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val))
 const random = (min: number, max: number) => min + Math.random() * (max - min)
 
@@ -95,7 +31,14 @@ export function AnimatedBackground() {
     let width = 0
     let height = 0
     let animFrameId = 0
-    let lastTime = performance.now()
+    let lastTimestamp = 0
+
+    // Continuous real-time movement accumulators
+    let gridOffset = 0
+    let waveOffset = 0
+    let hScanY = 0
+    let vScanX = 0
+    let diagScanPos = 0
 
     const mouse = {
       x: -1000,
@@ -104,16 +47,16 @@ export function AnimatedBackground() {
       targetY: -1000,
     }
 
-    let nodes: NodePoint[] = []
-    let pulses: CircuitPulse[] = []
-    let sparks: Spark[] = []
-    let particles: Particle[] = []
-    let blueprints: BlueprintItem[] = []
-    let gridIntersections: GridIntersection[] = []
+    let nodes: any[] = []
+    let pulses: any[] = []
+    let sparks: any[] = []
+    let particles: any[] = []
+    let blueprints: any[] = []
+    let gridDots: any[] = []
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    const createBlueprint = (w: number, h: number, index: number): BlueprintItem => {
+    const createBlueprint = (w: number, h: number, index: number) => {
       const kinds = 6
       const kind = index % kinds
       const labels = [
@@ -126,15 +69,16 @@ export function AnimatedBackground() {
       ]
       return {
         id: Math.random(),
-        x: random(w * 0.08, w * 0.92),
-        y: random(h * 0.12, h * 0.88),
-        size: random(60, 130),
+        x: random(w * 0.05, w * 0.95),
+        y: random(h * 0.1, h * 0.9),
+        vx: random(-0.4, 0.4),
+        vy: random(-0.3, 0.3),
+        size: random(65, 135),
         kind,
         rotation: random(0, Math.PI * 2),
-        rotSpeed: random(-0.015, 0.015),
+        rotSpeed: random(-0.012, 0.012),
         progress: 0,
-        duration: random(3500, 6000), // Active sketching cycle 3.5s - 6s
-        state: 'drawing',
+        duration: random(4000, 7000),
         alpha: 0,
         label1: labels[kind][0],
         label2: labels[kind][1],
@@ -151,21 +95,24 @@ export function AnimatedBackground() {
       canvas.style.height = `${height}px`
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
+      hScanY = 0
+      vScanX = 0
+      diagScanPos = 0
+
       // 1. Dynamic Circuit Nodes
       const nodeCount = Math.min(36, Math.max(18, Math.round(width / 65)))
       nodes = Array.from({ length: nodeCount }, (_, i) => ({
         id: i,
         x: random(width * 0.05, width * 0.95),
         y: random(height * 0.08, height * 0.92),
-        vx: random(-0.55, 0.55), // Dynamic continuous floating velocity
-        vy: random(-0.55, 0.55),
+        vx: random(-0.8, 0.8),
+        vy: random(-0.8, 0.8),
         baseRadius: random(2.5, 4.5),
         phase: random(0, Math.PI * 2),
         pulseGlow: 0,
         neighbors: [],
       }))
 
-      // Connect nodes to nearest neighbors
       nodes.forEach((node) => {
         const sorted = [...nodes]
           .filter((n) => n.id !== node.id)
@@ -173,70 +120,49 @@ export function AnimatedBackground() {
         node.neighbors = sorted.slice(0, random(2, 4) > 2.5 ? 3 : 2).map((n) => n.id)
       })
 
-      // 2. High-Speed Circuit Pulses
-      pulses = Array.from({ length: Math.min(16, Math.max(8, Math.round(nodeCount / 2.2))) }, () => {
+      // 2. High-Speed Racing Pulses
+      pulses = Array.from({ length: Math.min(18, Math.max(10, Math.round(nodeCount / 2))) }, () => {
         const fromNode = nodes[Math.floor(Math.random() * nodes.length)]
         const toId = fromNode.neighbors[Math.floor(Math.random() * fromNode.neighbors.length)] || 0
         return {
           fromIndex: fromNode.id,
           toIndex: toId,
           progress: Math.random(),
-          speed: random(0.015, 0.035), // Fast moving energy pulses
+          speed: random(0.018, 0.04),
         }
       })
 
-      // 3. Floating Ambient Particles
-      const particleCount = Math.min(75, Math.max(45, Math.round(width / 25)))
+      // 3. Floating Particles
+      const particleCount = Math.min(80, Math.max(45, Math.round(width / 22)))
       particles = Array.from({ length: particleCount }, () => ({
         x: random(0, width),
         y: random(0, height),
-        vx: random(-0.6, 0.6),
-        vy: random(-1.2, -0.4),
-        size: random(1.5, 3.5),
-        alpha: random(0.2, 0.65),
+        vx: random(-0.8, 0.8),
+        vy: random(-1.6, -0.6),
+        size: random(1.5, 3.8),
+        alpha: random(0.25, 0.7),
         phase: random(0, Math.PI * 2),
         layer: Math.floor(random(1, 4)),
       }))
 
-      // 4. Blueprint CAD Drawings
-      const blueprintCount = Math.min(10, Math.max(6, Math.round(width / 190)))
-      blueprints = Array.from({ length: blueprintCount }, (_, i) => createBlueprint(width, height, i))
+      // 4. Blueprint Drawings
+      const bpCount = Math.min(10, Math.max(6, Math.round(width / 180)))
+      blueprints = Array.from({ length: bpCount }, (_, i) => createBlueprint(width, height, i))
 
       // 5. Grid Intersections
       const spacing = 55
-      gridIntersections = []
+      gridDots = []
       for (let gx = spacing; gx < width; gx += spacing * 2) {
         for (let gy = spacing; gy < height; gy += spacing * 2) {
-          if (Math.random() > 0.4) {
-            gridIntersections.push({ x: gx, y: gy, glow: random(0.2, 0.9) })
-          }
+          gridDots.push({ x: gx, y: gy, glow: random(0.3, 0.95), phase: random(0, Math.PI * 2) })
         }
       }
-
       sparks = []
     }
 
-    const spawnSparks = (x: number, y: number, count = 5) => {
-      for (let i = 0; i < count; i++) {
-        const angle = Math.random() * Math.PI * 2
-        const speed = random(1.5, 4.0)
-        sparks.push({
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          alpha: 1,
-          maxAlpha: random(0.8, 1),
-          life: 0,
-          decay: random(0.03, 0.07),
-          size: random(1.2, 2.8),
-        })
-      }
-    }
-
-    const drawLine = (x1: number, y1: number, x2: number, y2: number, color: string, width = 1, dash: number[] = []) => {
+    const drawLine = (x1: number, y1: number, x2: number, y2: number, color: string, w = 1, dash: number[] = []) => {
       ctx.strokeStyle = color
-      ctx.lineWidth = width
+      ctx.lineWidth = w
       ctx.setLineDash(dash)
       ctx.beginPath()
       ctx.moveTo(x1, y1)
@@ -244,7 +170,16 @@ export function AnimatedBackground() {
       ctx.stroke()
     }
 
-    const renderBlueprint = (bp: BlueprintItem, time: number, dt: number) => {
+    const renderBlueprint = (bp: any, dt: number, time: number) => {
+      bp.x += bp.vx * (dt / 16)
+      bp.y += bp.vy * (dt / 16)
+      bp.rotation += bp.rotSpeed * (dt / 16)
+
+      if (bp.x < -100) bp.x = width + 100
+      if (bp.x > width + 100) bp.x = -100
+      if (bp.y < -100) bp.y = height + 100
+      if (bp.y > height + 100) bp.y = -100
+
       bp.progress += dt / bp.duration
       if (bp.progress >= 1) {
         Object.assign(bp, createBlueprint(width, height, Math.floor(Math.random() * 6)))
@@ -252,51 +187,42 @@ export function AnimatedBackground() {
       }
 
       if (bp.progress < 0.3) {
-        bp.state = 'drawing'
-        bp.alpha = (bp.progress / 0.3) * 0.55
+        bp.alpha = (bp.progress / 0.3) * 0.6
       } else if (bp.progress < 0.75) {
-        bp.state = 'holding'
-        bp.alpha = 0.55 + Math.sin(time * 0.003 + bp.id) * 0.1
+        bp.alpha = 0.6 + Math.sin(time * 0.004 + bp.id) * 0.12
       } else {
-        bp.state = 'fading'
-        bp.alpha = ((1 - bp.progress) / 0.25) * 0.55
+        bp.alpha = ((1 - bp.progress) / 0.25) * 0.6
       }
 
       if (bp.alpha <= 0.01) return
 
-      const drawProgress = bp.state === 'drawing' ? bp.progress / 0.3 : 1
-      bp.rotation += bp.rotSpeed
+      const drawProgress = bp.progress < 0.3 ? bp.progress / 0.3 : 1
 
-      // Fast active drift movement
-      const driftX = Math.sin(time * 0.0012 + bp.id) * 35
-      const driftY = Math.cos(time * 0.0014 + bp.id) * 28
-      const cx = bp.x + driftX
-      const cy = bp.y + driftY
-      const s = bp.size
-
-      const mouseDist = Math.hypot(mouse.x - cx, mouse.y - cy)
+      const mouseDist = Math.hypot(mouse.x - bp.x, mouse.y - bp.y)
       const mouseGlow = clamp(1 - mouseDist / 220, 0, 1)
-      const effectiveAlpha = clamp(bp.alpha + mouseGlow * 0.38, 0, 0.9)
+      const effectiveAlpha = clamp(bp.alpha + mouseGlow * 0.35, 0, 0.95)
 
       ctx.save()
-      ctx.translate(cx, cy)
+      ctx.translate(bp.x, bp.y)
       ctx.rotate(bp.rotation)
       ctx.globalAlpha = effectiveAlpha
       ctx.strokeStyle = PALETTE.frost
       ctx.fillStyle = PALETTE.cyan
       ctx.shadowColor = PALETTE.teal
-      ctx.shadowBlur = 8 + mouseGlow * 14
+      ctx.shadowBlur = 8 + mouseGlow * 15
+
+      const s = bp.size
 
       if (bp.kind === 0) {
         const maxAngle = Math.PI * 2 * drawProgress
-        ctx.lineWidth = 1.4
+        ctx.lineWidth = 1.5
         ctx.setLineDash([4, 4])
         ctx.beginPath()
         ctx.arc(0, 0, s * 0.5, 0, maxAngle)
         ctx.stroke()
 
         ctx.setLineDash([])
-        ctx.lineWidth = 1.6
+        ctx.lineWidth = 1.8
         ctx.beginPath()
         ctx.arc(0, 0, s * 0.35, 0, maxAngle)
         ctx.stroke()
@@ -317,9 +243,9 @@ export function AnimatedBackground() {
         ctx.stroke()
 
         if (drawProgress > 0.4) {
-          drawLine(-s * 0.65, 0, s * 0.65, 0, RGBA.cyan(effectiveAlpha * 0.9), 1)
-          drawLine(0, -s * 0.65, 0, s * 0.65, RGBA.cyan(effectiveAlpha * 0.9), 1)
-          ctx.fillRect(-2, -2, 4, 4)
+          drawLine(-s * 0.65, 0, s * 0.65, 0, RGBA.cyan(effectiveAlpha), 1.2)
+          drawLine(0, -s * 0.65, 0, s * 0.65, RGBA.cyan(effectiveAlpha), 1.2)
+          ctx.fillRect(-2.5, -2.5, 5, 5)
         }
       } else if (bp.kind === 1) {
         const w = s * 1.2
@@ -327,7 +253,7 @@ export function AnimatedBackground() {
         const perimeter = 2 * (w + h)
         const currentLen = perimeter * drawProgress
 
-        ctx.lineWidth = 1.5
+        ctx.lineWidth = 1.6
         ctx.setLineDash([])
         ctx.beginPath()
         let rLen = currentLen
@@ -353,14 +279,14 @@ export function AnimatedBackground() {
 
         if (drawProgress > 0.6) {
           const off = 16
-          drawLine(-w / 2 - 5, h / 2 + off, w / 2 + 5, h / 2 + off, RGBA.frost(effectiveAlpha * 0.8), 1, [3, 3])
-          drawLine(-w / 2, h / 2 + 4, -w / 2, h / 2 + off + 5, RGBA.frost(effectiveAlpha * 0.7), 1)
-          drawLine(w / 2, h / 2 + 4, w / 2, h / 2 + off + 5, RGBA.frost(effectiveAlpha * 0.7), 1)
+          drawLine(-w / 2 - 5, h / 2 + off, w / 2 + 5, h / 2 + off, RGBA.frost(effectiveAlpha * 0.85), 1, [3, 3])
+          drawLine(-w / 2, h / 2 + 4, -w / 2, h / 2 + off + 5, RGBA.frost(effectiveAlpha * 0.8), 1)
+          drawLine(w / 2, h / 2 + 4, w / 2, h / 2 + off + 5, RGBA.frost(effectiveAlpha * 0.8), 1)
         }
       } else if (bp.kind === 2) {
         const sides = 6
         const radius = s * 0.48
-        ctx.lineWidth = 1.4
+        ctx.lineWidth = 1.5
         ctx.setLineDash([])
         ctx.beginPath()
         for (let i = 0; i <= sides; i++) {
@@ -377,16 +303,16 @@ export function AnimatedBackground() {
         if (drawProgress > 0.5) {
           for (let i = 0; i < sides; i++) {
             const a = (i / sides) * Math.PI * 2
-            drawLine(0, 0, Math.cos(a) * radius, Math.sin(a) * radius, RGBA.teal(effectiveAlpha * 0.7), 1, [2, 3])
+            drawLine(0, 0, Math.cos(a) * radius, Math.sin(a) * radius, RGBA.teal(effectiveAlpha * 0.75), 1, [2, 3])
           }
           ctx.beginPath()
-          ctx.arc(0, 0, 3.5, 0, Math.PI * 2)
+          ctx.arc(0, 0, 4, 0, Math.PI * 2)
           ctx.fill()
         }
       } else if (bp.kind === 3) {
         const cw = s * 0.8
         const ch = s * 0.8
-        ctx.lineWidth = 1.6
+        ctx.lineWidth = 1.8
         ctx.setLineDash([])
         ctx.strokeRect(-cw / 2, -ch / 2, cw * drawProgress, ch)
 
@@ -395,12 +321,12 @@ export function AnimatedBackground() {
           const pinLen = 14
           for (let i = 0; i < pins; i++) {
             const py = -ch / 2 + (ch / (pins + 1)) * (i + 1)
-            drawLine(-cw / 2, py, -cw / 2 - pinLen, py, RGBA.cyan(effectiveAlpha * 0.85), 1.4)
-            drawLine(cw / 2, py, cw / 2 + pinLen, py, RGBA.cyan(effectiveAlpha * 0.85), 1.4)
+            drawLine(-cw / 2, py, -cw / 2 - pinLen, py, RGBA.cyan(effectiveAlpha * 0.9), 1.5)
+            drawLine(cw / 2, py, cw / 2 + pinLen, py, RGBA.cyan(effectiveAlpha * 0.9), 1.5)
           }
         }
       } else if (bp.kind === 4) {
-        ctx.lineWidth = 1.3
+        ctx.lineWidth = 1.4
         ctx.setLineDash([3, 4])
         ctx.beginPath()
         ctx.arc(0, 0, s * 0.45, 0, Math.PI * 2 * drawProgress)
@@ -410,23 +336,23 @@ export function AnimatedBackground() {
           const bSize = 14
           const hs = s * 0.52
           ctx.setLineDash([])
-          drawLine(-hs, -hs, -hs + bSize, -hs, RGBA.cyan(effectiveAlpha), 2)
-          drawLine(-hs, -hs, -hs, -hs + bSize, RGBA.cyan(effectiveAlpha), 2)
-          drawLine(hs, hs, hs - bSize, hs, RGBA.cyan(effectiveAlpha), 2)
-          drawLine(hs, hs, hs, hs - bSize, RGBA.cyan(effectiveAlpha), 2)
+          drawLine(-hs, -hs, -hs + bSize, -hs, RGBA.cyan(effectiveAlpha), 2.2)
+          drawLine(-hs, -hs, -hs, -hs + bSize, RGBA.cyan(effectiveAlpha), 2.2)
+          drawLine(hs, hs, hs - bSize, hs, RGBA.cyan(effectiveAlpha), 2.2)
+          drawLine(hs, hs, hs, hs - bSize, RGBA.cyan(effectiveAlpha), 2.2)
         }
       } else {
         const radius = s * 0.5
         const startAngle = -Math.PI / 3
         const endAngle = startAngle + Math.PI * 0.85 * drawProgress
-        ctx.lineWidth = 1.5
+        ctx.lineWidth = 1.6
         ctx.setLineDash([])
         ctx.beginPath()
         ctx.arc(0, 0, radius, startAngle, endAngle)
         ctx.stroke()
 
         if (drawProgress > 0.3) {
-          drawLine(0, 0, Math.cos(endAngle) * (radius + 10), Math.sin(endAngle) * (radius + 10), RGBA.frost(effectiveAlpha), 1.6)
+          drawLine(0, 0, Math.cos(endAngle) * (radius + 10), Math.sin(endAngle) * (radius + 10), RGBA.frost(effectiveAlpha), 1.8)
         }
       }
 
@@ -442,21 +368,28 @@ export function AnimatedBackground() {
       ctx.restore()
     }
 
-    const draw = (time: number) => {
-      const dt = Math.min(time - lastTime, 50)
-      lastTime = time
+    // MAIN CONTINUOUS ANIMATION LOOP
+    const draw = (timestamp: number) => {
+      if (!lastTimestamp) lastTimestamp = timestamp
+      const dt = Math.min(timestamp - lastTimestamp, 50)
+      lastTimestamp = timestamp
 
-      // Snappy interactive mouse responsiveness
-      mouse.x += (mouse.targetX - mouse.x) * 0.12
-      mouse.y += (mouse.targetY - mouse.y) * 0.12
+      // Real-time motion accumulators
+      const deltaSec = dt / 1000
+      gridOffset += deltaSec * 35
+      waveOffset += deltaSec * 160
 
-      // Parallax shifts
+      hScanY = (hScanY + deltaSec * 220) % (height + 100)
+      vScanX = (vScanX + deltaSec * 260) % (width + 100)
+      diagScanPos = (diagScanPos + deltaSec * 180) % (width + height + 200)
+
+      mouse.x += (mouse.targetX - mouse.x) * 0.14
+      mouse.y += (mouse.targetY - mouse.y) * 0.14
+
       const parallaxX = clamp((mouse.x - width / 2) * 0.02, -15, 15)
       const parallaxY = clamp((mouse.y - height / 2) * 0.016, -12, 12)
 
-      // ==========================================
-      // LAYER 1: Dynamic Background Gradient
-      // ==========================================
+      // Layer 1: Background Base & Shifting Gradient Pools
       const bgGrad = ctx.createRadialGradient(
         width * 0.5 + parallaxX * 2,
         height * 0.4 + parallaxY * 2,
@@ -471,12 +404,11 @@ export function AnimatedBackground() {
       ctx.fillStyle = bgGrad
       ctx.fillRect(0, 0, width, height)
 
-      // Dynamic Shifting Ambient Pools
-      const pool1X = width * 0.3 + Math.sin(time * 0.001) * (width * 0.2)
-      const pool1Y = height * 0.35 + Math.cos(time * 0.0012) * (height * 0.18)
+      const pool1X = width * 0.3 + Math.sin(timestamp * 0.001) * (width * 0.22)
+      const pool1Y = height * 0.35 + Math.cos(timestamp * 0.0012) * (height * 0.18)
       const pool1Grad = ctx.createRadialGradient(pool1X, pool1Y, 0, pool1X, pool1Y, width * 0.45)
-      pool1Grad.addColorStop(0, RGBA.primary(0.22))
-      pool1Grad.addColorStop(0.6, RGBA.teal(0.1))
+      pool1Grad.addColorStop(0, RGBA.primary(0.24))
+      pool1Grad.addColorStop(0.6, RGBA.teal(0.12))
       pool1Grad.addColorStop(1, 'rgba(3, 4, 94, 0)')
       ctx.fillStyle = pool1Grad
       ctx.fillRect(0, 0, width, height)
@@ -484,20 +416,15 @@ export function AnimatedBackground() {
       ctx.save()
       ctx.translate(parallaxX, parallaxY)
 
-      // ==========================================
-      // LAYER 2: Fast Drifting Grid & Perspective
-      // ==========================================
+      // Layer 2: CONTINUOUSLY MOVING GRID
       const spacing = 55
-      const gridDriftX = (time * 0.038) % spacing // ~38px/s active grid scroll
-      const gridDriftY = (time * 0.026) % spacing // ~26px/s active grid scroll
-
-      const waveX = (time * 0.18) % (width + spacing * 4) - spacing * 2
-      const waveY = (time * 0.14) % (height + spacing * 4) - spacing * 2
+      const gridShiftX = gridOffset % spacing
+      const gridShiftY = (gridOffset * 0.7) % spacing
 
       // Vertical Grid Lines
       for (let x = -spacing; x < width + spacing * 2; x += spacing) {
-        const gx = x + gridDriftX
-        const distToWave = Math.abs(gx - waveX)
+        const gx = x + gridShiftX
+        const distToWave = Math.abs(gx - (waveOffset % (width + spacing * 4)))
         const waveGlow = clamp(1 - distToWave / 140, 0, 1)
 
         const distToMouse = Math.abs(gx - mouse.x)
@@ -505,17 +432,16 @@ export function AnimatedBackground() {
 
         const isMajor = Math.round(gx) % (spacing * 3) < spacing
         const alpha = isMajor
-          ? 0.26 + waveGlow * 0.28 + mouseLineGlow * 0.22
-          : 0.18 + waveGlow * 0.2 + mouseLineGlow * 0.18
+          ? 0.28 + waveGlow * 0.3 + mouseLineGlow * 0.25
+          : 0.18 + waveGlow * 0.22 + mouseLineGlow * 0.2
 
-        const strokeColor = isMajor ? RGBA.teal(alpha) : RGBA.primary(alpha)
-        drawLine(gx, 0, gx, height, strokeColor, isMajor ? 1.4 : 1)
+        drawLine(gx, 0, gx, height, isMajor ? RGBA.teal(alpha) : RGBA.primary(alpha), isMajor ? 1.4 : 1)
       }
 
       // Horizontal Grid Lines
       for (let y = -spacing; y < height + spacing * 2; y += spacing) {
-        const gy = y + gridDriftY
-        const distToWave = Math.abs(gy - waveY)
+        const gy = y + gridShiftY
+        const distToWave = Math.abs(gy - (waveOffset % (height + spacing * 4)))
         const waveGlow = clamp(1 - distToWave / 140, 0, 1)
 
         const distToMouse = Math.abs(gy - mouse.y)
@@ -523,19 +449,18 @@ export function AnimatedBackground() {
 
         const isMajor = Math.round(gy) % (spacing * 3) < spacing
         const alpha = isMajor
-          ? 0.24 + waveGlow * 0.25 + mouseLineGlow * 0.22
-          : 0.16 + waveGlow * 0.18 + mouseLineGlow * 0.18
+          ? 0.26 + waveGlow * 0.28 + mouseLineGlow * 0.25
+          : 0.16 + waveGlow * 0.2 + mouseLineGlow * 0.2
 
-        const strokeColor = isMajor ? RGBA.teal(alpha) : RGBA.primary(alpha)
-        drawLine(0, gy, width, gy, strokeColor, isMajor ? 1.4 : 1)
+        drawLine(0, gy, width, gy, isMajor ? RGBA.teal(alpha) : RGBA.primary(alpha), isMajor ? 1.4 : 1)
       }
 
-      // Glowing Grid Intersections
-      gridIntersections.forEach((gi) => {
-        const ix = gi.x + gridDriftX
-        const iy = gi.y + gridDriftY
-        const pulse = 0.5 + Math.sin(time * 0.005 + gi.x + gi.y) * 0.5
-        const alpha = 0.35 + pulse * gi.glow * 0.55
+      // Glowing Grid Intersection Dots
+      gridDots.forEach((gd) => {
+        const ix = gd.x + gridShiftX
+        const iy = gd.y + gridShiftY
+        const pulse = 0.5 + Math.sin(timestamp * 0.005 + gd.phase) * 0.5
+        const alpha = 0.35 + pulse * gd.glow * 0.55
         ctx.fillStyle = RGBA.cyan(alpha)
         ctx.shadowColor = PALETTE.cyan
         ctx.shadowBlur = 8
@@ -545,9 +470,9 @@ export function AnimatedBackground() {
       })
       ctx.shadowBlur = 0
 
-      // 3D Perspective Horizon Grid
+      // 3D Perspective Grid
       const horizonY = height * 0.72
-      ctx.strokeStyle = RGBA.primary(0.24)
+      ctx.strokeStyle = RGBA.primary(0.25)
       ctx.lineWidth = 1.2
       ctx.beginPath()
       for (let px = -width * 0.5; px < width * 1.5; px += 80) {
@@ -555,24 +480,21 @@ export function AnimatedBackground() {
         ctx.lineTo(px, height + 80)
       }
       for (let row = 0; row < 10; row++) {
-        const progress = (row / 10 + (time * 0.0006) % 0.1) // Continuous forward movement towards viewer
+        const progress = (row / 10 + (timestamp * 0.0008) % 0.1)
         const ry = horizonY + Math.pow(progress, 2.2) * (height - horizonY + 80)
         ctx.moveTo(0, ry)
         ctx.lineTo(width, ry)
       }
       ctx.stroke()
 
-      // ==========================================
-      // LAYER 3: Blueprint CAD Drawings
-      // ==========================================
-      blueprints.forEach((bp) => renderBlueprint(bp, time, dt))
+      // Layer 3: MOVING BLUEPRINT SCHEMATICS
+      blueprints.forEach((bp) => renderBlueprint(bp, dt, timestamp))
 
-      // ==========================================
-      // LAYER 4: Dynamic Floating Nodes & Traces
-      // ==========================================
+      // Layer 4: CONTINUOUSLY FLOATING NODES & TRACES
       nodes.forEach((node) => {
-        node.x += node.vx
-        node.y += node.vy
+        node.x += node.vx * (dt / 16)
+        node.y += node.vy * (dt / 16)
+
         if (node.x < width * 0.04 || node.x > width * 0.96) node.vx *= -1
         if (node.y < height * 0.06 || node.y > height * 0.94) node.vy *= -1
 
@@ -581,7 +503,7 @@ export function AnimatedBackground() {
         const distToMouse = Math.hypot(mouse.x - node.x, mouse.y - node.y)
         const mouseNear = clamp(1 - distToMouse / 200, 0, 1)
 
-        node.neighbors.forEach((targetId) => {
+        node.neighbors.forEach((targetId: number) => {
           const target = nodes[targetId]
           if (!target) return
           const dist = Math.hypot(target.x - node.x, target.y - node.y)
@@ -592,12 +514,12 @@ export function AnimatedBackground() {
           const midMouseDist = Math.hypot(mouse.x - midX, mouse.y - midY)
           const lineMouseGlow = clamp(1 - midMouseDist / 220, 0, 1)
 
-          const lineAlpha = 0.18 + lineMouseGlow * 0.4 + (node.pulseGlow + target.pulseGlow) * 0.3
+          const lineAlpha = 0.2 + lineMouseGlow * 0.4 + (node.pulseGlow + target.pulseGlow) * 0.3
           drawLine(node.x, node.y, target.x, target.y, RGBA.teal(lineAlpha), 1.2 + lineMouseGlow * 0.8)
         })
 
-        const baseAlpha = 0.6 + Math.sin(time * 0.004 + node.phase) * 0.3 + mouseNear * 0.4 + node.pulseGlow
-        const radius = node.baseRadius + mouseNear * 2.5 + node.pulseGlow * 3
+        const baseAlpha = 0.65 + Math.sin(timestamp * 0.004 + node.phase) * 0.3 + mouseNear * 0.4 + node.pulseGlow
+        const radius = node.baseRadius + mouseNear * 2.5 + node.pulseGlow * 3.5
 
         ctx.fillStyle = RGBA.cyan(clamp(baseAlpha, 0.45, 1))
         ctx.shadowColor = PALETTE.cyan
@@ -608,16 +530,28 @@ export function AnimatedBackground() {
       })
       ctx.shadowBlur = 0
 
-      // ==========================================
-      // LAYER 5: Fast Energy Pulses & Spark Trails
-      // ==========================================
+      // Layer 5: FAST RACING CIRCUIT PULSES & SPARKS
       pulses.forEach((pulse) => {
-        pulse.progress += pulse.speed
+        pulse.progress += pulse.speed * (dt / 16)
         if (pulse.progress >= 1) {
           const toNode = nodes[pulse.toIndex]
           if (toNode) {
             toNode.pulseGlow = 1.0
-            spawnSparks(toNode.x, toNode.y, 5)
+            for (let i = 0; i < 5; i++) {
+              const angle = Math.random() * Math.PI * 2
+              const speed = random(1.5, 4.2)
+              sparks.push({
+                x: toNode.x,
+                y: toNode.y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                alpha: 1,
+                maxAlpha: random(0.8, 1),
+                life: 0,
+                decay: random(0.03, 0.07),
+                size: random(1.2, 2.8),
+              })
+            }
             pulse.fromIndex = toNode.id
             const nextNeighbor = toNode.neighbors[Math.floor(Math.random() * toNode.neighbors.length)]
             pulse.toIndex = nextNeighbor !== undefined ? nextNeighbor : (toNode.id + 1) % nodes.length
@@ -647,28 +581,28 @@ export function AnimatedBackground() {
       })
       ctx.shadowBlur = 0
 
-      sparks.forEach((spark, index) => {
-        spark.x += spark.vx
-        spark.y += spark.vy
+      // Sparks
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const spark = sparks[i]
+        spark.x += spark.vx * (dt / 16)
+        spark.y += spark.vy * (dt / 16)
         spark.life += spark.decay
         spark.alpha = (1 - spark.life) * spark.maxAlpha
 
         if (spark.life >= 1) {
-          sparks.splice(index, 1)
-          return
+          sparks.splice(i, 1)
+          continue
         }
 
         ctx.fillStyle = RGBA.cyan(spark.alpha)
         ctx.fillRect(spark.x, spark.y, spark.size, spark.size)
-      })
+      }
 
-      // ==========================================
-      // LAYER 6: Fast Floating Ambient Particles
-      // ==========================================
+      // Layer 6: CONTINUOUSLY RISING PARTICLES
       particles.forEach((p) => {
         const speedMult = p.layer === 3 ? 1.6 : p.layer === 2 ? 1.1 : 0.7
-        p.x += (p.vx + Math.sin(time * 0.003 + p.phase) * 0.4) * speedMult
-        p.y += p.vy * speedMult
+        p.x += (p.vx + Math.sin(timestamp * 0.003 + p.phase) * 0.5) * speedMult * (dt / 16)
+        p.y += p.vy * speedMult * (dt / 16)
 
         const dx = p.x - mouse.x
         const dy = p.y - mouse.y
@@ -683,40 +617,49 @@ export function AnimatedBackground() {
         if (p.x < -10) p.x = width + 10
         if (p.x > width + 10) p.x = -10
 
-        const alpha = p.alpha * (0.6 + Math.sin(time * 0.004 + p.phase) * 0.4)
+        const alpha = p.alpha * (0.6 + Math.sin(timestamp * 0.004 + p.phase) * 0.4)
         ctx.fillStyle = p.layer === 3 ? RGBA.cyan(alpha) : p.layer === 2 ? RGBA.frost(alpha) : RGBA.teal(alpha)
         ctx.fillRect(p.x, p.y, p.size, p.size)
       })
 
       ctx.restore()
 
-      // ==========================================
-      // LAYER 7: Scanner Beams & Laser Sweeps
-      // ==========================================
-      // Horizontal Scanner Laser
-      const scanY = ((time * 0.00035) % 1.2 - 0.1) * height // Active 3.5s sweep
-      const hScanGrad = ctx.createLinearGradient(0, scanY - 30, 0, scanY + 30)
+      // Layer 7: CONTINUOUS SCANNER LASERS & CURSOR AURA
+      // 1. Horizontal Laser
+      const hScanYPos = (hScanY - 50) % (height + 100)
+      const hScanGrad = ctx.createLinearGradient(0, hScanYPos - 30, 0, hScanYPos + 30)
       hScanGrad.addColorStop(0, 'rgba(0, 180, 216, 0)')
-      hScanGrad.addColorStop(0.5, RGBA.teal(0.18))
+      hScanGrad.addColorStop(0.5, RGBA.teal(0.22))
       hScanGrad.addColorStop(1, 'rgba(0, 180, 216, 0)')
       ctx.fillStyle = hScanGrad
-      ctx.fillRect(0, scanY - 30, width, 60)
-      drawLine(0, scanY, width, scanY, RGBA.frost(0.35), 1.5, [10, 8])
+      ctx.fillRect(0, hScanYPos - 30, width, 60)
+      drawLine(0, hScanYPos, width, hScanYPos, RGBA.frost(0.4), 1.8, [12, 8])
 
-      // Vertical Scanner Laser
-      const scanX = ((time * 0.00028) % 1.2 - 0.1) * width
-      const vScanGrad = ctx.createLinearGradient(scanX - 30, 0, scanX + 30, 0)
+      // 2. Vertical Laser
+      const vScanXPos = (vScanX - 50) % (width + 100)
+      const vScanGrad = ctx.createLinearGradient(vScanXPos - 30, 0, vScanXPos + 30, 0)
       vScanGrad.addColorStop(0, 'rgba(0, 119, 182, 0)')
-      vScanGrad.addColorStop(0.5, RGBA.primary(0.16))
+      vScanGrad.addColorStop(0.5, RGBA.primary(0.2))
       vScanGrad.addColorStop(1, 'rgba(0, 119, 182, 0)')
       ctx.fillStyle = vScanGrad
-      ctx.fillRect(scanX - 30, 0, 60, height)
+      ctx.fillRect(vScanXPos - 30, 0, 60, height)
+      drawLine(vScanXPos, 0, vScanXPos, height, RGBA.frost(0.3), 1.5, [10, 8])
 
-      // Interactive Mouse Laser Radial & Magnetic Connectors
+      // 3. Diagonal Laser Sweep
+      const dPos = diagScanPos % (width + height + 200) - 100
+      ctx.strokeStyle = RGBA.cyan(0.18)
+      ctx.lineWidth = 2
+      ctx.setLineDash([15, 10])
+      ctx.beginPath()
+      ctx.moveTo(dPos, 0)
+      ctx.lineTo(dPos - height, height)
+      ctx.stroke()
+
+      // Interactive Mouse Laser Aura & Magnetic Connectors
       if (mouse.x > 0 && mouse.y > 0) {
         const mouseAura = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 240)
-        mouseAura.addColorStop(0, RGBA.teal(0.22))
-        mouseAura.addColorStop(0.5, RGBA.primary(0.1))
+        mouseAura.addColorStop(0, RGBA.teal(0.24))
+        mouseAura.addColorStop(0.5, RGBA.primary(0.12))
         mouseAura.addColorStop(1, 'rgba(3, 4, 94, 0)')
         ctx.fillStyle = mouseAura
         ctx.fillRect(0, 0, width, height)
@@ -728,17 +671,17 @@ export function AnimatedBackground() {
           .slice(0, 3)
 
         sortedNodes.forEach(({ node, dist }) => {
-          const lineAlpha = clamp(1 - dist / 220, 0, 1) * 0.55
+          const lineAlpha = clamp(1 - dist / 220, 0, 1) * 0.6
           const nx = node.x + parallaxX
           const ny = node.y + parallaxY
-          drawLine(mouse.x, mouse.y, nx, ny, RGBA.cyan(lineAlpha), 1.4, [4, 4])
+          drawLine(mouse.x, mouse.y, nx, ny, RGBA.cyan(lineAlpha), 1.5, [4, 4])
 
-          const p = (time * 0.006 + node.id) % 1
+          const p = (timestamp * 0.006 + node.id) % 1
           const ipx = mouse.x + (nx - mouse.x) * p
           const ipy = mouse.y + (ny - mouse.y) * p
           ctx.fillStyle = PALETTE.cyan
           ctx.beginPath()
-          ctx.arc(ipx, ipy, 2.5, 0, Math.PI * 2)
+          ctx.arc(ipx, ipy, 2.8, 0, Math.PI * 2)
           ctx.fill()
         })
       }
@@ -761,14 +704,15 @@ export function AnimatedBackground() {
     }
 
     const onVisibility = () => {
-      if (!document.hidden && !animFrameId) {
-        lastTime = performance.now()
+      if (!document.hidden) {
+        lastTimestamp = performance.now()
+        cancelAnimationFrame(animFrameId)
         animFrameId = requestAnimationFrame(draw)
       }
     }
 
     initScene()
-    draw(performance.now())
+    animFrameId = requestAnimationFrame(draw)
 
     window.addEventListener('resize', initScene, { passive: true })
     window.addEventListener('pointermove', onPointerMove, { passive: true })
