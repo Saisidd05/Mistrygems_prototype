@@ -32,14 +32,18 @@
   html {
     scroll-behavior: smooth;
     font-size: 16px;
+    min-height: 100%;
+    background-color: var(--deep);
   }
 
-  body {
+  body,
+  #root {
     font-family: 'Inter', 'Space Grotesk', sans-serif;
     background-color: var(--deep);
     color: var(--text);
     overflow-x: hidden;
     min-height: 100vh;
+    min-height: 100dvh;
     cursor: none; /* Custom glowing blue cursor handles pointer */
   }
 
@@ -287,6 +291,7 @@
 .app-container {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
 }
 
@@ -295,6 +300,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
 }
 
