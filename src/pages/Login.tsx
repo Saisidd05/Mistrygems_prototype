@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Gem, Lock, User, ArrowRight, Mail, CheckCircle2, Building2, Wrench } from 'lucide-react'
-import { useAuth } from '../context/AuthContext'
+import { useAuth, getDashboardPath } from '../context/AuthContext'
 import { GlowButton } from '../components/ui/GlowButton'
 import { AnimatedBackground } from '../components/ui/AnimatedBackground'
 import { Modal } from '../components/ui/Modal'
@@ -47,8 +47,15 @@ export function Login() {
   const [customGoogleName, setCustomGoogleName] = useState('')
 
   const googleButtonRef = useRef<HTMLDivElement>(null)
-  const { login, loginWithGoogle } = useAuth()
+  const { login, loginWithGoogle, isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
+
+  // Redirect already-authenticated users to their own dashboard
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate(getDashboardPath(user), { replace: true })
+    }
+  }, [isAuthenticated, user, navigate])
 
   const isRealGoogleConfigured = Boolean(
     import.meta.env.VITE_GOOGLE_CLIENT_ID &&

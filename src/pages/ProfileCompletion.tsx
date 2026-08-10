@@ -90,7 +90,9 @@ export function ProfileCompletion() {
             <Gem size={28} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold font-sora gradient-text-bright">Complete Profile</h1>
-          <p className="text-xs text-glass-dim mt-1">Almost there! Customize your workshop settings</p>
+          <p className="text-xs text-glass-dim mt-1">
+            Almost there! Set up your {googleData.accountType === 'industry' ? 'industry' : 'workshop'} account
+          </p>
         </div>
 
         {error && (
@@ -129,11 +131,13 @@ export function ProfileCompletion() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-glass-dim mb-1.5">Workshop Name</label>
+            <label className="block text-xs font-medium text-glass-dim mb-1.5">
+              {googleData.accountType === 'industry' ? 'Company Name' : 'Workshop Name'}
+            </label>
             <div className="relative">
               <input
                 className="glass-input pl-10"
-                placeholder="e.g. Apex Precision Engineering"
+                placeholder={googleData.accountType === 'industry' ? 'e.g. Tata Motors Ltd.' : 'e.g. Apex Precision Engineering'}
                 value={workshopName}
                 onChange={e => setWorkshopName(e.target.value)}
                 required
@@ -143,11 +147,13 @@ export function ProfileCompletion() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-glass-dim mb-1.5">Workshop Address</label>
+            <label className="block text-xs font-medium text-glass-dim mb-1.5">
+              {googleData.accountType === 'industry' ? 'Company Address' : 'Workshop Address'}
+            </label>
             <div className="relative">
               <input
                 className="glass-input pl-10"
-                placeholder="e.g. GIDC Area, Sector 2, Rajkot"
+                placeholder={googleData.accountType === 'industry' ? 'e.g. Andheri East, Mumbai' : 'e.g. GIDC Area, Sector 2, Rajkot'}
                 value={workshopAddress}
                 onChange={e => setWorkshopAddress(e.target.value)}
                 required

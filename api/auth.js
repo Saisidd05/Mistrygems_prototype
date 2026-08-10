@@ -130,8 +130,10 @@ export default async function handler(req, res) {
         { $set: { workshopName, workshopAddress, gstin, workshop: { name: workshopName, address: workshopAddress } } },
         { returnDocument: 'after' }
       )
-      if (!result.value) return res.status(404).json({ error: 'User profile not found.' })
-      return res.status(200).json({ user: publicUser(result.value) })
+      // MongoDB Driver v5+ returns the document directly (not result.value)
+      const updatedUser = result?.value ?? result
+      if (!updatedUser) return res.status(404).json({ error: 'User profile not found.' })
+      return res.status(200).json({ user: publicUser(updatedUser) })
     }
 
     // Action 1: Manual Sign Up
