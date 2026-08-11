@@ -20,6 +20,7 @@ import { Tasks } from './pages/Tasks'
 import { Quotations } from './pages/Quotations'
 import { Invoices } from './pages/Invoices'
 import { Inventory } from './pages/Inventory'
+import { Feed } from './pages/Feed'
 import { Notifications } from './pages/Notifications'
 import { Reports } from './pages/Reports'
 import { Settings } from './pages/Settings'
@@ -59,7 +60,7 @@ export default function App() {
 
                 {/* Workshop routes: existing operational features, isolated from Industry users. */}
                 <Route path="/workshop/dashboard" element={<RoleProtectedRoute accountType="workshop"><Dashboard /></RoleProtectedRoute>} />
-                <Route path="/workshop/feed" element={<RoleProtectedRoute accountType="workshop"><Notifications /></RoleProtectedRoute>} />
+                <Route path="/workshop/feed" element={<RoleProtectedRoute accountType="workshop"><Feed /></RoleProtectedRoute>} />
                 <Route path="/workshop/jobs" element={<RoleProtectedRoute accountType="workshop"><Jobs /></RoleProtectedRoute>} />
                 <Route path="/workshop/customers" element={<RoleProtectedRoute accountType="workshop"><Customers /></RoleProtectedRoute>} />
                 <Route path="/workshop/employees" element={<RoleProtectedRoute accountType="workshop"><Employees /></RoleProtectedRoute>} />
