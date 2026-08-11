@@ -11,6 +11,7 @@ export function AnimatedBackground() {
         </defs>
 
         <g className="blueprint-gear blueprint-gear-left" fill="none" stroke="url(#blueprint-fade)">
+          <animateTransform attributeName="transform" type="rotate" from="0 190 245" to="360 190 245" dur="12s" repeatCount="indefinite" />
           <circle cx="190" cy="245" r="73" strokeWidth="2" />
           <circle cx="190" cy="245" r="44" strokeWidth="1.5" />
           <circle cx="190" cy="245" r="12" strokeWidth="2" />
@@ -18,6 +19,7 @@ export function AnimatedBackground() {
         </g>
 
         <g className="blueprint-gear blueprint-gear-right" fill="none" stroke="url(#blueprint-fade)">
+          <animateTransform attributeName="transform" type="rotate" from="360 1235 615" to="0 1235 615" dur="18s" repeatCount="indefinite" />
           <circle cx="1235" cy="615" r="105" strokeWidth="2" />
           <circle cx="1235" cy="615" r="63" strokeWidth="1.5" />
           <circle cx="1235" cy="615" r="16" strokeWidth="2" />

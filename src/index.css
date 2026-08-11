@@ -376,8 +376,8 @@
   opacity: 0.62;
 }
 
-.blueprint-gear-left { transform-box: fill-box; transform-origin: center; animation: blueprint-rotate 34s linear infinite; }
-.blueprint-gear-right { transform-box: fill-box; transform-origin: center; animation: blueprint-rotate-reverse 48s linear infinite; }
+.blueprint-gear-left,
+.blueprint-gear-right { will-change: transform; }
 .blueprint-float { transform-box: fill-box; transform-origin: center; animation: blueprint-float 18s ease-in-out infinite; }
 .blueprint-drift { animation: blueprint-drift 25s ease-in-out infinite; }
 .blueprint-drift-reverse { animation: blueprint-drift-reverse 31s ease-in-out infinite; }
@@ -394,6 +394,7 @@
 @keyframes blueprint-particles { 50% { transform: translate(9px, -20px); opacity: 0.4; } }
 
 @media (prefers-reduced-motion: reduce) {
+  .blueprint-gear animateTransform { display: none; }
   .engineering-grid,
   .blueprint-gear-left,
   .blueprint-gear-right,
