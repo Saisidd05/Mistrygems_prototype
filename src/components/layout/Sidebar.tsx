@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Briefcase, Users, UserCheck, ClipboardList,
   FileText, Bell, BarChart2, Settings, LogOut, ChevronLeft,
-  ChevronRight, Gem, Package, Receipt
+  ChevronRight, Gem, Package, Receipt, Rss
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useSidebar } from '../../context/SidebarContext'
@@ -20,6 +20,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Dashboard', path: '/workshop/dashboard', icon: <LayoutDashboard size={18} /> },
+  { label: 'Feed', path: '/workshop/feed', icon: <Rss size={18} /> },
   { label: 'Jobs', path: '/workshop/jobs', icon: <Briefcase size={18} /> },
   { label: 'Customers', path: '/workshop/customers', icon: <Users size={18} /> },
   { label: 'Employees', path: '/workshop/employees', icon: <UserCheck size={18} /> },

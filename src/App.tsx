@@ -59,6 +59,7 @@ export default function App() {
 
                 {/* Workshop routes: existing operational features, isolated from Industry users. */}
                 <Route path="/workshop/dashboard" element={<RoleProtectedRoute accountType="workshop"><Dashboard /></RoleProtectedRoute>} />
+                <Route path="/workshop/feed" element={<RoleProtectedRoute accountType="workshop"><Notifications /></RoleProtectedRoute>} />
                 <Route path="/workshop/jobs" element={<RoleProtectedRoute accountType="workshop"><Jobs /></RoleProtectedRoute>} />
                 <Route path="/workshop/customers" element={<RoleProtectedRoute accountType="workshop"><Customers /></RoleProtectedRoute>} />
                 <Route path="/workshop/employees" element={<RoleProtectedRoute accountType="workshop"><Employees /></RoleProtectedRoute>} />
@@ -87,6 +88,7 @@ export default function App() {
 
                 {/* Preserve existing workshop bookmarks without exposing them to Industry accounts. */}
                 <Route path="/dashboard" element={<LegacyWorkshopRedirect path="dashboard" />} />
+                <Route path="/feed" element={<LegacyWorkshopRedirect path="feed" />} />
                 <Route path="/jobs" element={<LegacyWorkshopRedirect path="jobs" />} />
                 <Route path="/customers" element={<LegacyWorkshopRedirect path="customers" />} />
                 <Route path="/employees" element={<LegacyWorkshopRedirect path="employees" />} />

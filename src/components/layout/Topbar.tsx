@@ -8,6 +8,7 @@ import { useAppData } from '../../context/AppDataContext'
 
 const pageNames: Record<string, string> = {
   '/workshop/dashboard': 'Dashboard',
+  '/workshop/feed': 'Feed',
   '/workshop/jobs': 'Job Management',
   '/workshop/customers': 'Customers',
   '/workshop/employees': 'Employees',
