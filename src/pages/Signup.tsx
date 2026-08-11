@@ -3,6 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Gem, Mail, Lock, User, Building, MapPin, ArrowRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { GlowButton } from '../components/ui/GlowButton'
+import { AnimatedBackground } from '../components/ui/AnimatedBackground'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -109,6 +110,7 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-y-auto py-10">
+      <AnimatedBackground />
       <div className="w-full max-w-lg glass-card p-8 relative z-10 shadow-glass-lg border-glass-bright">
 
         {/* Brand Header */}

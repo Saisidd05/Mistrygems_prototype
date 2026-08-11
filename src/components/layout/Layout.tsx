@@ -1,6 +1,7 @@
 import React from 'react'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
+import { AnimatedBackground } from '../ui/AnimatedBackground'
 import { SidebarProvider } from '../../context/SidebarContext'
 
 interface LayoutProps {
@@ -10,6 +11,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   return (
     <SidebarProvider>
+      <AnimatedBackground />
       <div className="app-container">
         <Sidebar />
         <div className="main-content">

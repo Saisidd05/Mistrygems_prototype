@@ -2,6 +2,7 @@ import React from 'react'
 import { Bell, Building2, ClipboardList, FileCheck, FileText, LayoutDashboard, LogOut, MapPin, PlusCircle, Settings, Truck, UserCircle, Users } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { AnimatedBackground } from '../ui/AnimatedBackground'
 import { cn } from '../../lib/utils'
 
 const navigation = [
@@ -26,6 +27,7 @@ export function IndustryLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <AnimatedBackground />
       <div className="app-container">
         <aside className="relative flex h-screen w-60 flex-col z-20 glass-surface border-r border-glass/10">
           <div className="flex items-center gap-3 px-4 py-5 border-b border-glass/10">

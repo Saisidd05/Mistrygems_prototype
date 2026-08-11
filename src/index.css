@@ -349,20 +349,59 @@
   display: block;
 }
 
-/* One low-opacity, fixed canvas stays behind every app surface. */
+/* Full-viewport SVG blueprint layer stays behind every app surface. */
 .engineering-background {
   position: fixed;
   inset: 0;
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
-  background: var(--deep);
+  background: radial-gradient(circle at 50% 10%, rgba(0, 119, 182, 0.2), transparent 42%), var(--deep);
 }
 
-.engineering-background canvas {
-  display: block;
+.engineering-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.23;
+  background-image: linear-gradient(rgba(144, 224, 239, 0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(144, 224, 239, 0.18) 1px, transparent 1px), linear-gradient(rgba(0, 180, 216, 0.16) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 180, 216, 0.16) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
+  animation: blueprint-grid-drift 46s linear infinite;
+}
+
+.engineering-blueprint {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+  opacity: 0.42;
+}
+
+.blueprint-gear-left { transform-box: fill-box; transform-origin: center; animation: blueprint-rotate 84s linear infinite; }
+.blueprint-gear-right { transform-box: fill-box; transform-origin: center; animation: blueprint-rotate-reverse 120s linear infinite; }
+.blueprint-float { transform-box: fill-box; transform-origin: center; animation: blueprint-float 18s ease-in-out infinite; }
+.blueprint-drift { animation: blueprint-drift 25s ease-in-out infinite; }
+.blueprint-drift-reverse { animation: blueprint-drift-reverse 31s ease-in-out infinite; }
+.blueprint-circuit { animation: blueprint-pulse 7s ease-in-out infinite; }
+.blueprint-particles { animation: blueprint-particles 16s ease-in-out infinite; }
+
+@keyframes blueprint-grid-drift { to { background-position: 80px 80px, 80px 80px, 20px 20px, 20px 20px; } }
+@keyframes blueprint-rotate { to { transform: rotate(360deg); } }
+@keyframes blueprint-rotate-reverse { to { transform: rotate(-360deg); } }
+@keyframes blueprint-float { 50% { transform: translateY(-13px); } }
+@keyframes blueprint-drift { 50% { transform: translate(13px, -8px); } }
+@keyframes blueprint-drift-reverse { 50% { transform: translate(-15px, 10px); } }
+@keyframes blueprint-pulse { 50% { opacity: 0.42; } }
+@keyframes blueprint-particles { 50% { transform: translate(9px, -20px); opacity: 0.4; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .engineering-grid,
+  .blueprint-gear-left,
+  .blueprint-gear-right,
+  .blueprint-float,
+  .blueprint-drift,
+  .blueprint-drift-reverse,
+  .blueprint-circuit,
+  .blueprint-particles { animation: none; }
 }
 
 /* ─── Custom Glowing Blue Cursor ─────────────────────────────── */

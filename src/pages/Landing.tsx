@@ -6,12 +6,14 @@ import {
 } from 'lucide-react'
 import { GlowButton } from '../components/ui/GlowButton'
 import { GlassCard, StatCard } from '../components/ui/GlassCard'
+import { AnimatedBackground } from '../components/ui/AnimatedBackground'
 
 export function Landing() {
   const navigate = useNavigate()
 
   return (
     <div className="min-h-screen text-highlight relative overflow-x-hidden">
+      <AnimatedBackground />
       {/* Glass Navigation */}
       <nav className="fixed top-0 inset-x-0 z-50 glass-nav px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
