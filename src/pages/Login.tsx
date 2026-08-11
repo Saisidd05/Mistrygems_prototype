@@ -3,7 +3,6 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Gem, Lock, User, ArrowRight, Mail, CheckCircle2, Building2, Wrench } from 'lucide-react'
 import { useAuth, getDashboardPath } from '../context/AuthContext'
 import { GlowButton } from '../components/ui/GlowButton'
-import { AnimatedBackground } from '../components/ui/AnimatedBackground'
 import { Modal } from '../components/ui/Modal'
 
 const GoogleIcon = () => (
@@ -165,7 +164,6 @@ export function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      <AnimatedBackground />
       <div className="w-full max-w-md glass-card p-8 relative z-10 shadow-glass-lg border-glass-bright">
 
         {/* Brand Header */}
