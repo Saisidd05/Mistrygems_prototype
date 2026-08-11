@@ -26,6 +26,7 @@ import { Reports } from './pages/Reports'
 import { Settings } from './pages/Settings'
 import { IndustryLayout } from './components/industry/IndustryLayout'
 import { IndustryDashboard, IndustryRequirements, IndustrySection } from './pages/industry/IndustryDashboard'
+import { Vendors } from './pages/industry/Vendors'
 
 function RoleProtectedRoute({ accountType, children }: { accountType: 'workshop' | 'industry'; children: React.ReactNode }) {
   const { isAuthenticated, user } = useAuth()
