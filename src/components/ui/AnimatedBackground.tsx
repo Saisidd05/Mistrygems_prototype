@@ -5,8 +5,8 @@ export function AnimatedBackground() {
       <svg className="engineering-blueprint" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" focusable="false">
         <defs>
           <linearGradient id="blueprint-fade" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#90E0EF" stopOpacity="0.46" />
-            <stop offset="1" stopColor="#0077B6" stopOpacity="0.12" />
+            <stop offset="0" stopColor="#CAF0F8" stopOpacity="0.72" />
+            <stop offset="1" stopColor="#00B4D8" stopOpacity="0.28" />
           </linearGradient>
         </defs>
 
