@@ -15,8 +15,8 @@ export function CustomCursor() {
     let frame = 0
 
     const render = () => {
-      ringX += (x - ringX) * 0.58
-      ringY += (y - ringY) * 0.58
+      ringX += (x - ringX) * 0.85
+      ringY += (y - ringY) * 0.85
       dotRef.current?.style.setProperty('transform', `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`)
       ringRef.current?.style.setProperty('transform', `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`)
       frame = requestAnimationFrame(render)
