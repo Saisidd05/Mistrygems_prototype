@@ -20,3 +20,6 @@ npm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Git worktrees (local linked checkouts — not project source)
+sri-worktree/
