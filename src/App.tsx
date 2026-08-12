@@ -28,6 +28,7 @@ import { WorkshopChats } from './pages/WorkshopChats'
 import { IndustryLayout } from './components/industry/IndustryLayout'
 import { IndustryDashboard, IndustryRequirements, IndustrySection } from './pages/industry/IndustryDashboard'
 import { Vendors } from './pages/industry/Vendors'
+import { IndustryChats } from './pages/industry/IndustryChats'
 
 function RoleProtectedRoute({ accountType, children }: { accountType: 'workshop' | 'industry'; children: React.ReactNode }) {
   const { isAuthenticated, user } = useAuth()
@@ -81,6 +82,7 @@ export default function App() {
                 <Route path="/industry/requirements/new" element={<RoleProtectedRoute accountType="industry"><IndustryRequirements createMode /></RoleProtectedRoute>} />
                 <Route path="/industry/quotations" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Quotations" description="Compare received quotations by price, delivery time and workshop rating." /></RoleProtectedRoute>} />
                 <Route path="/industry/vendors" element={<RoleProtectedRoute accountType="industry"><Vendors /></RoleProtectedRoute>} />
+                <Route path="/industry/chats" element={<RoleProtectedRoute accountType="industry"><IndustryChats /></RoleProtectedRoute>} />
                 <Route path="/industry/purchase-orders" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Purchase Orders" description="Create and monitor industry purchase orders." /></RoleProtectedRoute>} />
                 <Route path="/industry/production-tracking" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Production Tracking" description="Track acceptance, production, inspection and dispatch updates." /></RoleProtectedRoute>} />
                 <Route path="/industry/quality-check" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Quality Check Status" description="Review inspection reports, approvals and rework requests." /></RoleProtectedRoute>} />

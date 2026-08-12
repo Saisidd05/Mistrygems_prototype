@@ -45,6 +45,7 @@ const industryNavItems: NavItem[] = [
   { label: 'Quality Check', path: '/industry/quality-check', icon: <FileCheck size={18} /> },
   { label: 'Delivery Tracking', path: '/industry/delivery-tracking', icon: <MapPin size={18} /> },
   { label: 'Registered Workshops', path: '/industry/vendors', icon: <Building2 size={18} /> },
+  { label: 'Workshop Chats', path: '/industry/chats', icon: <MessageCircle size={18} /> },
   { label: 'Notifications', path: '/industry/notifications', icon: <Bell size={18} /> },
   { label: 'Company Profile', path: '/industry/company-profile', icon: <UserCircle size={18} /> },
   { label: 'Settings', path: '/industry/settings', icon: <Settings size={18} /> },

@@ -31,6 +31,7 @@ const pageNames: Record<string, string> = {
   '/industry/quality-check': 'Quality Check Status',
   '/industry/delivery-tracking': 'Delivery Tracking',
   '/industry/vendors': 'Registered Workshops',
+  '/industry/chats': 'Workshop Chats',
   '/industry/notifications': 'Notifications',
   '/industry/company-profile': 'Company Profile',
   '/industry/settings': 'Settings',

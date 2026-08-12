@@ -67,6 +67,45 @@ export default async function handler(req, res) {
         return res.status(200).json(Object.values(threadMap))
       }
 
+      // Industry: list every workshop conversation for the signed-in industry user.
+      // This lets the industry chat screen show replies from all workshop owners,
+      // rather than only showing a preview after each workshop is opened.
+      if (!workshopUser && threads === '1') {
+        const allMessages = await chats
+          .find({
+            $or: [
+              { userId: user.id },
+              { senderId: user.id },
+              { receiverId: user.id },
+            ],
+          })
+          .sort({ createdAt: -1 })
+          .toArray()
+
+        const threadMap = {}
+        for (const msg of allMessages) {
+          const wid = msg.workshopId
+          if (!wid) continue
+          if (!threadMap[wid]) {
+            const isWorkshopMessage = msg.senderId === wid
+            threadMap[wid] = {
+              workshopId: wid,
+              workshopName: isWorkshopMessage
+                ? (msg.senderName || wid)
+                : (msg.receiverName || wid),
+              lastMessage: msg.text,
+              lastAt: msg.createdAt,
+              unread: 0,
+            }
+          }
+          if (msg.senderId === wid && !msg.readByIndustry) {
+            threadMap[wid].unread += 1
+          }
+        }
+
+        return res.status(200).json(Object.values(threadMap))
+      }
+
       // Workshop: messages with a specific industry customer
       if (workshopUser && customerId) {
         const messages = await chats
@@ -116,6 +155,11 @@ export default async function handler(req, res) {
           .sort({ createdAt: 1 })
           .toArray()
 
+        await chats.updateMany(
+          { workshopId: String(workshopId), senderId: String(workshopId), receiverId: user.id, readByIndustry: { $ne: true } },
+          { $set: { readByIndustry: true } }
+        )
+
         return res.status(200).json(
           messages.map(m => ({
             id: m.id || String(m._id),
@@ -134,7 +178,7 @@ export default async function handler(req, res) {
 
     // ── POST ────────────────────────────────────────────────────────────────
     if (req.method === 'POST') {
-      const { workshopId, text, receiverId, receiverName } = req.body || {}
+      const { workshopId, workshopName, text, receiverId, receiverName } = req.body || {}
 
       if (!text || !text.trim()) {
         return res.status(400).json({ error: 'Message text is required.' })
@@ -155,6 +199,7 @@ export default async function handler(req, res) {
           text: String(text).trim(),
           createdAt: new Date().toISOString(),
           readByWorkshop: true,
+          readByIndustry: false,
         }
         await chats.insertOne(newMessage)
         return res.status(201).json({ ...newMessage, isSelf: true })
@@ -170,9 +215,11 @@ export default async function handler(req, res) {
         userId: user.id,
         senderId: user.id,
         senderName: user.name || 'Industry Customer',
+        receiverName: workshopName || '',
         text: String(text).trim(),
         createdAt: new Date().toISOString(),
         readByWorkshop: false,
+        readByIndustry: true,
       }
       await chats.insertOne(newMessage)
       return res.status(201).json({ ...newMessage, isSelf: true })
