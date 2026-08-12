@@ -1,14 +1,15 @@
 import React, { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Bell, Sun, Moon, Menu, Search, LogOut, ChevronDown } from 'lucide-react'
-import { useAuth } from '../../context/AuthContext'
+import { getAccountType, useAuth } from '../../context/AuthContext'
 import { useSidebar } from '../../context/SidebarContext'
 import { useTheme } from '../../context/ThemeContext'
 import { useAppData } from '../../context/AppDataContext'
 
 const pageNames: Record<string, string> = {
+  // Workshop routes
   '/workshop/dashboard': 'Dashboard',
-  '/workshop/feed': 'Feed',
+  '/workshop/feed': 'Industry Feed',
   '/workshop/jobs': 'Job Management',
   '/workshop/customers': 'Customers',
   '/workshop/employees': 'Employees',
@@ -19,6 +20,21 @@ const pageNames: Record<string, string> = {
   '/workshop/reports': 'Reports & Analytics',
   '/workshop/notifications': 'Notifications',
   '/workshop/settings': 'Settings',
+
+  // Industry routes
+  '/industry/dashboard': 'Industry Dashboard',
+  '/industry/requirements/new': 'Post Requirement',
+  '/industry/requirements': 'My Requirements',
+  '/industry/vendor-matching': 'Vendor Matching',
+  '/industry/quotations': 'Quotations',
+  '/industry/purchase-orders': 'Purchase Orders',
+  '/industry/production-tracking': 'Production Tracking',
+  '/industry/quality-check': 'Quality Check Status',
+  '/industry/delivery-tracking': 'Delivery Tracking',
+  '/industry/vendors': 'Registered Workshops',
+  '/industry/notifications': 'Notifications',
+  '/industry/company-profile': 'Company Profile',
+  '/industry/settings': 'Settings',
 }
 
 export function Topbar() {
@@ -30,8 +46,10 @@ export function Topbar() {
   const { notifications } = useAppData()
   const [showProfile, setShowProfile] = useState(false)
 
+  const isIndustry = getAccountType(user) === 'industry' || location.pathname.startsWith('/industry')
+  const notifPath = isIndustry ? '/industry/notifications' : '/workshop/notifications'
   const unread = notifications.filter(n => !n.read).length
-  const pageName = pageNames[location.pathname] || 'Mistry Gems'
+  const pageName = pageNames[location.pathname] || (isIndustry ? 'Industry Portal' : 'Mistry Gems')
 
   const handleLogout = () => {
     logout()
@@ -51,7 +69,7 @@ export function Topbar() {
         </button>
         <div>
           <h1 className="text-sm font-bold font-sora text-highlight">{pageName}</h1>
-          <p className="text-[10px] text-glass-dim hidden sm:block">Mistry Gems Platform</p>
+          <p className="text-[10px] text-glass-dim hidden sm:block">{isIndustry ? 'Industry Procurement Workspace' : 'Mistry Gems Platform'}</p>
         </div>
       </div>
 
@@ -68,7 +86,7 @@ export function Topbar() {
 
         {/* Notifications */}
         <button
-          onClick={() => navigate('/workshop/notifications')}
+          onClick={() => navigate(notifPath)}
           className="relative p-2 rounded-xl text-glass-dim hover:text-highlight hover:bg-white/5 transition-all"
           aria-label="Notifications"
         >
@@ -103,7 +121,7 @@ export function Topbar() {
             >
               <div className="px-3 py-2 border-b border-glass/10">
                 <p className="text-xs font-semibold text-highlight">{user?.name}</p>
-                <p className="text-[10px] text-glass-dim">{user?.role}</p>
+                <p className="text-[10px] text-glass-dim">{isIndustry ? (user?.workshopName || 'Industry Account') : user?.role}</p>
               </div>
               <button
                 onClick={handleLogout}

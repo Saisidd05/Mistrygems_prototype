@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Briefcase, Users, UserCheck, ClipboardList,
   FileText, Bell, BarChart2, Settings, LogOut, ChevronLeft,
-  ChevronRight, Gem, Package, Receipt, Rss
+  ChevronRight, Gem, Package, Receipt, Rss, PlusCircle,
+  Truck, FileCheck, MapPin, UserCircle, Building2
 } from 'lucide-react'
-import { useAuth } from '../../context/AuthContext'
+import { getAccountType, useAuth } from '../../context/AuthContext'
 import { useSidebar } from '../../context/SidebarContext'
 import { useAppData } from '../../context/AppDataContext'
 import { cn } from '../../lib/utils'
@@ -18,7 +19,7 @@ interface NavItem {
   roles?: string[]
 }
 
-const navItems: NavItem[] = [
+const workshopNavItems: NavItem[] = [
   { label: 'Dashboard', path: '/workshop/dashboard', icon: <LayoutDashboard size={18} /> },
   { label: 'Industry Feed', path: '/workshop/feed', icon: <Rss size={18} /> },
   { label: 'Jobs', path: '/workshop/jobs', icon: <Briefcase size={18} /> },
@@ -33,7 +34,24 @@ const navItems: NavItem[] = [
   { label: 'Settings', path: '/workshop/settings', icon: <Settings size={18} /> },
 ]
 
+const industryNavItems: NavItem[] = [
+  { label: 'Dashboard', path: '/industry/dashboard', icon: <LayoutDashboard size={18} /> },
+  { label: 'Post Requirement', path: '/industry/requirements/new', icon: <PlusCircle size={18} /> },
+  { label: 'My Requirements', path: '/industry/requirements', icon: <ClipboardList size={18} /> },
+  { label: 'Vendor Matching', path: '/industry/vendor-matching', icon: <Users size={18} /> },
+  { label: 'Quotations', path: '/industry/quotations', icon: <FileText size={18} /> },
+  { label: 'Purchase Orders', path: '/industry/purchase-orders', icon: <Receipt size={18} /> },
+  { label: 'Production Tracking', path: '/industry/production-tracking', icon: <Truck size={18} /> },
+  { label: 'Quality Check', path: '/industry/quality-check', icon: <FileCheck size={18} /> },
+  { label: 'Delivery Tracking', path: '/industry/delivery-tracking', icon: <MapPin size={18} /> },
+  { label: 'Registered Workshops', path: '/industry/vendors', icon: <Building2 size={18} /> },
+  { label: 'Notifications', path: '/industry/notifications', icon: <Bell size={18} /> },
+  { label: 'Company Profile', path: '/industry/company-profile', icon: <UserCircle size={18} /> },
+  { label: 'Settings', path: '/industry/settings', icon: <Settings size={18} /> },
+]
+
 export function Sidebar() {
+  const location = useLocation()
   const { collapsed, toggle } = useSidebar()
   const [desktop, setDesktop] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px) and (pointer: fine)').matches)
   const [dockOpen, setDockOpen] = useState(false)
@@ -41,6 +59,9 @@ export function Sidebar() {
   const { user, logout } = useAuth()
   const { notifications } = useAppData()
   const navigate = useNavigate()
+
+  const isIndustry = getAccountType(user) === 'industry' || location.pathname.startsWith('/industry')
+  const navItems = isIndustry ? industryNavItems : workshopNavItems
   const unread = notifications.filter(n => !n.read).length
 
   const handleLogout = () => {
@@ -101,12 +122,12 @@ export function Sidebar() {
         {/* Logo */}
         <div className={cn('flex items-center gap-3 px-4 py-5 border-b border-glass/10', collapsed && 'justify-center px-2')}>
           <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-[#0077B6] to-[#00B4D8] shadow-glow-sm">
-            <Gem size={16} className="text-white" />
+            {isIndustry ? <Building2 size={16} className="text-white" /> : <Gem size={16} className="text-white" />}
           </div>
           {!collapsed && (
             <div>
               <p className="text-sm font-bold font-sora gradient-text-bright leading-tight">Mistry Gems</p>
-              <p className="text-[10px] text-glass-dim">Workflow Platform</p>
+              <p className="text-[10px] text-glass-dim">{isIndustry ? 'Industry Portal' : 'Workflow Platform'}</p>
             </div>
           )}
         </div>
@@ -124,7 +145,7 @@ export function Sidebar() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-highlight truncate">{user.name}</p>
-                <p className="text-[10px] text-glass-dim">{user.role}</p>
+                <p className="text-[10px] text-glass-dim truncate">{isIndustry ? (user.workshopName || 'Industry Account') : user.role}</p>
               </div>
             </div>
           </div>
@@ -134,7 +155,7 @@ export function Sidebar() {
         <nav className="flex-1 overflow-y-auto no-scrollbar py-3 px-2 space-y-0.5">
           {navItems.map(item => {
             if (item.roles && user && !item.roles.includes(user.role)) return null
-            const isNotif = item.path === '/workshop/notifications'
+            const isNotif = item.path.endsWith('/notifications')
             return (
               <NavLink
                 key={item.path}
@@ -180,3 +201,4 @@ export function Sidebar() {
     </>
   )
 }
+
