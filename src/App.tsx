@@ -77,7 +77,6 @@ export default function App() {
                 <Route path="/industry/dashboard" element={<RoleProtectedRoute accountType="industry"><IndustryDashboard /></RoleProtectedRoute>} />
                 <Route path="/industry/requirements" element={<RoleProtectedRoute accountType="industry"><IndustryRequirements /></RoleProtectedRoute>} />
                 <Route path="/industry/requirements/new" element={<RoleProtectedRoute accountType="industry"><IndustryRequirements createMode /></RoleProtectedRoute>} />
-                <Route path="/industry/vendor-matching" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Vendor Matching" description="Match workshops by capability, services, certifications, location and capacity." /></RoleProtectedRoute>} />
                 <Route path="/industry/quotations" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Quotations" description="Compare received quotations by price, delivery time and workshop rating." /></RoleProtectedRoute>} />
                 <Route path="/industry/vendors" element={<RoleProtectedRoute accountType="industry"><Vendors /></RoleProtectedRoute>} />
                 <Route path="/industry/purchase-orders" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Purchase Orders" description="Create and monitor industry purchase orders." /></RoleProtectedRoute>} />
