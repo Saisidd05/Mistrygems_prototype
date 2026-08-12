@@ -24,6 +24,7 @@ import { Feed } from './pages/Feed'
 import { Notifications } from './pages/Notifications'
 import { Reports } from './pages/Reports'
 import { Settings } from './pages/Settings'
+import { WorkshopChats } from './pages/WorkshopChats'
 import { IndustryLayout } from './components/industry/IndustryLayout'
 import { IndustryDashboard, IndustryRequirements, IndustrySection } from './pages/industry/IndustryDashboard'
 import { Vendors } from './pages/industry/Vendors'
@@ -72,6 +73,7 @@ export default function App() {
                 <Route path="/workshop/notifications" element={<RoleProtectedRoute accountType="workshop"><Notifications /></RoleProtectedRoute>} />
                 <Route path="/workshop/reports" element={<RoleProtectedRoute accountType="workshop"><Reports /></RoleProtectedRoute>} />
                 <Route path="/workshop/settings" element={<RoleProtectedRoute accountType="workshop"><Settings /></RoleProtectedRoute>} />
+                <Route path="/workshop/chats" element={<RoleProtectedRoute accountType="workshop"><WorkshopChats /></RoleProtectedRoute>} />
 
                 {/* Industry routes: dedicated layout, navigation and pages. */}
                 <Route path="/industry/dashboard" element={<RoleProtectedRoute accountType="industry"><IndustryDashboard /></RoleProtectedRoute>} />

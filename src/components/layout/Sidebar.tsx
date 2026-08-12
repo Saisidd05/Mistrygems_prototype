@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Briefcase, Users, UserCheck, ClipboardList,
   FileText, Bell, BarChart2, Settings, LogOut, ChevronLeft,
   ChevronRight, Gem, Package, Receipt, Rss, PlusCircle,
-  Truck, FileCheck, MapPin, UserCircle, Building2
+  Truck, FileCheck, MapPin, UserCircle, Building2, MessageCircle
 } from 'lucide-react'
 import { getAccountType, useAuth } from '../../context/AuthContext'
 import { useSidebar } from '../../context/SidebarContext'
@@ -30,6 +30,7 @@ const workshopNavItems: NavItem[] = [
   { label: 'Invoices', path: '/workshop/invoices', icon: <Receipt size={18} /> },
   { label: 'Inventory', path: '/workshop/inventory', icon: <Package size={18} /> },
   { label: 'Reports', path: '/workshop/reports', icon: <BarChart2 size={18} />, roles: ['Owner', 'Manager'] },
+  { label: 'Industry Chats', path: '/workshop/chats', icon: <MessageCircle size={18} /> },
   { label: 'Notifications', path: '/workshop/notifications', icon: <Bell size={18} /> },
   { label: 'Settings', path: '/workshop/settings', icon: <Settings size={18} /> },
 ]

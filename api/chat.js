@@ -14,6 +14,13 @@ function getUserFromRequest(req) {
   }
 }
 
+function isWorkshop(user) {
+  return (
+    user.accountType === 'workshop' ||
+    (!user.accountType && !String(user.role || '').toLowerCase().includes('industry'))
+  )
+}
+
 export default async function handler(req, res) {
   const user = getUserFromRequest(req)
   if (!user) {
@@ -23,40 +30,140 @@ export default async function handler(req, res) {
   try {
     const db = await getDatabase()
     const chats = db.collection('chats')
+    const workshopUser = isWorkshop(user)
 
+    // ── GET ─────────────────────────────────────────────────────────────────
     if (req.method === 'GET') {
-      const { workshopId } = req.query || {}
-      if (!workshopId) {
-        return res.status(400).json({ error: 'Workshop ID parameter is required.' })
+      const { workshopId, customerId, threads } = req.query || {}
+
+      // Workshop: list all unique conversation threads (one per industry customer)
+      if (workshopUser && threads === '1') {
+        // All messages where this workshop is the target
+        const allMessages = await chats
+          .find({ workshopId: user.id })
+          .sort({ createdAt: -1 })
+          .toArray()
+
+        // Group by sender (industry customer userId)
+        const threadMap = {}
+        for (const msg of allMessages) {
+          // The industry customer userId — use userId field (set on POST)
+          const cid = msg.senderId === user.id ? msg.receiverId : msg.senderId
+          if (!cid) continue
+          if (!threadMap[cid]) {
+            threadMap[cid] = {
+              customerId: cid,
+              customerName: msg.senderId === user.id ? (msg.receiverName || cid) : (msg.senderName || cid),
+              lastMessage: msg.text,
+              lastAt: msg.createdAt,
+              unread: 0,
+            }
+          }
+          if (!msg.readByWorkshop && msg.senderId !== user.id) {
+            threadMap[cid].unread += 1
+          }
+        }
+
+        return res.status(200).json(Object.values(threadMap))
       }
 
-      // Find all messages associated with this user and workshop
-      const messages = await chats.find({
-        $or: [
-          { userId: user.id, workshopId: String(workshopId) },
-          { senderId: user.id, workshopId: String(workshopId) },
-          { senderId: String(workshopId), receiverId: user.id },
-          { workshopId: String(workshopId) }
-        ]
-      }).sort({ createdAt: 1 }).toArray()
+      // Workshop: messages with a specific industry customer
+      if (workshopUser && customerId) {
+        const messages = await chats
+          .find({
+            workshopId: user.id,
+            $or: [
+              { senderId: String(customerId) },
+              { senderId: user.id, receiverId: String(customerId) },
+            ],
+          })
+          .sort({ createdAt: 1 })
+          .toArray()
 
-      return res.status(200).json(messages.map(m => ({
-        id: m.id || String(m._id),
-        workshopId: m.workshopId,
-        senderId: m.senderId,
-        senderName: m.senderName || 'User',
-        text: m.text,
-        createdAt: m.createdAt,
-        isSelf: m.senderId === user.id
-      })))
+        // Mark messages as read by workshop
+        await chats.updateMany(
+          { workshopId: user.id, senderId: String(customerId), readByWorkshop: { $ne: true } },
+          { $set: { readByWorkshop: true } }
+        )
+
+        return res.status(200).json(
+          messages.map(m => ({
+            id: m.id || String(m._id),
+            workshopId: m.workshopId,
+            senderId: m.senderId,
+            senderName: m.senderName || 'Customer',
+            text: m.text,
+            createdAt: m.createdAt,
+            isSelf: m.senderId === user.id,
+          }))
+        )
+      }
+
+      // Industry customer: messages with a specific workshop
+      if (!workshopUser) {
+        if (!workshopId) {
+          return res.status(400).json({ error: 'workshopId parameter is required.' })
+        }
+
+        const messages = await chats
+          .find({
+            workshopId: String(workshopId),
+            $or: [
+              { senderId: user.id },
+              { senderId: String(workshopId), receiverId: user.id },
+            ],
+          })
+          .sort({ createdAt: 1 })
+          .toArray()
+
+        return res.status(200).json(
+          messages.map(m => ({
+            id: m.id || String(m._id),
+            workshopId: m.workshopId,
+            senderId: m.senderId,
+            senderName: m.senderName || 'User',
+            text: m.text,
+            createdAt: m.createdAt,
+            isSelf: m.senderId === user.id,
+          }))
+        )
+      }
+
+      return res.status(400).json({ error: 'Missing query parameters.' })
     }
 
+    // ── POST ────────────────────────────────────────────────────────────────
     if (req.method === 'POST') {
-      const { workshopId, text } = req.body || {}
-      if (!workshopId || !text || !text.trim()) {
-        return res.status(400).json({ error: 'Workshop ID and message text are required.' })
+      const { workshopId, text, receiverId, receiverName } = req.body || {}
+
+      if (!text || !text.trim()) {
+        return res.status(400).json({ error: 'Message text is required.' })
       }
 
+      // Workshop replying to industry customer
+      if (workshopUser) {
+        if (!receiverId) {
+          return res.status(400).json({ error: 'receiverId is required for workshop replies.' })
+        }
+        const newMessage = {
+          id: `MSG-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+          workshopId: user.id,
+          senderId: user.id,
+          senderName: user.workshopName || user.name || 'Workshop',
+          receiverId: String(receiverId),
+          receiverName: receiverName || 'Customer',
+          text: String(text).trim(),
+          createdAt: new Date().toISOString(),
+          readByWorkshop: true,
+        }
+        await chats.insertOne(newMessage)
+        return res.status(201).json({ ...newMessage, isSelf: true })
+      }
+
+      // Industry customer sending to workshop
+      if (!workshopId) {
+        return res.status(400).json({ error: 'workshopId is required.' })
+      }
       const newMessage = {
         id: `MSG-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
         workshopId: String(workshopId),
@@ -64,14 +171,11 @@ export default async function handler(req, res) {
         senderId: user.id,
         senderName: user.name || 'Industry Customer',
         text: String(text).trim(),
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        readByWorkshop: false,
       }
-
       await chats.insertOne(newMessage)
-      return res.status(201).json({
-        ...newMessage,
-        isSelf: true
-      })
+      return res.status(201).json({ ...newMessage, isSelf: true })
     }
 
     res.setHeader('Allow', ['GET', 'POST'])
