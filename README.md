@@ -8,17 +8,16 @@
   <!-- Badges -->
   <p>
     <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge" alt="Build Status" />
-    <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
+    <img src="https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge" alt="License" />
     <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
     <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
     <img src="https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
   </p>
 
   <p>
-    <a href="[PLACEHOLDER]">🚀 Live Demo</a> •
+    <a href="https://www.mistrygems.in">🚀 Live Demo</a> •
     <a href="#-quick-start">📖 Documentation</a> •
-    <a href="https://github.com/Saisidd05/Mistrygems_prototype">💻 GitHub</a> •
-    <a href="[PLACEHOLDER]">🎥 Demo Video</a>
+    <a href="https://github.com/Saisidd05/Mistrygems_prototype">💻 GitHub</a>
   </p>
 </div>
 
@@ -236,21 +235,9 @@ npm run build
 
 ---
 
-## 🤝 CONTRIBUTING
-
-We welcome contributions! Please follow these steps:
-1. Fork the repository.
-2. Create a focused feature branch (`git checkout -b feature/amazing-feature`).
-3. Commit your changes (`git commit -m 'Add some amazing feature'`).
-4. Ensure the build passes (`npm run build`).
-5. Push to the branch (`git push origin feature/amazing-feature`).
-6. Open a Pull Request.
-
----
-
 ## 📜 LICENSE
 
-This project is open-source. (See [LICENSE](./LICENSE) file for details or assume MIT).
+This project is proprietary and closed-source. All rights reserved.
 
 ---
 
