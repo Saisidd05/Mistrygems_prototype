@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Bell, Sun, Moon, Menu, Search, LogOut, ChevronDown } from 'lucide-react'
+import { Bell, Sun, Moon, Menu, LogOut, ChevronDown } from 'lucide-react'
 import { getAccountType, useAuth } from '../../context/AuthContext'
 import { useSidebar } from '../../context/SidebarContext'
 import { useTheme } from '../../context/ThemeContext'
@@ -8,6 +8,7 @@ import { useAppData } from '../../context/AppDataContext'
 import { Modal } from '../ui/Modal'
 import { GlowButton } from '../ui/GlowButton'
 import { useToast } from '../ui/Toast'
+import { NotificationPanel } from './NotificationPanel'
 
 const pageNames: Record<string, string> = {
   // Workshop routes
@@ -52,6 +53,7 @@ export function Topbar() {
   const { theme, toggleTheme } = useTheme()
   const { notifications } = useAppData()
   const [showProfile, setShowProfile] = useState(false)
+  const [showNotifPanel, setShowNotifPanel] = useState(false)
 
   const isIndustry = getAccountType(user) === 'industry' || location.pathname.startsWith('/industry')
   const notifPath = isIndustry ? '/industry/notifications' : '/workshop/notifications'
@@ -94,16 +96,21 @@ export function Topbar() {
         </button>
 
         {/* Notifications */}
-        <button
-          onClick={() => navigate(notifPath)}
-          className="relative p-2 rounded-xl text-glass-dim hover:text-highlight hover:bg-white/5 transition-all"
-          aria-label="Notifications"
-        >
-          <Bell size={18} />
-          {unread > 0 && (
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#00B4D8] animate-pulse" />
+        <div className="relative">
+          <button
+            onClick={() => { setShowNotifPanel(s => !s); setShowProfile(false) }}
+            className="relative p-2 rounded-xl text-glass-dim hover:text-highlight hover:bg-white/5 transition-all"
+            aria-label="Notifications"
+          >
+            <Bell size={18} />
+            {unread > 0 && (
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#00B4D8] animate-pulse" />
+            )}
+          </button>
+          {showNotifPanel && (
+            <NotificationPanel onClose={() => setShowNotifPanel(false)} />
           )}
-        </button>
+        </div>
 
         {/* Profile */}
         <div className="relative">
