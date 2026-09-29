@@ -3,7 +3,6 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Gem, Mail, Lock, User, Building, MapPin, ArrowRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { GlowButton } from '../components/ui/GlowButton'
-import { AnimatedBackground } from '../components/ui/AnimatedBackground'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -109,8 +108,7 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-y-auto py-10">
-      <AnimatedBackground />
+    <div className="internal-theme min-h-screen flex items-center justify-center p-4 relative overflow-y-auto py-10">
       <div className="w-full max-w-lg glass-card p-8 relative z-10 shadow-glass-lg border-glass-bright">
 
         {/* Brand Header */}
@@ -332,8 +330,8 @@ export default function Signup() {
 
         {/* Divider */}
         <div className="relative my-5">
-          <div className="border-t border-glass/10" />
-          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#061c3c] px-3 text-[10px] text-glass-dim tracking-wider font-semibold">
+          <div className="border-t border-black/10" />
+          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-white px-3 text-[10px] text-gray-400 tracking-wider font-semibold">
             OR SIGN UP WITH
           </span>
         </div>

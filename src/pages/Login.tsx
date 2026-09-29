@@ -3,7 +3,6 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Gem, Lock, User, ArrowRight, Mail, CheckCircle2, Building2, Wrench } from 'lucide-react'
 import { useAuth, getDashboardPath } from '../context/AuthContext'
 import { GlowButton } from '../components/ui/GlowButton'
-import { AnimatedBackground } from '../components/ui/AnimatedBackground'
 import { Modal } from '../components/ui/Modal'
 
 const GoogleIcon = () => (
@@ -164,8 +163,8 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      <AnimatedBackground />
+    <div className="internal-theme min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+
       <div className="w-full max-w-md glass-card p-8 relative z-10 shadow-glass-lg border-glass-bright">
 
         {/* Brand Header */}
@@ -275,8 +274,8 @@ export function Login() {
 
         {/* Divider */}
         <div className="relative my-6">
-          <div className="border-t border-glass/10" />
-          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#061c3c] px-3 text-[10px] text-glass-dim tracking-wider font-semibold">
+          <div className="border-t border-black/10" />
+          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-white px-3 text-[10px] text-gray-400 tracking-wider font-semibold">
             OR CONTINUE WITH
           </span>
         </div>
@@ -351,8 +350,8 @@ export function Login() {
           </div>
 
           <div className="relative my-3">
-            <div className="border-t border-glass/10" />
-            <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#0d2240] px-2 text-[9px] text-glass-dim uppercase">or enter custom email</span>
+            <div className="border-t border-black/10" />
+            <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-white px-2 text-[9px] text-gray-400 uppercase">or enter custom email</span>
           </div>
 
           <form

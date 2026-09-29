@@ -528,3 +528,387 @@
   box-shadow: 0 0 25px rgba(0, 180, 216, 0.5);
   color: var(--text);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   INTERNAL THEME — Grey & White palette for all non-landing pages
+   Applied via .internal-theme wrapper on Layout / Login / Signup
+═══════════════════════════════════════════════════════════════ */
+.internal-theme {
+  /* Override colour tokens */
+  --deep: #f4f5f7;
+  --primary: #4a4a4a;
+  --secondary: #6b7280;
+  --accent: #9ca3af;
+  --text: #1a1a1a;
+  --text-muted: rgba(26, 26, 26, 0.55);
+
+  --card-bg: #ffffff;
+  --card-bg-hover: #f8f9fa;
+  --card-border: rgba(0, 0, 0, 0.10);
+  --card-border-hover: rgba(0, 0, 0, 0.22);
+
+  /* Page background */
+  background-color: #f0f2f5;
+  color: #1a1a1a;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Remove the animated blueprint bg inside internal pages */
+.internal-theme .engineering-background {
+  display: none;
+}
+
+/* Solid clean background replacing the animated dark one */
+.internal-theme .app-container {
+  background: #f0f2f5;
+}
+
+.internal-theme .main-content {
+  background: #f0f2f5;
+}
+
+.internal-theme .page-content {
+  background: #f0f2f5;
+}
+
+/* ── Scrollbar (internal) ── */
+.internal-theme ::-webkit-scrollbar-track {
+  background: #e5e7eb;
+}
+.internal-theme ::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+}
+.internal-theme ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* ── Typography ── */
+.internal-theme h1,
+.internal-theme h2,
+.internal-theme h3 {
+  color: #111827;
+}
+.internal-theme h4,
+.internal-theme h5,
+.internal-theme h6 {
+  color: #1f2937;
+}
+
+/* ── Glass Card → Clean white card ── */
+.internal-theme .glass-card {
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  box-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.07), 0 0 0 0 transparent;
+}
+.internal-theme .glass-card:hover {
+  background: #fafafa;
+  border-color: rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 18px 0 rgba(0, 0, 0, 0.10);
+  transform: translateY(-2px);
+}
+
+/* ── Glass Surface → Light grey sidebar surface ── */
+.internal-theme .glass-surface {
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+}
+
+/* ── Glass Nav → White topbar ── */
+.internal-theme .glass-nav {
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.09);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Primary Button ── */
+.internal-theme .btn-glow {
+  background-color: #374151;
+  color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(55, 65, 81, 0.25);
+}
+.internal-theme .btn-glow:hover {
+  background-color: #1f2937;
+  box-shadow: 0 4px 16px rgba(55, 65, 81, 0.35);
+  transform: scale(1.02) translateY(-1px);
+}
+.internal-theme .btn-glow:active {
+  background-color: #111827;
+  transform: scale(0.97) translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Outline Button ── */
+.internal-theme .btn-outline {
+  background: transparent;
+  color: #374151;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+.internal-theme .btn-outline:hover {
+  border-color: #6b7280;
+  background: rgba(0, 0, 0, 0.04);
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+.internal-theme .btn-outline:active {
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(0.97);
+}
+
+/* ── Gradient Text → dark text ── */
+.internal-theme .gradient-text {
+  background: linear-gradient(135deg, #1f2937 0%, #374151 60%, #6b7280 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.internal-theme .gradient-text-bright {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Badge ── */
+.internal-theme .glass-badge {
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  color: #374151;
+}
+
+/* ── Input ── */
+.internal-theme .glass-input {
+  background: #f9fafb;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  color: #111827;
+}
+.internal-theme .glass-input::placeholder {
+  color: #9ca3af;
+}
+.internal-theme .glass-input:focus {
+  border-color: #6b7280;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.12);
+}
+
+/* ── Select ── */
+.internal-theme .glass-select {
+  background: #f9fafb;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  color: #111827;
+}
+.internal-theme .glass-select:focus {
+  border-color: #6b7280;
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.12);
+}
+.internal-theme .glass-select option {
+  background: #ffffff;
+  color: #111827;
+}
+
+/* ── Sidebar Items ── */
+.internal-theme .sidebar-item {
+  color: #4b5563;
+}
+.internal-theme .sidebar-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #111827;
+  box-shadow: none;
+}
+.internal-theme .sidebar-item.active {
+  background: #374151;
+  color: #ffffff;
+  border: 1px solid transparent;
+  box-shadow: 0 2px 10px rgba(55, 65, 81, 0.20);
+}
+
+/* ── Table ── */
+.internal-theme .glass-table th {
+  color: #6b7280;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.internal-theme .glass-table td {
+  color: #1f2937;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.internal-theme .glass-table tr:hover td {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+/* ── Page Title / Subtitle ── */
+.internal-theme .page-title {
+  color: #111827;
+}
+.internal-theme .page-subtitle {
+  color: #6b7280;
+}
+
+/* ── Modal Overlay ── */
+.internal-theme .modal-overlay {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ── Feature Icon Ring ── */
+.internal-theme .feature-icon-ring {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  box-shadow: none;
+  color: #374151;
+}
+.internal-theme .glass-card:hover .feature-icon-ring {
+  background: rgba(0, 0, 0, 0.10);
+  box-shadow: none;
+  color: #111827;
+}
+
+/* ── Sidebar border / dividers ── */
+.internal-theme aside {
+  border-right: 1px solid rgba(0, 0, 0, 0.09) !important;
+  box-shadow: 1px 0 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ── Text utility overrides ── */
+.internal-theme .text-glass-dim,
+.internal-theme [class*="text-glass"] {
+  color: #6b7280 !important;
+}
+.internal-theme .text-highlight,
+.internal-theme [class*="text-highlight"] {
+  color: #111827 !important;
+}
+.internal-theme .text-glass:not(.text-glass-dim) {
+  color: #374151 !important;
+}
+.internal-theme .text-accent {
+  color: #6b7280 !important;
+}
+
+/* ── Borders ── */
+.internal-theme [class*="border-glass"] {
+  border-color: rgba(0, 0, 0, 0.09) !important;
+}
+.internal-theme .border-glass\/10 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── bg-white\/5 utility → light grey ── */
+.internal-theme .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+.internal-theme .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+.internal-theme .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+.internal-theme .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+/* ── border-white/10 → visible light grey ── */
+.internal-theme .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.10) !important;
+}
+
+/* ── Divider span background ("OR CONTINUE WITH") ── */
+.internal-theme span[class*="bg-["] {
+  background-color: #ffffff !important;
+  color: #9ca3af;
+}
+
+/* ── Custom Cursor (keep working on internal pages) ── */
+.internal-theme .custom-cursor-ring {
+  border-color: #9ca3af;
+  box-shadow: 0 0 10px rgba(156, 163, 175, 0.4);
+}
+.internal-theme .custom-cursor-dot {
+  background-color: #374151;
+  box-shadow: 0 0 6px rgba(55, 65, 81, 0.4);
+}
+.internal-theme .custom-cursor-ring.hovered {
+  border-color: #6b7280;
+  background-color: rgba(107, 114, 128, 0.10);
+  box-shadow: 0 0 18px rgba(107, 114, 128, 0.3);
+}
+.internal-theme .cursor-ripple {
+  border-color: #9ca3af;
+}
+
+/* ── Notification badge ── */
+.internal-theme aside .bg-\[\#00B4D8\] {
+  background-color: #374151 !important;
+}
+.internal-theme header .bg-\[\#00B4D8\] {
+  background-color: #374151 !important;
+  border-radius: 50%;
+}
+
+/* ── StatCard gradient icon backgrounds → neutral greys ── */
+.internal-theme .feature-icon-ring.bg-gradient-to-br {
+  background: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ── Topbar & Sidebar text colour overrides ── */
+.internal-theme header p,
+.internal-theme header span,
+.internal-theme header h1 {
+  color: #111827;
+}
+.internal-theme header .text-glass-dim {
+  color: #9ca3af !important;
+}
+.internal-theme aside p,
+.internal-theme aside span:not([class*="rounded-full"]) {
+  color: #374151;
+}
+
+/* ── Sidebar logo text ── */
+.internal-theme aside .gradient-text-bright {
+  background: linear-gradient(135deg, #111827 0%, #374151 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Login/Signup card needs white bg even without glass-card hover ── */
+.internal-theme .border-glass-bright {
+  border-color: rgba(0, 0, 0, 0.09) !important;
+}
+
+/* ── shadow-glass-lg → soft neutral shadow ── */
+.internal-theme .shadow-glass-lg {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10) !important;
+}
+
+/* ── Google button on login/signup → clean grey border ── */
+.internal-theme button[class*="border-white\\/10"] {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  background-color: #f9fafb !important;
+  color: #1f2937 !important;
+}
+.internal-theme a[class*="border-white\\/10"] {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  background-color: #f9fafb !important;
+  color: #1f2937 !important;
+}
+
+/* ── Account type selector cards on login ── */
+.internal-theme button[aria-selected="true"] {
+  border-color: #374151 !important;
+  background-color: rgba(55, 65, 81, 0.08) !important;
+}
+
+/* ── Kanban board background ── */
+.internal-theme .kanban-board {
+  background: transparent;
+}
+
