@@ -4,6 +4,12 @@ import { getDatabase, getIndustryDatabase } from '../db/mongodb.js'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mistry-gems-local-secret-key-12345'
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;',
+  }[character]))
+}
+
 function userFromRequest(req) {
   const header = req.headers.authorization
   if (!header?.startsWith('Bearer ')) return null
@@ -23,25 +29,18 @@ function userFromRequest(req) {
 // Send email notification using nodemailer (Ethereal fallback if no SMTP configured)
 async function sendQuotationEmail({ toEmail, toName, workshopName, jobTitle, amount, requirementId, quotationId }) {
   try {
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.info('Quotation email skipped: SMTP is not configured.')
+      return false
+    }
     let transporter
 
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      // Production SMTP
-      transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 587,
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      })
-    } else {
-      // Dev fallback: Ethereal test account
-      const testAccount = await nodemailer.createTestAccount()
-      transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        auth: { user: testAccount.user, pass: testAccount.pass },
-      })
-    }
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    })
 
     const formattedAmount = new Intl.NumberFormat('en-IN', {
       style: 'currency', currency: 'INR', maximumFractionDigits: 0,
@@ -64,7 +63,7 @@ async function sendQuotationEmail({ toEmail, toName, workshopName, jobTitle, amo
             </div>
             <!-- Body -->
             <div style="padding:28px 32px;">
-              <p style="margin:0 0 18px;color:#374151;font-size:14px;">Hi <strong>${toName}</strong>,</p>
+              <p style="margin:0 0 18px;color:#374151;font-size:14px;">Hi <strong>${escapeHtml(toName)}</strong>,</p>
               <p style="margin:0 0 20px;color:#4B5563;font-size:14px;line-height:1.6;">
                 A workshop has submitted a quotation for your requirement. Review and compare it in your Industry Portal.
               </p>
@@ -73,11 +72,11 @@ async function sendQuotationEmail({ toEmail, toName, workshopName, jobTitle, amo
                 <table style="width:100%;border-collapse:collapse;">
                   <tr>
                     <td style="padding:6px 0;color:#6B7280;font-size:12px;width:40%;">Requirement</td>
-                    <td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;">${jobTitle}</td>
+                    <td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;">${escapeHtml(jobTitle)}</td>
                   </tr>
                   <tr>
                     <td style="padding:6px 0;color:#6B7280;font-size:12px;">Submitted By</td>
-                    <td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;">${workshopName}</td>
+                    <td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;">${escapeHtml(workshopName)}</td>
                   </tr>
                   <tr>
                     <td style="padding:6px 0;color:#6B7280;font-size:12px;">Quoted Amount</td>
@@ -85,7 +84,7 @@ async function sendQuotationEmail({ toEmail, toName, workshopName, jobTitle, amo
                   </tr>
                   <tr>
                     <td style="padding:6px 0;color:#6B7280;font-size:12px;">Quotation ID</td>
-                    <td style="padding:6px 0;color:#9CA3AF;font-size:11px;font-family:monospace;">${quotationId}</td>
+                    <td style="padding:6px 0;color:#9CA3AF;font-size:11px;font-family:monospace;">${escapeHtml(quotationId)}</td>
                   </tr>
                 </table>
               </div>
@@ -153,8 +152,16 @@ export default async function handler(req, res) {
 
     const { requirementId, description, quantity, unitCost, gstRate, deliveryDays, notes } = req.body || {}
 
-    if (!requirementId || !description || !quantity || !unitCost) {
+    const parsedQuantity = Number(quantity)
+    const parsedUnitCost = Number(unitCost)
+    const parsedDeliveryDays = deliveryDays === '' || deliveryDays == null ? null : Number(deliveryDays)
+    const parsedGstRate = gstRate == null || gstRate === '' ? 18 : Number(gstRate)
+
+    if (!requirementId || !String(description).trim() || !Number.isFinite(parsedQuantity) || parsedQuantity <= 0 || !Number.isFinite(parsedUnitCost) || parsedUnitCost <= 0) {
       return res.status(400).json({ error: 'requirementId, description, quantity and unitCost are required.' })
+    }
+    if (!Number.isFinite(parsedGstRate) || parsedGstRate < 0 || parsedGstRate > 100 || (parsedDeliveryDays !== null && (!Number.isInteger(parsedDeliveryDays) || parsedDeliveryDays < 1))) {
+      return res.status(400).json({ error: 'GST rate or delivery days are invalid.' })
     }
 
     // Fetch the requirement to get industry company details
@@ -162,8 +169,8 @@ export default async function handler(req, res) {
     if (!requirement) return res.status(404).json({ error: 'Requirement not found.' })
     if (requirement.status === 'Closed') return res.status(400).json({ error: 'This requirement is no longer accepting quotations.' })
 
-    const gst = Number(gstRate) || 18
-    const subtotal = Number(quantity) * Number(unitCost)
+    const gst = parsedGstRate
+    const subtotal = parsedQuantity * parsedUnitCost
     const gstAmount = (subtotal * gst) / 100
     const grandTotal = subtotal + gstAmount
 
@@ -175,15 +182,15 @@ export default async function handler(req, res) {
       industryCompanyName: requirement.companyName || 'Industry Account',
       workshopId: user.id,
       workshopName: user.name,
-      description,
-      quantity: Number(quantity),
-      unitCost: Number(unitCost),
+      description: String(description).trim(),
+      quantity: parsedQuantity,
+      unitCost: parsedUnitCost,
       gstRate: gst,
       gstAmount,
       subtotal,
       grandTotal,
-      deliveryDays: Number(deliveryDays) || null,
-      notes: notes || '',
+      deliveryDays: parsedDeliveryDays,
+      notes: typeof notes === 'string' ? notes.trim() : '',
       status: 'Pending',
       createdAt: new Date().toISOString(),
     }
@@ -200,8 +207,7 @@ export default async function handler(req, res) {
     const toEmail = industryUser?.email || requirement.industryEmail
     const toName = industryUser?.name || requirement.companyName || 'Industry Account'
 
-    if (toEmail) {
-      await sendQuotationEmail({
+    const emailSent = toEmail ? await sendQuotationEmail({
         toEmail,
         toName,
         workshopName: user.name,
@@ -209,11 +215,10 @@ export default async function handler(req, res) {
         amount: grandTotal,
         requirementId,
         quotationId: quotation.id,
-      })
-    }
+      }) : false
 
     const { _id, ...safeQuotation } = quotation
-    return res.status(201).json(safeQuotation)
+    return res.status(201).json({ ...safeQuotation, emailSent })
   }
 
   // ── PUT: Industry user updates quotation status (Accept/Reject) ──

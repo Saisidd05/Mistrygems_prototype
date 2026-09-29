@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import {
   Building2, CalendarDays, ClipboardList, FileText, IndianRupee,
-  MapPin, Package, RefreshCw, Send, X, Calculator
+  MapPin, Package, RefreshCw, Send
 } from 'lucide-react'
 import { GlassCard } from '../components/ui/GlassCard'
 import { GlowButton } from '../components/ui/GlowButton'
@@ -81,7 +81,12 @@ function QuoteModal({ requirement, onClose }: QuoteModalProps) {
       })
       const body = await res.json()
       if (!res.ok) throw new Error(body.error || 'Failed to submit quotation.')
-      showToast(`✅ Quotation submitted! Industry will be notified via email.`, 'success')
+      showToast(
+        body.emailSent
+          ? 'Quotation submitted and the industry was notified by email.'
+          : 'Quotation submitted successfully. The industry can review it in their portal.',
+        'success',
+      )
       onClose()
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Submission failed.', 'error')
