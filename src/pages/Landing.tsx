@@ -201,20 +201,76 @@ export function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-glass/10 py-6 px-6 text-xs text-glass-dim">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#0077B6] to-[#00B4D8] flex items-center justify-center">
-              <Gem size={14} className="text-white" />
+      <footer className="border-t border-glass/10 pt-10 pb-6 px-6 text-xs text-glass-dim">
+        <div className="max-w-6xl mx-auto">
+
+          {/* 3-column grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-8">
+
+            {/* Brand */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0077B6] to-[#00B4D8] flex items-center justify-center shadow-glow-sm">
+                  <Gem size={16} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-bold text-highlight font-sora text-sm">Mistry Gems</p>
+                  <p className="text-[10px]">Workflow Management Platform</p>
+                </div>
+              </div>
+              <p className="leading-relaxed text-[11px] max-w-xs">
+                Empowering manufacturing MSMEs with intelligent workflow automation, digitalizing operations from job creation to final dispatch.
+              </p>
             </div>
-            <div>
-              <p className="font-bold text-highlight font-sora text-xs">Mistry Gems</p>
-              <p className="text-[10px]">Workflow Management Platform</p>
+
+            {/* Headquarters Address */}
+            <div className="space-y-2">
+              <h4 className="font-bold text-highlight font-sora text-xs uppercase tracking-wider mb-3">Headquarters</h4>
+              <p className="font-semibold text-glass text-[11px]">Mistry Gems — IT Department</p>
+              <p className="leading-relaxed text-[11px]">
+                Agni College of Technology<br />
+                Vels College Road, Thalambur<br />
+                Navalur IT Corridor<br />
+                Chennai — 600 130<br />
+                Tamil Nadu, India
+              </p>
+            </div>
+
+            {/* Contact */}
+            <div className="space-y-2">
+              <h4 className="font-bold text-highlight font-sora text-xs uppercase tracking-wider mb-3">Contact</h4>
+              <div className="space-y-1.5 text-[11px]">
+                <p>
+                  <span className="text-glass-dim">Email: </span>
+                  <a href="mailto:team@mistrygems.app" className="text-accent hover:text-highlight transition-colors">
+                    team@mistrygems.app
+                  </a>
+                </p>
+                <p>
+                  <span className="text-glass-dim">Support: </span>
+                  <a href="mailto:support@mistrygems.app" className="text-accent hover:text-highlight transition-colors">
+                    support@mistrygems.app
+                  </a>
+                </p>
+                <p className="pt-1">
+                  <span className="text-glass-dim">Platform: </span>
+                  <span className="text-glass">Industry 4.0 MSME Solution</span>
+                </p>
+              </div>
             </div>
           </div>
-          <p>© {new Date().getFullYear()} Mistry Gems. All rights reserved.</p>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-glass/10 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p className="text-[10px]">© {new Date().getFullYear()} Mistry Gems. All rights reserved.</p>
+            <p className="text-[10px] gradient-text font-semibold">
+              🛠️ Built with ❤️ by Team Mistry Gems
+            </p>
+          </div>
+
         </div>
       </footer>
+
     </div>
   )
 }
