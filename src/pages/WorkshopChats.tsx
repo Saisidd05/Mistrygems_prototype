@@ -63,8 +63,8 @@ export function WorkshopChats() {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // ── Load conversation threads ────────────────────────────────────────────
-  const loadThreads = useCallback(async () => {
-    setLoadingThreads(true)
+  const loadThreads = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoadingThreads(true)
     try {
       const res = await fetch('/api/chat?threads=1', { headers: authHeaders() })
       if (res.ok) {
@@ -74,11 +74,11 @@ export function WorkshopChats() {
     } catch {
       // silent
     } finally {
-      setLoadingThreads(false)
+      if (showLoading) setLoadingThreads(false)
     }
   }, [])
 
-  useEffect(() => { void loadThreads(); const timer = window.setInterval(() => void loadThreads(), 5000); return () => window.clearInterval(timer) }, [loadThreads])
+  useEffect(() => { void loadThreads(true); const timer = window.setInterval(() => void loadThreads(false), 3000); return () => window.clearInterval(timer) }, [loadThreads])
 
   useEffect(() => {
     const customerId = searchParams.get('customerId')
@@ -91,9 +91,10 @@ export function WorkshopChats() {
   useEffect(() => {
     if (!activeThread) return
     let cancelled = false
+    let firstRun = true
 
     async function load() {
-      setLoadingMsgs(true)
+      if (firstRun) setLoadingMsgs(true)
       try {
         const res = await fetch(
           `/api/chat?customerId=${encodeURIComponent(activeThread!.customerId)}`,
@@ -110,12 +111,15 @@ export function WorkshopChats() {
       } catch {
         // silent
       } finally {
-        if (!cancelled) setLoadingMsgs(false)
+        if (!cancelled && firstRun) {
+          setLoadingMsgs(false)
+          firstRun = false
+        }
       }
     }
 
     void load()
-    const refreshTimer = window.setInterval(() => void load(), 1000)
+    const refreshTimer = window.setInterval(() => void load(), 2000)
     return () => { cancelled = true; window.clearInterval(refreshTimer) }
   }, [activeThread])
 

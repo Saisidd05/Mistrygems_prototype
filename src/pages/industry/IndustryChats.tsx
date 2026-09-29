@@ -80,8 +80,8 @@ export function IndustryChats() {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // ── Load all workshops (vendors list) ────────────────────────────────────
-  const loadWorkshops = useCallback(async () => {
-    setLoadingWorkshops(true)
+  const loadWorkshops = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoadingWorkshops(true)
     try {
       const [vendorsRes, threadsRes] = await Promise.all([
         fetch('/api/vendors', { headers: authHeaders() }),
@@ -103,19 +103,20 @@ export function IndustryChats() {
     } catch {
       // silent
     } finally {
-      setLoadingWorkshops(false)
+      if (showLoading) setLoadingWorkshops(false)
     }
   }, [])
 
-  useEffect(() => { void loadWorkshops(); const timer = window.setInterval(() => void loadWorkshops(), 5000); return () => window.clearInterval(timer) }, [loadWorkshops])
+  useEffect(() => { void loadWorkshops(true); const timer = window.setInterval(() => void loadWorkshops(false), 3000); return () => window.clearInterval(timer) }, [loadWorkshops])
 
   // ── Load messages for active workshop ────────────────────────────────────
   useEffect(() => {
     if (!activeWorkshop) return
     let cancelled = false
+    let firstRun = true
 
     async function load() {
-      setLoadingMsgs(true)
+      if (firstRun) setLoadingMsgs(true)
       try {
         const res = await fetch(
           `/api/chat?workshopId=${encodeURIComponent(activeWorkshop!.id)}`,
@@ -137,12 +138,15 @@ export function IndustryChats() {
       } catch {
         // silent
       } finally {
-        if (!cancelled) setLoadingMsgs(false)
+        if (!cancelled && firstRun) {
+          setLoadingMsgs(false)
+          firstRun = false
+        }
       }
     }
 
     void load()
-    const refreshTimer = window.setInterval(() => void load(), 1000)
+    const refreshTimer = window.setInterval(() => void load(), 2000)
     return () => { cancelled = true; window.clearInterval(refreshTimer) }
   }, [activeWorkshop])
 
