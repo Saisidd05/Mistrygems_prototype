@@ -64,6 +64,14 @@ export function WorkshopChats() {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const isNearBottomRef = useRef(true)
+
+  function checkNearBottom() {
+    const el = scrollContainerRef.current
+    if (!el) return
+    isNearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 150
+  }
 
   function handleInputChange(value: string) {
     setText(value)
@@ -147,9 +155,11 @@ export function WorkshopChats() {
     return () => { cancelled = true; window.clearInterval(refreshTimer) }
   }, [activeThread])
 
-  // ── Auto-scroll ──────────────────────────────────────────────────────────
+  // ── Auto-scroll (smart: only if user is near bottom) ────────────────────
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (isNearBottomRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [messages, isTyping])
 
   // ── Send reply ───────────────────────────────────────────────────────────
@@ -167,6 +177,9 @@ export function WorkshopChats() {
       isSelf: true,
     }
     setMessages(prev => [...prev, optimistic])
+    // Force scroll to bottom when user sends a message
+    isNearBottomRef.current = true
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
 
     try {
       const res = await fetch('/api/chat', {
@@ -318,7 +331,11 @@ export function WorkshopChats() {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div
+                ref={scrollContainerRef}
+                onScroll={checkNearBottom}
+                className="flex-1 overflow-y-auto p-4 space-y-3"
+              >
                 {loadingMsgs ? (
                   <p className="text-center text-xs text-glass-dim py-8">Loading messages…</p>
                 ) : messages.length === 0 ? (

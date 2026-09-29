@@ -129,6 +129,14 @@ function ChatModal({
   const [loadingHistory, setLoadingHistory] = useState(true)
   const [sending, setSending] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const isNearBottomRef = useRef(true)
+
+  function checkNearBottom() {
+    const el = scrollContainerRef.current
+    if (!el) return
+    isNearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 150
+  }
 
   // Load chat history
   useEffect(() => {
@@ -153,9 +161,11 @@ function ChatModal({
     return () => { cancelled = true }
   }, [workshop.id])
 
-  // Auto-scroll to bottom
+  // Auto-scroll (smart: only if user is near bottom)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (isNearBottomRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [messages])
 
   async function handleSend() {
@@ -171,6 +181,9 @@ function ChatModal({
       isSelf: true,
     }
     setMessages(prev => [...prev, optimistic])
+    // Force scroll to bottom when user sends
+    isNearBottomRef.current = true
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
     setText('')
     try {
       const res = await fetch('/api/chat', {
@@ -236,7 +249,11 @@ function ChatModal({
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 scroll-smooth">
+        <div
+          ref={scrollContainerRef}
+          onScroll={checkNearBottom}
+          className="flex-1 overflow-y-auto p-4 space-y-3 scroll-smooth"
+        >
           {loadingHistory ? (
             <p className="text-center text-xs text-glass-dim py-8">Loading messages…</p>
           ) : messages.length === 0 ? (
