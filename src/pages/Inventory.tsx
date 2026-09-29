@@ -18,7 +18,7 @@ export function Inventory() {
   const [selectedMaterial, setSelectedMaterial] = useState('')
   const [adjustment, setAdjustment] = useState<number | ''>('')
   const [editingMaterial, setEditingMaterial] = useState<typeof rawMaterials[number] | null>(null)
-  const [newMaterial, setNewMaterial] = useState({ name: '', unit: 'pcs', currentStock: '' as number | '', reorderLevel: '' as number | '', unitCost: '' as number | '' })
+  const [newMaterial, setNewMaterial] = useState({ name: '', currentStock: '' as number | '', reorderLevel: '' as number | '', unitCost: '' as number | '' })
 
   const filteredRaw = rawMaterials.filter(r => r.name.toLowerCase().includes(search.toLowerCase()) || r.sku.toLowerCase().includes(search.toLowerCase()))
   const filteredFinished = finishedGoods.filter(f => f.name.toLowerCase().includes(search.toLowerCase()) || f.sku.toLowerCase().includes(search.toLowerCase()))
@@ -36,7 +36,7 @@ export function Inventory() {
     if (!newMaterial.name) { showToast('Material name is required.', 'warning'); return }
     const sku = `RM-${Date.now()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`
     addRawMaterial({ ...newMaterial, sku, currentStock: Number(newMaterial.currentStock) || 0, reorderLevel: Number(newMaterial.reorderLevel) || 0, unitCost: Number(newMaterial.unitCost) || 0 })
-    setNewMaterial({ name: '', unit: 'pcs', currentStock: '', reorderLevel: '', unitCost: '' })
+    setNewMaterial({ name: '', currentStock: '', reorderLevel: '', unitCost: '' })
     setAddModal(false)
     showToast('New material added to inventory.', 'success')
   }
@@ -97,8 +97,8 @@ export function Inventory() {
                 <tr key={rm.id}>
                   <td className="font-mono text-xs text-accent font-semibold">{rm.sku}</td>
                   <td className="text-highlight font-medium">{rm.name}</td>
-                  <td className="font-bold text-highlight">{rm.currentStock} {rm.unit}</td>
-                  <td className="text-xs">{rm.reorderLevel} {rm.unit}</td>
+                  <td className="font-bold text-highlight">{rm.currentStock}</td>
+                  <td className="text-xs">{rm.reorderLevel}</td>
                   <td className="text-xs">{formatCurrency(rm.unitCost)}</td>
                   <td><StatusBadge status={rm.status} dot /></td>
                   <td className="text-right space-x-3"><button onClick={() => { setSelectedMaterial(rm.id); setStockModal('in') }} className="text-xs text-accent hover:text-highlight">Stock In / Out</button><button onClick={() => setEditingMaterial(rm)} className="text-xs text-accent hover:text-highlight">Edit</button></td>
@@ -140,7 +140,7 @@ export function Inventory() {
         <div className="grid grid-cols-2 gap-3"><label className="col-span-2 text-xs text-glass-dim">Material Name<input className="glass-input mt-1" placeholder="e.g. Drill Bit" value={newMaterial.name} onChange={event => setNewMaterial({ ...newMaterial, name: event.target.value })} /></label><p className="col-span-2 text-[10px] text-glass-dim">Material code is generated automatically.</p><label className="text-xs text-glass-dim">Opening Stock<input type="number" className="glass-input mt-1" placeholder="e.g. 50" value={newMaterial.currentStock} onChange={event => setNewMaterial({ ...newMaterial, currentStock: event.target.value === '' ? '' : Number(event.target.value) })} /></label><label className="text-xs text-glass-dim">Reorder Level<input type="number" className="glass-input mt-1" placeholder="e.g. 10" value={newMaterial.reorderLevel} onChange={event => setNewMaterial({ ...newMaterial, reorderLevel: event.target.value === '' ? '' : Number(event.target.value) })} /></label><label className="col-span-2 text-xs text-glass-dim">Unit Cost (₹)<input type="number" className="glass-input mt-1" placeholder="e.g. 250" value={newMaterial.unitCost} onChange={event => setNewMaterial({ ...newMaterial, unitCost: event.target.value === '' ? '' : Number(event.target.value) })} /></label><GlowButton className="col-span-2" onClick={createMaterial}>Add Material</GlowButton></div>
       </Modal>
       <Modal open={!!editingMaterial} onClose={() => setEditingMaterial(null)} title="Edit Raw Material">
-        {editingMaterial && <div className="grid grid-cols-2 gap-3"><label className="col-span-2 text-xs text-glass-dim">Material Name<input className="glass-input mt-1" value={editingMaterial.name} onChange={event => setEditingMaterial({ ...editingMaterial, name: event.target.value })} /></label><label className="text-xs text-glass-dim">SKU<input className="glass-input mt-1" value={editingMaterial.sku} onChange={event => setEditingMaterial({ ...editingMaterial, sku: event.target.value })} /></label><label className="text-xs text-glass-dim">Unit<input className="glass-input mt-1" value={editingMaterial.unit} onChange={event => setEditingMaterial({ ...editingMaterial, unit: event.target.value })} /></label><label className="text-xs text-glass-dim">Current Stock<input type="number" className="glass-input mt-1" value={editingMaterial.currentStock} onChange={event => setEditingMaterial({ ...editingMaterial, currentStock: Number(event.target.value) })} /></label><label className="text-xs text-glass-dim">Reorder Level<input type="number" className="glass-input mt-1" value={editingMaterial.reorderLevel} onChange={event => setEditingMaterial({ ...editingMaterial, reorderLevel: Number(event.target.value) })} /></label><label className="col-span-2 text-xs text-glass-dim">Unit Cost<input type="number" className="glass-input mt-1" value={editingMaterial.unitCost} onChange={event => setEditingMaterial({ ...editingMaterial, unitCost: Number(event.target.value) })} /></label><GlowButton className="col-span-2" onClick={() => { updateRawMaterial(editingMaterial.id, editingMaterial); setEditingMaterial(null); showToast('Material updated successfully.', 'success') }}>Save Changes</GlowButton></div>}
+        {editingMaterial && <div className="grid grid-cols-2 gap-3"><label className="col-span-2 text-xs text-glass-dim">Material Name<input className="glass-input mt-1" value={editingMaterial.name} onChange={event => setEditingMaterial({ ...editingMaterial, name: event.target.value })} /></label><label className="text-xs text-glass-dim">SKU<input className="glass-input mt-1" value={editingMaterial.sku} onChange={event => setEditingMaterial({ ...editingMaterial, sku: event.target.value })} /></label><label className="text-xs text-glass-dim">Current Stock<input type="number" className="glass-input mt-1" value={editingMaterial.currentStock} onChange={event => setEditingMaterial({ ...editingMaterial, currentStock: Number(event.target.value) })} /></label><label className="text-xs text-glass-dim">Reorder Level<input type="number" className="glass-input mt-1" value={editingMaterial.reorderLevel} onChange={event => setEditingMaterial({ ...editingMaterial, reorderLevel: Number(event.target.value) })} /></label><label className="col-span-2 text-xs text-glass-dim">Unit Cost<input type="number" className="glass-input mt-1" value={editingMaterial.unitCost} onChange={event => setEditingMaterial({ ...editingMaterial, unitCost: Number(event.target.value) })} /></label><GlowButton className="col-span-2" onClick={() => { updateRawMaterial(editingMaterial.id, editingMaterial); setEditingMaterial(null); showToast('Material updated successfully.', 'success') }}>Save Changes</GlowButton></div>}
       </Modal>
     </div>
   )
