@@ -107,7 +107,7 @@ export function IndustryChats() {
     }
   }, [])
 
-  useEffect(() => { void loadWorkshops(true); const timer = window.setInterval(() => void loadWorkshops(false), 3000); return () => window.clearInterval(timer) }, [loadWorkshops])
+  useEffect(() => { void loadWorkshops(true); const timer = window.setInterval(() => void loadWorkshops(false), 1500); return () => window.clearInterval(timer) }, [loadWorkshops])
 
   // ── Load messages for active workshop ────────────────────────────────────
   useEffect(() => {
@@ -146,7 +146,7 @@ export function IndustryChats() {
     }
 
     void load()
-    const refreshTimer = window.setInterval(() => void load(), 2000)
+    const refreshTimer = window.setInterval(() => void load(), 500)
     return () => { cancelled = true; window.clearInterval(refreshTimer) }
   }, [activeWorkshop])
 
