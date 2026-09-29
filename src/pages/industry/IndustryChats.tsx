@@ -73,7 +73,7 @@ export function IndustryChats() {
   const [loadingMsgs, setLoadingMsgs] = useState(false)
   const [isOnline, setIsOnline] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
-  const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Track last message per workshop for preview
   const [lastMessages, setLastMessages] = useState<Record<string, { text: string; at: string }>>({})

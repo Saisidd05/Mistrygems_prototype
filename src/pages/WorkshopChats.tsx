@@ -59,7 +59,7 @@ export function WorkshopChats() {
   const [loadingMsgs, setLoadingMsgs] = useState(false)
   const [isOnline, setIsOnline] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
-  const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
