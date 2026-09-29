@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { MessageCircle, Send, ArrowLeft, Users, Clock } from 'lucide-react'
 import { useToast } from '../components/ui/Toast'
 import { useSearchParams } from 'react-router-dom'
+import { useChatNotifications } from '../hooks/useChatNotifications'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -52,6 +53,9 @@ function avatar(name: string) {
 export function WorkshopChats() {
   const [searchParams] = useSearchParams()
   const { showToast } = useToast()
+  const { notifyNewMessages, resetSeen } = useChatNotifications(
+    activeThread?.customerName ?? null
+  )
   const [threads, setThreads] = useState<Thread[]>([])
   const [loadingThreads, setLoadingThreads] = useState(true)
   const [activeThread, setActiveThread] = useState<Thread | null>(null)
@@ -131,6 +135,7 @@ export function WorkshopChats() {
           const resData = await res.json()
           const msgs: ChatMessage[] = Array.isArray(resData) ? resData : (resData?.messages ?? [])
           setMessages(msgs)
+          notifyNewMessages(msgs)
           if (resData && typeof resData === 'object' && !Array.isArray(resData)) {
             setIsOnline(Boolean(resData.isOnline))
             setIsTyping(Boolean(resData.isTyping))
@@ -152,8 +157,8 @@ export function WorkshopChats() {
 
     void load()
     const refreshTimer = window.setInterval(() => void load(), 500)
-    return () => { cancelled = true; window.clearInterval(refreshTimer) }
-  }, [activeThread])
+    return () => { cancelled = true; window.clearInterval(refreshTimer); resetSeen() }
+  }, [activeThread, notifyNewMessages, resetSeen])
 
   // ── Auto-scroll (smart: only if user is near bottom) ────────────────────
   useEffect(() => {

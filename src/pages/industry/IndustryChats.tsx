@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { MessageCircle, Send, ArrowLeft, Building2, Clock, RefreshCw } from 'lucide-react'
 import { useToast } from '../../components/ui/Toast'
+import { useChatNotifications } from '../../hooks/useChatNotifications'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -62,6 +63,9 @@ function initials(name: string) {
 
 export function IndustryChats() {
   const { showToast } = useToast()
+  const { notifyNewMessages, resetSeen } = useChatNotifications(
+    activeWorkshop?.name ?? null
+  )
 
   // All workshops this industry user has previously chatted with
   const [workshops, setWorkshops] = useState<Workshop[]>([])
@@ -153,6 +157,7 @@ export function IndustryChats() {
           const resData = await res.json()
           const msgs: ChatMessage[] = Array.isArray(resData) ? resData : (resData?.messages ?? [])
           setMessages(msgs)
+          notifyNewMessages(msgs)
           if (resData && typeof resData === 'object' && !Array.isArray(resData)) {
             setIsOnline(Boolean(resData.isOnline))
             setIsTyping(Boolean(resData.isTyping))
@@ -177,8 +182,8 @@ export function IndustryChats() {
 
     void load()
     const refreshTimer = window.setInterval(() => void load(), 500)
-    return () => { cancelled = true; window.clearInterval(refreshTimer) }
-  }, [activeWorkshop])
+    return () => { cancelled = true; window.clearInterval(refreshTimer); resetSeen() }
+  }, [activeWorkshop, notifyNewMessages, resetSeen])
 
   // ── Auto-scroll (smart: only if user is near bottom) ────────────────────
   useEffect(() => {

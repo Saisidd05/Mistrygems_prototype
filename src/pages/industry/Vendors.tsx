@@ -15,6 +15,7 @@ import { GlassCard } from '../../components/ui/GlassCard'
 import { GlowButton } from '../../components/ui/GlowButton'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/Toast'
+import { useChatNotifications } from '../../hooks/useChatNotifications'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -131,6 +132,7 @@ function ChatModal({
   const bottomRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const isNearBottomRef = useRef(true)
+  const { notifyNewMessages } = useChatNotifications(workshop.name)
 
   function checkNearBottom() {
     const el = scrollContainerRef.current
@@ -149,7 +151,11 @@ function ChatModal({
         })
         if (res.ok) {
           const data: ChatMessage[] = await res.json()
-          if (!cancelled) setMessages(Array.isArray(data) ? data : [])
+          if (!cancelled) {
+            const msgs = Array.isArray(data) ? data : []
+            setMessages(msgs)
+            notifyNewMessages(msgs)
+          }
         }
       } catch {
         // silently fail — chat still usable for new messages
