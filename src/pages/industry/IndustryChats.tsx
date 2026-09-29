@@ -414,7 +414,7 @@ export function IndustryChats() {
                   onKeyDown={handleKey}
                   placeholder={`Message ${activeWorkshop.name}… (Enter to send)`}
                   rows={1}
-                  className="flex-1 resize-none rounded-xl px-3.5 py-2.5 text-sm bg-white/8 border border-glass/15 text-highlight placeholder:text-glass-dim focus:outline-none focus:border-[#00B4D8]/50 transition-colors max-h-[100px]"
+                  className="flex-1 resize-none rounded-xl px-3.5 py-2.5 text-sm bg-white/8 border border-glass/15 text-black placeholder:text-glass-dim focus:outline-none focus:border-[#00B4D8]/50 transition-colors max-h-[100px]"
                   style={{ lineHeight: '1.5' }}
                 />
                 <button
