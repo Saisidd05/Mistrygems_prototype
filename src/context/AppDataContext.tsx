@@ -30,13 +30,15 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isAuthenticated || getAccountType(user) !== 'workshop') { setJobs([]); setEmployees([]); setCustomers([]); setTasks([]); setNotifications([]); setInvoices([]); setRawMaterials([]); setFinishedGoods([]); setQuotations([]); return }
     let active = true; setLoading(true)
-    Promise.all([
+    const load = () => Promise.all([
       database.list<Job>('jobs'), database.list<Employee>('employees'), database.list<Customer>('customers'), database.list<Task>('tasks'),
       database.list<Notification>('notifications'), database.list<Invoice>('invoices'), database.list<RawMaterial>('rawMaterials'), database.list<FinishedGood>('finishedGoods'), database.list<Quotation>('quotations'),
     ]).then(([nextJobs, nextEmployees, nextCustomers, nextTasks, nextNotifications, nextInvoices, nextMaterials, nextGoods, nextQuotations]) => {
       if (!active) return; setJobs(nextJobs); setEmployees(nextEmployees); setCustomers(nextCustomers); setTasks(nextTasks); setNotifications(nextNotifications); setInvoices(nextInvoices); setRawMaterials(nextMaterials); setFinishedGoods(nextGoods); setQuotations(nextQuotations)
     }).catch(error => console.error('Unable to load private workspace data:', error)).finally(() => active && setLoading(false))
-    return () => { active = false }
+    void load()
+    const refreshTimer = window.setInterval(load, 30000)
+    return () => { active = false; window.clearInterval(refreshTimer) }
   }, [isAuthenticated, user])
 
   const create = <T extends { id: string }>(collection: Parameters<typeof database.create>[0], value: T, setter: React.Dispatch<React.SetStateAction<T[]>>) => { void database.create(collection, value).then(saved => setter(current => [...current, saved])).catch(error => console.error(`Unable to create ${collection}:`, error)) }

@@ -24,7 +24,7 @@ export default async function handler(req, res) {
   try {
     const collection = (await getIndustryDatabase()).collection(collectionName)
     const filter = feedMode ? { status: { $ne: 'Closed' } } : { companyId: user.companyId }
-    if (req.method === 'GET') return res.status(200).json(await collection.find(filter).sort({ createdAt: -1 }).toArray().then(rows => rows.map(({ _id, ownerId, companyId, ...row }) => row)))
+    if (req.method === 'GET') return res.status(200).json(await collection.find(filter).sort({ createdAt: -1 }).toArray().then(rows => rows.map(({ _id, ownerId, companyId, ...row }) => feedMode ? { ...row, customerId: ownerId, customerName: row.companyName } : row)))
     if (req.method === 'POST') {
       const document = req.body?.document
       if (!document || typeof document !== 'object' || Array.isArray(document)) return res.status(400).json({ error: 'A document is required.' })

@@ -23,7 +23,6 @@ import { Inventory } from './pages/Inventory'
 import { Feed } from './pages/Feed'
 import { Notifications } from './pages/Notifications'
 import { Reports } from './pages/Reports'
-import { Settings } from './pages/Settings'
 import { WorkshopChats } from './pages/WorkshopChats'
 import { IndustryLayout } from './components/industry/IndustryLayout'
 import { IndustryDashboard, IndustryRequirements, IndustrySection } from './pages/industry/IndustryDashboard'
@@ -74,7 +73,6 @@ export default function App() {
                 <Route path="/workshop/inventory" element={<RoleProtectedRoute accountType="workshop"><Inventory /></RoleProtectedRoute>} />
                 <Route path="/workshop/notifications" element={<RoleProtectedRoute accountType="workshop"><Notifications /></RoleProtectedRoute>} />
                 <Route path="/workshop/reports" element={<RoleProtectedRoute accountType="workshop"><Reports /></RoleProtectedRoute>} />
-                <Route path="/workshop/settings" element={<RoleProtectedRoute accountType="workshop"><Settings /></RoleProtectedRoute>} />
                 <Route path="/workshop/chats" element={<RoleProtectedRoute accountType="workshop"><WorkshopChats /></RoleProtectedRoute>} />
 
                 {/* Industry routes: dedicated layout, navigation and pages. */}
@@ -90,7 +88,6 @@ export default function App() {
                 <Route path="/industry/delivery-tracking" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Delivery Tracking" description="Monitor dispatch, transport, tracking and delivery confirmation." /></RoleProtectedRoute>} />
                 <Route path="/industry/notifications" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Notifications" description="Stay informed about quotes, production, quality and delivery updates." /></RoleProtectedRoute>} />
                 <Route path="/industry/company-profile" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Company Profile" description="Manage your company details, GST number, contacts and business description." /></RoleProtectedRoute>} />
-                <Route path="/industry/settings" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Settings" description="Configure your industry portal preferences." /></RoleProtectedRoute>} />
 
                 {/* Preserve existing workshop bookmarks without exposing them to Industry accounts. */}
                 <Route path="/dashboard" element={<LegacyWorkshopRedirect path="dashboard" />} />
@@ -104,7 +101,6 @@ export default function App() {
                 <Route path="/inventory" element={<LegacyWorkshopRedirect path="inventory" />} />
                 <Route path="/notifications" element={<LegacyWorkshopRedirect path="notifications" />} />
                 <Route path="/reports" element={<LegacyWorkshopRedirect path="reports" />} />
-                <Route path="/settings" element={<LegacyWorkshopRedirect path="settings" />} />
 
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />

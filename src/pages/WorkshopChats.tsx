@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { MessageCircle, Send, ArrowLeft, Users, Clock } from 'lucide-react'
 import { GlassCard } from '../components/ui/GlassCard'
 import { useToast } from '../components/ui/Toast'
+import { useSearchParams } from 'react-router-dom'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -50,6 +51,7 @@ function avatar(name: string) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export function WorkshopChats() {
+  const [searchParams] = useSearchParams()
   const { showToast } = useToast()
   const [threads, setThreads] = useState<Thread[]>([])
   const [loadingThreads, setLoadingThreads] = useState(true)
@@ -77,6 +79,13 @@ export function WorkshopChats() {
   }, [])
 
   useEffect(() => { void loadThreads() }, [loadThreads])
+
+  useEffect(() => {
+    const customerId = searchParams.get('customerId')
+    if (!customerId) return
+    const customerName = searchParams.get('customerName') || 'Industry Customer'
+    setActiveThread({ customerId, customerName, lastMessage: '', lastAt: '', unread: 0 })
+  }, [searchParams])
 
   // ── Load messages for active thread ─────────────────────────────────────
   useEffect(() => {

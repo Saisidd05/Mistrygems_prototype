@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Building2, CalendarDays, ClipboardList, FileText, IndianRupee,
-  MapPin, Package, RefreshCw, Send
+  MapPin, Package, RefreshCw, Send, MessageCircle, Image as ImageIcon, Info
 } from 'lucide-react'
 import { GlassCard } from '../components/ui/GlassCard'
 import { GlowButton } from '../components/ui/GlowButton'
@@ -28,7 +29,11 @@ interface FeedRequirement {
   status: 'Open' | 'Closed' | 'Matched' | 'In Production'
   createdAt: string
   companyName?: string
+  customerId?: string
+  customerName?: string
 }
+
+interface SubmittedQuotation { id: string; requirementTitle: string; grandTotal: number; status: 'Pending' | 'Accepted' | 'Rejected'; createdAt: string }
 
 function getToken() {
   const saved = localStorage.getItem('mistry-auth')
@@ -179,10 +184,15 @@ function QuoteModal({ requirement, onClose }: QuoteModalProps) {
 
 // ── Main Feed Component ────────────────────────────────────────────────────
 export function Feed() {
+  const navigate = useNavigate()
+  const { showToast } = useToast()
   const [requirements, setRequirements] = useState<FeedRequirement[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [quoting, setQuoting] = useState<FeedRequirement | null>(null)
+  const [details, setDetails] = useState<FeedRequirement | null>(null)
+  const [submitted, setSubmitted] = useState<SubmittedQuotation[]>([])
+  const previousStatuses = useRef<Record<string, string>>({})
 
   const loadFeed = useCallback(async () => {
     setLoading(true)
@@ -203,7 +213,11 @@ export function Feed() {
     }
   }, [])
 
-  useEffect(() => { void loadFeed() }, [loadFeed])
+  const loadSubmitted = useCallback(async () => {
+    try { const response = await fetch('/api/quotations', { headers: { Authorization: `Bearer ${getToken()}` } }); if (response.ok) setSubmitted(await response.json()) } catch { /* Keep current list on temporary failures. */ }
+  }, [])
+  useEffect(() => { void loadFeed(); void loadSubmitted(); const timer = window.setInterval(() => { void loadFeed(); void loadSubmitted() }, 30000); return () => window.clearInterval(timer) }, [loadFeed, loadSubmitted])
+  useEffect(() => { submitted.forEach(q => { const previous = previousStatuses.current[q.id]; if (previous && previous !== q.status) { const message = `Your quotation for ${q.requirementTitle} was ${q.status.toLowerCase()}.`; showToast(message, q.status === 'Accepted' ? 'success' : 'warning'); if ('Notification' in window && Notification.permission === 'granted') new Notification('Mistry Gems', { body: message }) } previousStatuses.current[q.id] = q.status }) }, [submitted, showToast])
 
   return (
     <div className="space-y-6">
@@ -218,6 +232,8 @@ export function Feed() {
       </div>
 
       {error && <GlassCard className="p-4 text-sm text-red-300 border-red-400/30">{error}</GlassCard>}
+
+      {submitted.length > 0 && <GlassCard className="p-4"><p className="text-xs font-bold text-highlight mb-3">My submitted quotations</p><div className="space-y-2">{submitted.slice(0, 5).map(q => <div key={q.id} className="flex justify-between gap-3 text-xs"><span className="text-glass truncate">{q.requirementTitle}</span><span className={q.status === 'Accepted' ? 'text-emerald-400' : q.status === 'Rejected' ? 'text-red-400' : 'text-amber-400'}>{q.status} · {formatCurrency(q.grandTotal)}</span></div>)}</div></GlassCard>}
 
       <div className="space-y-4">
         {loading && !requirements.length ? (
@@ -249,6 +265,7 @@ export function Feed() {
                 >
                   Send Quotation
                 </GlowButton>
+                <div className="flex gap-2"><button className="text-xs text-accent hover:text-highlight" onClick={() => setDetails(item)}><Info size={13} className="inline mr-1" />More info</button>{item.customerId && <button className="text-xs text-accent hover:text-highlight" onClick={() => navigate(`/workshop/chats?customerId=${encodeURIComponent(item.customerId!)}&customerName=${encodeURIComponent(item.customerName || item.companyName || 'Industry Customer')}`)}><MessageCircle size={13} className="inline mr-1" />Chat</button>}</div>
               </div>
             </div>
 
@@ -299,6 +316,7 @@ export function Feed() {
           <QuoteModal requirement={quoting} onClose={() => setQuoting(null)} />
         </Modal>
       )}
+      {details && <Modal open={!!details} onClose={() => setDetails(null)} title={details.jobTitle} maxWidth="lg"><div className="space-y-4 text-sm text-glass"><p>{details.description}</p><div className="grid grid-cols-2 gap-3 text-xs"><p>Material: {details.materialSpecification}</p><p>Process: {details.manufacturingProcess}</p><p>Delivery: {formatDate(details.deliveryDate)}</p><p>Location: {details.deliveryLocation}</p></div><div className="grid sm:grid-cols-2 gap-3">{[details.drawingFile, details.technicalFile].filter(Boolean).map((file, index) => <div key={index} className="rounded-xl border border-glass/10 p-3">{typeof file === 'string' && (file.startsWith('data:image') || file.startsWith('http')) ? <img src={file} alt="Requirement attachment" className="w-full max-h-56 object-contain rounded-lg" /> : <p className="text-xs"><ImageIcon size={14} className="inline mr-1" />Attachment: {file}</p>}</div>)}</div>{!details.drawingFile && !details.technicalFile && <p className="text-xs text-glass-dim">No drawings or images attached to this requirement.</p>}</div></Modal>}
     </div>
   )
 }

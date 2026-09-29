@@ -5,6 +5,9 @@ import { getAccountType, useAuth } from '../../context/AuthContext'
 import { useSidebar } from '../../context/SidebarContext'
 import { useTheme } from '../../context/ThemeContext'
 import { useAppData } from '../../context/AppDataContext'
+import { Modal } from '../ui/Modal'
+import { GlowButton } from '../ui/GlowButton'
+import { useToast } from '../ui/Toast'
 
 const pageNames: Record<string, string> = {
   // Workshop routes
@@ -19,7 +22,6 @@ const pageNames: Record<string, string> = {
   '/workshop/inventory': 'Inventory',
   '/workshop/reports': 'Reports & Analytics',
   '/workshop/notifications': 'Notifications',
-  '/workshop/settings': 'Settings',
 
   // Industry routes
   '/industry/dashboard': 'Industry Dashboard',
@@ -40,7 +42,12 @@ const pageNames: Record<string, string> = {
 export function Topbar() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const { user, logout, updateProfile } = useAuth()
+  const { showToast } = useToast()
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [workshopName, setWorkshopName] = useState('')
+  const [workshopAddress, setWorkshopAddress] = useState('')
+  const [gstin, setGstin] = useState('')
   const { toggle } = useSidebar()
   const { theme, toggleTheme } = useTheme()
   const { notifications } = useAppData()
@@ -55,6 +62,8 @@ export function Topbar() {
     logout()
     navigate('/login')
   }
+  const openProfile = () => { setWorkshopName(user?.workshopName || ''); setWorkshopAddress(user?.workshopAddress || ''); setGstin(user?.gstin || ''); setEditingProfile(true); setShowProfile(false) }
+  const saveProfile = async (event: React.FormEvent) => { event.preventDefault(); const result = await updateProfile({ workshopName, workshopAddress, gstin }); showToast(result.success ? 'Profile updated.' : result.error || 'Could not update profile.', result.success ? 'success' : 'error'); if (result.success) setEditingProfile(false) }
 
   return (
     <header className="glass-nav sticky top-0 z-20 flex items-center justify-between px-5 py-3 gap-4">
@@ -124,6 +133,12 @@ export function Topbar() {
                 <p className="text-[10px] text-glass-dim">{isIndustry ? (user?.workshopName || 'Industry Account') : user?.role}</p>
               </div>
               <button
+                onClick={openProfile}
+                className="flex items-center gap-2 w-full px-3 py-2 text-xs text-glass hover:bg-white/5 rounded-lg transition-all"
+              >
+                Edit profile
+              </button>
+              <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 w-full px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-lg transition-all mt-1"
               >
@@ -134,6 +149,9 @@ export function Topbar() {
           )}
         </div>
       </div>
+      <Modal open={editingProfile} onClose={() => setEditingProfile(false)} title="Edit Profile">
+        <form onSubmit={saveProfile} className="space-y-3"><label className="block text-xs text-glass-dim">Company name<input className="glass-input mt-1" value={workshopName} onChange={e => setWorkshopName(e.target.value)} required /></label><label className="block text-xs text-glass-dim">Address<input className="glass-input mt-1" value={workshopAddress} onChange={e => setWorkshopAddress(e.target.value)} required /></label><label className="block text-xs text-glass-dim">GSTIN<input className="glass-input mt-1" value={gstin} onChange={e => setGstin(e.target.value)} /></label><GlowButton type="submit" size="sm">Save profile</GlowButton></form>
+      </Modal>
     </header>
   )
 }

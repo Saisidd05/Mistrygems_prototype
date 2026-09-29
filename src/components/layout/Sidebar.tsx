@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Briefcase, Users, UserCheck, ClipboardList,
-  FileText, Bell, BarChart2, Settings, LogOut, ChevronLeft,
+  FileText, Bell, BarChart2, LogOut, ChevronLeft,
   ChevronRight, Gem, Package, Receipt, Rss, PlusCircle,
   Truck, FileCheck, MapPin, UserCircle, Building2, MessageCircle
 } from 'lucide-react'
@@ -32,7 +32,6 @@ const workshopNavItems: NavItem[] = [
   { label: 'Reports', path: '/workshop/reports', icon: <BarChart2 size={18} />, roles: ['Owner', 'Manager'] },
   { label: 'Industry Chats', path: '/workshop/chats', icon: <MessageCircle size={18} /> },
   { label: 'Notifications', path: '/workshop/notifications', icon: <Bell size={18} /> },
-  { label: 'Settings', path: '/workshop/settings', icon: <Settings size={18} /> },
 ]
 
 const industryNavItems: NavItem[] = [
@@ -48,7 +47,6 @@ const industryNavItems: NavItem[] = [
   { label: 'Workshop Chats', path: '/industry/chats', icon: <MessageCircle size={18} /> },
   { label: 'Notifications', path: '/industry/notifications', icon: <Bell size={18} /> },
   { label: 'Company Profile', path: '/industry/company-profile', icon: <UserCircle size={18} /> },
-  { label: 'Settings', path: '/industry/settings', icon: <Settings size={18} /> },
 ]
 
 export function Sidebar() {

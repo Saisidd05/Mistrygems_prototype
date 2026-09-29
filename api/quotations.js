@@ -134,11 +134,11 @@ export default async function handler(req, res) {
 
   // ── GET: Industry user fetches all quotations for their requirements ──
   if (req.method === 'GET') {
-    if (user.accountType !== 'industry') {
-      return res.status(403).json({ error: 'Industry account required.' })
-    }
+    const filter = user.accountType === 'industry'
+      ? { industryCompanyId: user.companyId }
+      : { workshopId: user.id }
     const list = await quotations
-      .find({ industryCompanyId: user.companyId })
+      .find(filter)
       .sort({ createdAt: -1 })
       .toArray()
     return res.status(200).json(list.map(({ _id, ...q }) => q))
@@ -228,6 +228,8 @@ export default async function handler(req, res) {
     if (!id || !['Accepted', 'Rejected', 'Pending'].includes(status)) {
       return res.status(400).json({ error: 'Quotation id and valid status required.' })
     }
+    const existing = await quotations.findOne({ id, industryCompanyId: user.companyId })
+    if (!existing) return res.status(404).json({ error: 'Quotation not found.' })
     const result = await quotations.findOneAndUpdate(
       { id, industryCompanyId: user.companyId },
       { $set: { status } },
@@ -235,6 +237,30 @@ export default async function handler(req, res) {
     )
     const doc = result?.value ?? result
     if (!doc) return res.status(404).json({ error: 'Quotation not found.' })
+
+    const users = workshopDb.collection('users')
+    const notification = {
+      id: `NOT-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+      title: `Quotation ${status}`,
+      message: `${existing.industryCompanyName} ${status.toLowerCase()} your quotation for ${existing.requirementTitle}.`,
+      type: status === 'Accepted' ? 'success' : 'warning', time: new Date().toISOString(), read: false,
+      group: 'Today', channel: 'in-app', quotationId: existing.id,
+      ownerId: existing.workshopId, createdAt: new Date().toISOString(),
+    }
+    await workshopDb.collection('notifications').insertOne(notification)
+    if (status === 'Accepted') {
+      const customer = {
+        id: `CUST-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+        name: existing.industryCompanyName || 'Industry Customer', company: existing.industryCompanyName || 'Industry Customer',
+        email: '', phone: '', city: '', totalJobs: 1, totalRevenue: existing.grandTotal,
+        status: 'Active', avatar: (existing.industryCompanyName || 'IC').slice(0, 2).toUpperCase(),
+        ownerId: existing.workshopId, createdAt: new Date().toISOString(), sourceQuotationId: existing.id,
+      }
+      await workshopDb.collection('customers').updateOne(
+        { ownerId: existing.workshopId, sourceQuotationId: existing.id },
+        { $setOnInsert: customer }, { upsert: true },
+      )
+    }
     const { _id, ...safeDoc } = doc
     return res.status(200).json(safeDoc)
   }

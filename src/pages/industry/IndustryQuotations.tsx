@@ -58,7 +58,7 @@ export function IndustryQuotations() {
     }
   }, [])
 
-  useEffect(() => { void load() }, [load])
+  useEffect(() => { void load(); const timer = window.setInterval(() => void load(), 30000); return () => window.clearInterval(timer) }, [load])
 
   const updateStatus = async (id: string, status: 'Accepted' | 'Rejected') => {
     setUpdating(id)
