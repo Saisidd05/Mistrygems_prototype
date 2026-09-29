@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { MessageCircle, Send, ArrowLeft, Users, Clock } from 'lucide-react'
-import { GlassCard } from '../components/ui/GlassCard'
 import { useToast } from '../components/ui/Toast'
 import { useSearchParams } from 'react-router-dom'
 
@@ -58,9 +57,29 @@ export function WorkshopChats() {
   const [activeThread, setActiveThread] = useState<Thread | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loadingMsgs, setLoadingMsgs] = useState(false)
+  const [isOnline, setIsOnline] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
+
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  function handleInputChange(value: string) {
+    setText(value)
+    if (!activeThread) return
+    if (!typingTimerRef.current) {
+      void fetch('/api/chat', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ typingTo: activeThread.customerId }),
+      })
+    }
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
+    typingTimerRef.current = setTimeout(() => {
+      typingTimerRef.current = null
+    }, 2000)
+  }
 
   // ── Load conversation threads ────────────────────────────────────────────
   const loadThreads = useCallback(async (showLoading = false) => {
@@ -101,8 +120,13 @@ export function WorkshopChats() {
           { headers: authHeaders() }
         )
         if (res.ok && !cancelled) {
-          const data: ChatMessage[] = await res.json()
-          setMessages(Array.isArray(data) ? data : [])
+          const resData = await res.json()
+          const msgs: ChatMessage[] = Array.isArray(resData) ? resData : (resData?.messages ?? [])
+          setMessages(msgs)
+          if (resData && typeof resData === 'object' && !Array.isArray(resData)) {
+            setIsOnline(Boolean(resData.isOnline))
+            setIsTyping(Boolean(resData.isTyping))
+          }
           // Clear unread badge for this thread
           setThreads(prev =>
             prev.map(t => t.customerId === activeThread!.customerId ? { ...t, unread: 0 } : t)
@@ -126,7 +150,7 @@ export function WorkshopChats() {
   // ── Auto-scroll ──────────────────────────────────────────────────────────
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, isTyping])
 
   // ── Send reply ───────────────────────────────────────────────────────────
   async function handleSend() {
@@ -157,7 +181,6 @@ export function WorkshopChats() {
       if (res.ok) {
         const saved: ChatMessage = await res.json()
         setMessages(prev => prev.map(m => m.id === optimistic.id ? saved : m))
-        // Update thread last message
         setThreads(prev =>
           prev.map(t =>
             t.customerId === activeThread.customerId
@@ -182,7 +205,6 @@ export function WorkshopChats() {
     }
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="p-4 sm:p-6 h-full">
       <div className="mb-5">
@@ -202,7 +224,6 @@ export function WorkshopChats() {
         <div
           className={`flex flex-col border-r border-glass/10 ${activeThread ? 'hidden sm:flex' : 'flex'} w-full sm:w-72 flex-shrink-0`}
         >
-          {/* Header */}
           <div
             className="flex items-center gap-2 px-4 py-3.5 border-b border-glass/10"
             style={{ background: 'rgba(0,119,182,0.12)' }}
@@ -212,7 +233,6 @@ export function WorkshopChats() {
             <span className="ml-auto text-xs text-glass-dim">{threads.length}</span>
           </div>
 
-          {/* Thread items */}
           <div className="flex-1 overflow-y-auto">
             {loadingThreads ? (
               <p className="text-center text-xs text-glass-dim py-10">Loading…</p>
@@ -228,11 +248,9 @@ export function WorkshopChats() {
                   onClick={() => setActiveThread(thread)}
                   className={`w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors border-b border-glass/5 hover:bg-white/5 ${activeThread?.customerId === thread.customerId ? 'bg-white/8 border-l-2 border-l-[#00B4D8]' : ''}`}
                 >
-                  {/* Avatar */}
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#0077B6] to-[#00B4D8] flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
                     {avatar(thread.customerName)}
                   </div>
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1">
                       <p className="text-xs font-semibold text-highlight truncate">{thread.customerName}</p>
@@ -252,10 +270,9 @@ export function WorkshopChats() {
             )}
           </div>
 
-          {/* Refresh */}
           <div className="p-3 border-t border-glass/10">
             <button
-              onClick={() => void loadThreads()}
+              onClick={() => void loadThreads(true)}
               className="w-full text-xs text-glass-dim hover:text-highlight transition-colors py-1"
             >
               ↻ Refresh conversations
@@ -266,7 +283,6 @@ export function WorkshopChats() {
         {/* ── Chat view (right panel) ── */}
         <div className={`flex-1 flex flex-col ${activeThread ? 'flex' : 'hidden sm:flex'}`}>
           {!activeThread ? (
-            /* Empty state on desktop */
             <div className="flex flex-col items-center justify-center h-full gap-4 text-glass-dim">
               <MessageCircle size={48} className="opacity-20" />
               <p className="text-sm text-center">Select a conversation<br />to view messages</p>
@@ -278,7 +294,6 @@ export function WorkshopChats() {
                 className="flex items-center gap-3 px-4 py-3.5 border-b border-glass/10"
                 style={{ background: 'rgba(0,119,182,0.12)' }}
               >
-                {/* Back button (mobile only) */}
                 <button
                   className="sm:hidden p-1 rounded-lg hover:bg-white/10 transition-colors text-glass-dim hover:text-highlight"
                   onClick={() => setActiveThread(null)}
@@ -291,7 +306,12 @@ export function WorkshopChats() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-highlight truncate">{activeThread.customerName}</p>
-                  <p className="text-[11px] text-[#00B4D8]">Industry Customer</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+                    <span className="text-[11px] text-glass-dim">
+                      {isTyping ? <span className="text-[#00B4D8] font-medium animate-pulse">typing...</span> : isOnline ? 'Online' : 'Offline'}
+                    </span>
+                  </div>
                 </div>
                 <Clock size={14} className="text-glass-dim" />
                 <span className="text-[11px] text-glass-dim">{formatTime(activeThread.lastAt)}</span>
@@ -328,6 +348,18 @@ export function WorkshopChats() {
                     </div>
                   ))
                 )}
+
+                {/* Live typing indicator */}
+                {isTyping && (
+                  <div className="flex items-center gap-2 text-xs text-[#00B4D8] bg-white/5 border border-glass/10 rounded-xl px-3 py-1.5 w-fit">
+                    <div className="flex gap-1">
+                      <span className="w-1.5 h-1.5 bg-[#00B4D8] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 bg-[#00B4D8] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 bg-[#00B4D8] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <span>{activeThread.customerName} is typing...</span>
+                  </div>
+                )}
                 <div ref={bottomRef} />
               </div>
 
@@ -338,7 +370,7 @@ export function WorkshopChats() {
               >
                 <textarea
                   value={text}
-                  onChange={e => setText(e.target.value)}
+                  onChange={e => handleInputChange(e.target.value)}
                   onKeyDown={handleKey}
                   placeholder={`Reply to ${activeThread.customerName}… (Enter to send)`}
                   rows={1}

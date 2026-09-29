@@ -63,7 +63,7 @@ function initials(name: string) {
 export function IndustryChats() {
   const { showToast } = useToast()
 
-  // All workshops this industry user has previously chatted with (fetched from vendors + messages)
+  // All workshops this industry user has previously chatted with
   const [workshops, setWorkshops] = useState<Workshop[]>([])
   const [loadingWorkshops, setLoadingWorkshops] = useState(true)
 
@@ -71,6 +71,9 @@ export function IndustryChats() {
   const [activeWorkshop, setActiveWorkshop] = useState<Workshop | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loadingMsgs, setLoadingMsgs] = useState(false)
+  const [isOnline, setIsOnline] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Track last message per workshop for preview
   const [lastMessages, setLastMessages] = useState<Record<string, { text: string; at: string }>>({})
@@ -78,6 +81,22 @@ export function IndustryChats() {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  function handleInputChange(value: string) {
+    setText(value)
+    if (!activeWorkshop) return
+    if (!typingTimerRef.current) {
+      void fetch('/api/chat', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ typingTo: activeWorkshop.id }),
+      })
+    }
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
+    typingTimerRef.current = setTimeout(() => {
+      typingTimerRef.current = null
+    }, 2000)
+  }
 
   // ── Load all workshops (vendors list) ────────────────────────────────────
   const loadWorkshops = useCallback(async (showLoading = false) => {
@@ -123,10 +142,13 @@ export function IndustryChats() {
           { headers: authHeaders() }
         )
         if (res.ok && !cancelled) {
-          const data: ChatMessage[] = await res.json()
-          const msgs = Array.isArray(data) ? data : []
+          const resData = await res.json()
+          const msgs: ChatMessage[] = Array.isArray(resData) ? resData : (resData?.messages ?? [])
           setMessages(msgs)
-          // Update preview
+          if (resData && typeof resData === 'object' && !Array.isArray(resData)) {
+            setIsOnline(Boolean(resData.isOnline))
+            setIsTyping(Boolean(resData.isTyping))
+          }
           if (msgs.length > 0) {
             const last = msgs[msgs.length - 1]
             setLastMessages(prev => ({
@@ -153,7 +175,7 @@ export function IndustryChats() {
   // ── Auto-scroll ──────────────────────────────────────────────────────────
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, isTyping])
 
   // ── Send message ─────────────────────────────────────────────────────────
   async function handleSend() {
@@ -202,7 +224,6 @@ export function IndustryChats() {
     }
   }
 
-  // Workshops that have chat history show first
   const sortedWorkshops = [...workshops].sort((a, b) => {
     const aAt = lastMessages[a.id]?.at ?? ''
     const bAt = lastMessages[b.id]?.at ?? ''
@@ -212,7 +233,6 @@ export function IndustryChats() {
     return 0
   })
 
-  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="p-4 sm:p-6 h-full">
       {/* Header */}
@@ -222,7 +242,7 @@ export function IndustryChats() {
           <p className="text-sm text-glass-dim mt-1">Chat with registered workshops directly.</p>
         </div>
         <button
-          onClick={() => void loadWorkshops()}
+          onClick={() => void loadWorkshops(true)}
           className="flex items-center gap-1.5 text-xs text-glass-dim hover:text-highlight transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5"
         >
           <RefreshCw size={13} /> Refresh
@@ -241,7 +261,6 @@ export function IndustryChats() {
         <div
           className={`flex flex-col border-r border-glass/10 ${activeWorkshop ? 'hidden sm:flex' : 'flex'} w-full sm:w-72 flex-shrink-0`}
         >
-          {/* Panel header */}
           <div
             className="flex items-center gap-2 px-4 py-3.5 border-b border-glass/10"
             style={{ background: 'rgba(0,119,182,0.12)' }}
@@ -251,7 +270,6 @@ export function IndustryChats() {
             <span className="ml-auto text-xs text-glass-dim">{workshops.length}</span>
           </div>
 
-          {/* List */}
           <div className="flex-1 overflow-y-auto">
             {loadingWorkshops ? (
               <p className="text-center text-xs text-glass-dim py-10">Loading workshops…</p>
@@ -270,11 +288,9 @@ export function IndustryChats() {
                     onClick={() => { setActiveWorkshop(ws); setMessages([]) }}
                     className={`w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors border-b border-glass/5 hover:bg-white/5 ${isActive ? 'bg-white/8 border-l-2 border-l-[#00B4D8]' : ''}`}
                   >
-                    {/* Avatar */}
                     <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0077B6] to-[#00B4D8] flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
                       {initials(ws.name)}
                     </div>
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
                         <p className="text-xs font-semibold text-highlight truncate">{ws.name}</p>
@@ -296,7 +312,6 @@ export function IndustryChats() {
         {/* ── Right: Chat view ── */}
         <div className={`flex-1 flex flex-col min-w-0 ${activeWorkshop ? 'flex' : 'hidden sm:flex'}`}>
           {!activeWorkshop ? (
-            /* Empty state */
             <div className="flex flex-col items-center justify-center h-full gap-4 text-glass-dim">
               <MessageCircle size={52} className="opacity-20" />
               <div className="text-center">
@@ -311,7 +326,6 @@ export function IndustryChats() {
                 className="flex items-center gap-3 px-4 py-3.5 border-b border-glass/10 flex-shrink-0"
                 style={{ background: 'rgba(0,119,182,0.12)' }}
               >
-                {/* Back (mobile) */}
                 <button
                   className="sm:hidden p-1 rounded-lg hover:bg-white/10 transition-colors text-glass-dim hover:text-highlight"
                   onClick={() => setActiveWorkshop(null)}
@@ -325,7 +339,12 @@ export function IndustryChats() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-highlight truncate">{activeWorkshop.name}</p>
-                  <p className="text-[11px] text-[#00B4D8]">Workshop</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+                    <span className="text-[11px] text-glass-dim">
+                      {isTyping ? <span className="text-[#00B4D8] font-medium animate-pulse">typing...</span> : isOnline ? 'Online' : 'Offline'}
+                    </span>
+                  </div>
                 </div>
                 {lastMessages[activeWorkshop.id] && (
                   <div className="flex items-center gap-1 text-glass-dim">
@@ -369,6 +388,18 @@ export function IndustryChats() {
                     </div>
                   ))
                 )}
+
+                {/* Live typing indicator */}
+                {isTyping && (
+                  <div className="flex items-center gap-2 text-xs text-[#00B4D8] bg-white/5 border border-glass/10 rounded-xl px-3 py-1.5 w-fit">
+                    <div className="flex gap-1">
+                      <span className="w-1.5 h-1.5 bg-[#00B4D8] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 bg-[#00B4D8] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 bg-[#00B4D8] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <span>{activeWorkshop.name} is typing...</span>
+                  </div>
+                )}
                 <div ref={bottomRef} />
               </div>
 
@@ -379,7 +410,7 @@ export function IndustryChats() {
               >
                 <textarea
                   value={text}
-                  onChange={e => setText(e.target.value)}
+                  onChange={e => handleInputChange(e.target.value)}
                   onKeyDown={handleKey}
                   placeholder={`Message ${activeWorkshop.name}… (Enter to send)`}
                   rows={1}

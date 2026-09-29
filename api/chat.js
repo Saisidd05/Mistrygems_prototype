@@ -30,24 +30,30 @@ export default async function handler(req, res) {
   try {
     const db = await getDatabase()
     const chats = db.collection('chats')
+    const presence = db.collection('chat_presence')
     const workshopUser = isWorkshop(user)
+    const now = Date.now()
+
+    // Keep active user presence alive
+    await presence.updateOne(
+      { userId: user.id },
+      { $set: { userId: user.id, lastSeen: new Date() } },
+      { upsert: true }
+    )
 
     // ── GET ─────────────────────────────────────────────────────────────────
     if (req.method === 'GET') {
       const { workshopId, customerId, threads } = req.query || {}
 
-      // Workshop: list all unique conversation threads (one per industry customer)
+      // Workshop: list all unique conversation threads
       if (workshopUser && threads === '1') {
-        // All messages where this workshop is the target
         const allMessages = await chats
           .find({ workshopId: user.id })
           .sort({ createdAt: -1 })
           .toArray()
 
-        // Group by sender (industry customer userId)
         const threadMap = {}
         for (const msg of allMessages) {
-          // The industry customer userId — use userId field (set on POST)
           const cid = msg.senderId === user.id ? msg.receiverId : msg.senderId
           if (!cid) continue
           if (!threadMap[cid]) {
@@ -67,9 +73,7 @@ export default async function handler(req, res) {
         return res.status(200).json(Object.values(threadMap))
       }
 
-      // Industry: list every workshop conversation for the signed-in industry user.
-      // This lets the industry chat screen show replies from all workshop owners,
-      // rather than only showing a preview after each workshop is opened.
+      // Industry: list every workshop conversation
       if (!workshopUser && threads === '1') {
         const allMessages = await chats
           .find({
@@ -108,34 +112,39 @@ export default async function handler(req, res) {
 
       // Workshop: messages with a specific industry customer
       if (workshopUser && customerId) {
+        const targetId = String(customerId)
         const messages = await chats
           .find({
             workshopId: user.id,
             $or: [
-              { senderId: String(customerId) },
-              { senderId: user.id, receiverId: String(customerId) },
+              { senderId: targetId },
+              { senderId: user.id, receiverId: targetId },
             ],
           })
           .sort({ createdAt: 1 })
           .toArray()
 
-        // Mark messages as read by workshop
         await chats.updateMany(
-          { workshopId: user.id, senderId: String(customerId), readByWorkshop: { $ne: true } },
+          { workshopId: user.id, senderId: targetId, readByWorkshop: { $ne: true } },
           { $set: { readByWorkshop: true } }
         )
 
-        return res.status(200).json(
-          messages.map(m => ({
-            id: m.id || String(m._id),
-            workshopId: m.workshopId,
-            senderId: m.senderId,
-            senderName: m.senderName || 'Customer',
-            text: m.text,
-            createdAt: m.createdAt,
-            isSelf: m.senderId === user.id,
-          }))
-        )
+        // Presence & typing info for customer
+        const targetPresence = await presence.findOne({ userId: targetId })
+        const isOnline = targetPresence?.lastSeen ? (now - new Date(targetPresence.lastSeen).getTime() < 10000) : false
+        const isTyping = targetPresence?.typingTo === user.id && targetPresence?.typingAt ? (now - new Date(targetPresence.typingAt).getTime() < 4000) : false
+
+        const formatted = messages.map(m => ({
+          id: m.id || String(m._id),
+          workshopId: m.workshopId,
+          senderId: m.senderId,
+          senderName: m.senderName || 'Customer',
+          text: m.text,
+          createdAt: m.createdAt,
+          isSelf: m.senderId === user.id,
+        }))
+
+        return res.status(200).json({ messages: formatted, isOnline, isTyping })
       }
 
       // Industry customer: messages with a specific workshop
@@ -144,33 +153,39 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'workshopId parameter is required.' })
         }
 
+        const targetId = String(workshopId)
         const messages = await chats
           .find({
-            workshopId: String(workshopId),
+            workshopId: targetId,
             $or: [
               { senderId: user.id },
-              { senderId: String(workshopId), receiverId: user.id },
+              { senderId: targetId, receiverId: user.id },
             ],
           })
           .sort({ createdAt: 1 })
           .toArray()
 
         await chats.updateMany(
-          { workshopId: String(workshopId), senderId: String(workshopId), receiverId: user.id, readByIndustry: { $ne: true } },
+          { workshopId: targetId, senderId: targetId, receiverId: user.id, readByIndustry: { $ne: true } },
           { $set: { readByIndustry: true } }
         )
 
-        return res.status(200).json(
-          messages.map(m => ({
-            id: m.id || String(m._id),
-            workshopId: m.workshopId,
-            senderId: m.senderId,
-            senderName: m.senderName || 'User',
-            text: m.text,
-            createdAt: m.createdAt,
-            isSelf: m.senderId === user.id,
-          }))
-        )
+        // Presence & typing info for workshop
+        const targetPresence = await presence.findOne({ userId: targetId })
+        const isOnline = targetPresence?.lastSeen ? (now - new Date(targetPresence.lastSeen).getTime() < 10000) : false
+        const isTyping = targetPresence?.typingTo === user.id && targetPresence?.typingAt ? (now - new Date(targetPresence.typingAt).getTime() < 4000) : false
+
+        const formatted = messages.map(m => ({
+          id: m.id || String(m._id),
+          workshopId: m.workshopId,
+          senderId: m.senderId,
+          senderName: m.senderName || 'User',
+          text: m.text,
+          createdAt: m.createdAt,
+          isSelf: m.senderId === user.id,
+        }))
+
+        return res.status(200).json({ messages: formatted, isOnline, isTyping })
       }
 
       return res.status(400).json({ error: 'Missing query parameters.' })
@@ -178,7 +193,17 @@ export default async function handler(req, res) {
 
     // ── POST ────────────────────────────────────────────────────────────────
     if (req.method === 'POST') {
-      const { workshopId, workshopName, text, receiverId, receiverName } = req.body || {}
+      const { workshopId, workshopName, text, receiverId, receiverName, typingTo } = req.body || {}
+
+      // Typing heartbeat
+      if (typingTo) {
+        await presence.updateOne(
+          { userId: user.id },
+          { $set: { userId: user.id, lastSeen: new Date(), typingTo: String(typingTo), typingAt: new Date() } },
+          { upsert: true }
+        )
+        return res.status(200).json({ ok: true })
+      }
 
       if (!text || !text.trim()) {
         return res.status(400).json({ error: 'Message text is required.' })
@@ -202,6 +227,9 @@ export default async function handler(req, res) {
           readByIndustry: false,
         }
         await chats.insertOne(newMessage)
+        // Clear typing status on send
+        await presence.updateOne({ userId: user.id }, { $unset: { typingTo: '', typingAt: '' } })
+
         return res.status(201).json({ ...newMessage, isSelf: true })
       }
 
@@ -222,6 +250,9 @@ export default async function handler(req, res) {
         readByIndustry: true,
       }
       await chats.insertOne(newMessage)
+      // Clear typing status on send
+      await presence.updateOne({ userId: user.id }, { $unset: { typingTo: '', typingAt: '' } })
+
       return res.status(201).json({ ...newMessage, isSelf: true })
     }
 
