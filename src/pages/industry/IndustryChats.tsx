@@ -63,6 +63,7 @@ function initials(name: string) {
 
 export function IndustryChats() {
   const { showToast } = useToast()
+  const [activeWorkshop, setActiveWorkshop] = useState<Workshop | null>(null)
   const { notifyNewMessages, resetSeen } = useChatNotifications(
     activeWorkshop?.name ?? null
   )
@@ -72,7 +73,6 @@ export function IndustryChats() {
   const [loadingWorkshops, setLoadingWorkshops] = useState(true)
 
   // Active conversation
-  const [activeWorkshop, setActiveWorkshop] = useState<Workshop | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loadingMsgs, setLoadingMsgs] = useState(false)
   const [isOnline, setIsOnline] = useState(false)

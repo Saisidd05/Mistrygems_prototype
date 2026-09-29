@@ -53,12 +53,12 @@ function avatar(name: string) {
 export function WorkshopChats() {
   const [searchParams] = useSearchParams()
   const { showToast } = useToast()
+  const [activeThread, setActiveThread] = useState<Thread | null>(null)
   const { notifyNewMessages, resetSeen } = useChatNotifications(
     activeThread?.customerName ?? null
   )
   const [threads, setThreads] = useState<Thread[]>([])
   const [loadingThreads, setLoadingThreads] = useState(true)
-  const [activeThread, setActiveThread] = useState<Thread | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loadingMsgs, setLoadingMsgs] = useState(false)
   const [isOnline, setIsOnline] = useState(false)
