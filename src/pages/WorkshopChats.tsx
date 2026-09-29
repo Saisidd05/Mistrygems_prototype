@@ -78,7 +78,7 @@ export function WorkshopChats() {
     }
   }, [])
 
-  useEffect(() => { void loadThreads(); const timer = window.setInterval(() => void loadThreads(), 3000); return () => window.clearInterval(timer) }, [loadThreads])
+  useEffect(() => { void loadThreads(); const timer = window.setInterval(() => void loadThreads(), 5000); return () => window.clearInterval(timer) }, [loadThreads])
 
   useEffect(() => {
     const customerId = searchParams.get('customerId')
@@ -115,7 +115,7 @@ export function WorkshopChats() {
     }
 
     void load()
-    const refreshTimer = window.setInterval(() => void load(), 2500)
+    const refreshTimer = window.setInterval(() => void load(), 1000)
     return () => { cancelled = true; window.clearInterval(refreshTimer) }
   }, [activeThread])
 
