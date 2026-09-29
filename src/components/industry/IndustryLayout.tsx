@@ -1,12 +1,14 @@
 import React from 'react'
 import { Sidebar } from '../layout/Sidebar'
 import { Topbar } from '../layout/Topbar'
+import { AnimatedBackground } from '../ui/AnimatedBackground'
 import { SidebarProvider } from '../../context/SidebarContext'
 
 export function IndustryLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <div className="internal-theme app-container">
+      <AnimatedBackground />
+      <div className="app-container">
         <Sidebar />
         <div className="main-content">
           <Topbar />
@@ -18,3 +20,4 @@ export function IndustryLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   )
 }
+
