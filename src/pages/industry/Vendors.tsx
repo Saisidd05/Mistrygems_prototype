@@ -259,7 +259,7 @@ function ChatModal({
                   className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
                     msg.isSelf
                       ? 'rounded-br-sm bg-gradient-to-br from-[#0077B6] to-[#00B4D8] text-white'
-                      : 'rounded-bl-sm bg-white/8 text-glass border border-glass/10'
+                      : 'rounded-bl-sm bg-white/8 text-highlight border border-glass/10'
                   }`}
                 >
                   {msg.text}
@@ -284,7 +284,7 @@ function ChatModal({
             onKeyDown={handleKey}
             placeholder="Type a message… (Enter to send)"
             rows={1}
-            className="flex-1 resize-none rounded-xl px-3.5 py-2.5 text-sm bg-white/8 border border-glass/15 text-glass placeholder:text-glass-dim focus:outline-none focus:border-[#00B4D8]/50 transition-colors max-h-[100px]"
+            className="flex-1 resize-none rounded-xl px-3.5 py-2.5 text-sm bg-white/8 border border-glass/15 text-highlight placeholder:text-glass-dim focus:outline-none focus:border-[#00B4D8]/50 transition-colors max-h-[100px]"
             style={{ lineHeight: '1.5' }}
           />
           <button
@@ -365,7 +365,7 @@ function ReviewModal({
             placeholder="Share your experience with this workshop…"
             rows={4}
             maxLength={500}
-            className="w-full rounded-xl px-3.5 py-3 text-sm bg-white/5 border border-glass/15 text-glass placeholder:text-glass-dim focus:outline-none focus:border-[#00B4D8]/50 resize-none transition-colors"
+            className="w-full rounded-xl px-3.5 py-3 text-sm bg-white/5 border border-glass/15 text-highlight placeholder:text-glass-dim focus:outline-none focus:border-[#00B4D8]/50 resize-none transition-colors"
           />
           <p className="text-right text-[10px] text-glass-dim">{comment.length}/500</p>
         </div>
