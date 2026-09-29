@@ -19,7 +19,7 @@ export function Inventory() {
   const [adjustment, setAdjustment] = useState<number | ''>('')
   const [editingMaterial, setEditingMaterial] = useState<typeof rawMaterials[number] | null>(null)
   const [deletingMaterial, setDeletingMaterial] = useState<typeof rawMaterials[number] | null>(null)
-  const [newMaterial, setNewMaterial] = useState({ name: '', currentStock: '' as number | '', reorderLevel: '' as number | '', unitCost: '' as number | '' })
+  const [newMaterial, setNewMaterial] = useState({ name: '', unit: 'pcs', currentStock: '' as number | '', reorderLevel: '' as number | '', unitCost: '' as number | '' })
 
   const filteredRaw = rawMaterials.filter(r => r.name.toLowerCase().includes(search.toLowerCase()) || r.sku.toLowerCase().includes(search.toLowerCase()))
   const filteredFinished = finishedGoods.filter(f => f.name.toLowerCase().includes(search.toLowerCase()) || f.sku.toLowerCase().includes(search.toLowerCase()))
@@ -37,7 +37,7 @@ export function Inventory() {
     if (!newMaterial.name) { showToast('Material name is required.', 'warning'); return }
     const sku = `RM-${Date.now()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`
     addRawMaterial({ ...newMaterial, sku, currentStock: Number(newMaterial.currentStock) || 0, reorderLevel: Number(newMaterial.reorderLevel) || 0, unitCost: Number(newMaterial.unitCost) || 0 })
-    setNewMaterial({ name: '', currentStock: '', reorderLevel: '', unitCost: '' })
+    setNewMaterial({ name: '', unit: 'pcs', currentStock: '', reorderLevel: '', unitCost: '' })
     setAddModal(false)
     showToast('New material added to inventory.', 'success')
   }
@@ -105,7 +105,15 @@ export function Inventory() {
                   <td className="text-right space-x-3">
                     <button onClick={() => { setSelectedMaterial(rm.id); setStockModal('in') }} className="text-xs text-accent hover:text-highlight">Stock In / Out</button>
                     <button onClick={() => setEditingMaterial(rm)} className="text-xs text-accent hover:text-highlight">Edit</button>
-                    <button onClick={() => setDeletingMaterial(rm)} className="text-xs text-red-400 hover:text-red-300"><Trash2 size={13} className="inline" /></button>
+                    <button
+                      type="button"
+                      aria-label={`Delete ${rm.name}`}
+                      title={`Delete ${rm.name}`}
+                      onClick={() => setDeletingMaterial(rm)}
+                      className="text-xs text-red-400 hover:text-red-300"
+                    >
+                      <Trash2 size={13} className="mr-1 inline" />Delete
+                    </button>
                   </td>
                 </tr>
               ))}
