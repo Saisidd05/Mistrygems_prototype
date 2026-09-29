@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Package, Layers, AlertTriangle, Plus, Search, Minus, Pencil } from 'lucide-react'
+import { Package, Layers, AlertTriangle, Plus, Search, Minus, Pencil, Trash2 } from 'lucide-react'
 import { GlassCard } from '../components/ui/GlassCard'
 import { GlowButton } from '../components/ui/GlowButton'
 import { StatusBadge } from '../components/ui/StatusBadge'
@@ -10,7 +10,7 @@ import { Modal } from '../components/ui/Modal'
 
 export function Inventory() {
   const { showToast } = useToast()
-  const { rawMaterials, finishedGoods, addRawMaterial, updateRawMaterial } = useAppData()
+  const { rawMaterials, finishedGoods, addRawMaterial, updateRawMaterial, deleteRawMaterial } = useAppData()
   const [tab, setTab] = useState<'raw' | 'finished'>('raw')
   const [search, setSearch] = useState('')
   const [stockModal, setStockModal] = useState<'in' | 'out' | null>(null)
@@ -18,6 +18,7 @@ export function Inventory() {
   const [selectedMaterial, setSelectedMaterial] = useState('')
   const [adjustment, setAdjustment] = useState<number | ''>('')
   const [editingMaterial, setEditingMaterial] = useState<typeof rawMaterials[number] | null>(null)
+  const [deletingMaterial, setDeletingMaterial] = useState<typeof rawMaterials[number] | null>(null)
   const [newMaterial, setNewMaterial] = useState({ name: '', currentStock: '' as number | '', reorderLevel: '' as number | '', unitCost: '' as number | '' })
 
   const filteredRaw = rawMaterials.filter(r => r.name.toLowerCase().includes(search.toLowerCase()) || r.sku.toLowerCase().includes(search.toLowerCase()))
@@ -101,7 +102,11 @@ export function Inventory() {
                   <td className="text-xs">{rm.reorderLevel}</td>
                   <td className="text-xs">{formatCurrency(rm.unitCost)}</td>
                   <td><StatusBadge status={rm.status} dot /></td>
-                  <td className="text-right space-x-3"><button onClick={() => { setSelectedMaterial(rm.id); setStockModal('in') }} className="text-xs text-accent hover:text-highlight">Stock In / Out</button><button onClick={() => setEditingMaterial(rm)} className="text-xs text-accent hover:text-highlight">Edit</button></td>
+                  <td className="text-right space-x-3">
+                    <button onClick={() => { setSelectedMaterial(rm.id); setStockModal('in') }} className="text-xs text-accent hover:text-highlight">Stock In / Out</button>
+                    <button onClick={() => setEditingMaterial(rm)} className="text-xs text-accent hover:text-highlight">Edit</button>
+                    <button onClick={() => setDeletingMaterial(rm)} className="text-xs text-red-400 hover:text-red-300"><Trash2 size={13} className="inline" /></button>
+                  </td>
                 </tr>
               ))}
               {!filteredRaw.length && <tr><td colSpan={7} className="py-10 text-center text-glass-dim">No raw materials yet. Add your first material.</td></tr>}
@@ -141,6 +146,23 @@ export function Inventory() {
       </Modal>
       <Modal open={!!editingMaterial} onClose={() => setEditingMaterial(null)} title="Edit Raw Material">
         {editingMaterial && <div className="grid grid-cols-2 gap-3"><label className="col-span-2 text-xs text-glass-dim">Material Name<input className="glass-input mt-1" value={editingMaterial.name} onChange={event => setEditingMaterial({ ...editingMaterial, name: event.target.value })} /></label><label className="text-xs text-glass-dim">SKU<input className="glass-input mt-1" value={editingMaterial.sku} onChange={event => setEditingMaterial({ ...editingMaterial, sku: event.target.value })} /></label><label className="text-xs text-glass-dim">Current Stock<input type="number" className="glass-input mt-1" value={editingMaterial.currentStock} onChange={event => setEditingMaterial({ ...editingMaterial, currentStock: Number(event.target.value) })} /></label><label className="text-xs text-glass-dim">Reorder Level<input type="number" className="glass-input mt-1" value={editingMaterial.reorderLevel} onChange={event => setEditingMaterial({ ...editingMaterial, reorderLevel: Number(event.target.value) })} /></label><label className="col-span-2 text-xs text-glass-dim">Unit Cost<input type="number" className="glass-input mt-1" value={editingMaterial.unitCost} onChange={event => setEditingMaterial({ ...editingMaterial, unitCost: Number(event.target.value) })} /></label><GlowButton className="col-span-2" onClick={() => { updateRawMaterial(editingMaterial.id, editingMaterial); setEditingMaterial(null); showToast('Material updated successfully.', 'success') }}>Save Changes</GlowButton></div>}
+      </Modal>
+      {/* Delete Confirm Modal */}
+      <Modal open={!!deletingMaterial} onClose={() => setDeletingMaterial(null)} title="Delete Material">
+        {deletingMaterial && (
+          <div className="space-y-4">
+            <p className="text-sm text-glass">Are you sure you want to delete <span className="text-highlight font-semibold">{deletingMaterial.name}</span>? This cannot be undone.</p>
+            <div className="flex gap-2">
+              <GlowButton variant="outline" className="flex-1" onClick={() => setDeletingMaterial(null)}>Cancel</GlowButton>
+              <button
+                onClick={() => { deleteRawMaterial(deletingMaterial.id); setDeletingMaterial(null); showToast('Material deleted.', 'success') }}
+                className="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )
