@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Briefcase, Users, UserCheck, ClipboardList,
-  FileText, Bell, BarChart2, LogOut, ChevronLeft,
+  FileText, BarChart2, LogOut, ChevronLeft,
   ChevronRight, Gem, Package, Receipt, Rss, PlusCircle,
   Truck, FileCheck, MapPin, UserCircle, Building2, MessageCircle
 } from 'lucide-react'
@@ -31,7 +31,6 @@ const workshopNavItems: NavItem[] = [
   { label: 'Inventory', path: '/workshop/inventory', icon: <Package size={18} /> },
   { label: 'Reports', path: '/workshop/reports', icon: <BarChart2 size={18} />, roles: ['Owner', 'Manager'] },
   { label: 'Industry Chats', path: '/workshop/chats', icon: <MessageCircle size={18} /> },
-  { label: 'Notifications', path: '/workshop/notifications', icon: <Bell size={18} /> },
 ]
 
 const industryNavItems: NavItem[] = [
@@ -45,7 +44,6 @@ const industryNavItems: NavItem[] = [
   { label: 'Delivery Tracking', path: '/industry/delivery-tracking', icon: <MapPin size={18} /> },
   { label: 'Registered Workshops', path: '/industry/vendors', icon: <Building2 size={18} /> },
   { label: 'Workshop Chats', path: '/industry/chats', icon: <MessageCircle size={18} /> },
-  { label: 'Notifications', path: '/industry/notifications', icon: <Bell size={18} /> },
   { label: 'Company Profile', path: '/industry/company-profile', icon: <UserCircle size={18} /> },
 ]
 
@@ -61,7 +59,6 @@ export function Sidebar() {
 
   const isIndustry = getAccountType(user) === 'industry' || location.pathname.startsWith('/industry')
   const navItems = isIndustry ? industryNavItems : workshopNavItems
-  const unread = notifications.filter(n => !n.read).length
 
   const handleLogout = () => {
     logout()
@@ -154,7 +151,6 @@ export function Sidebar() {
         <nav className="flex-1 overflow-y-auto no-scrollbar py-3 px-2 space-y-0.5">
           {navItems.map(item => {
             if (item.roles && user && !item.roles.includes(user.role)) return null
-            const isNotif = item.path.endsWith('/notifications')
             return (
               <NavLink
                 key={item.path}
@@ -162,14 +158,7 @@ export function Sidebar() {
                 className={({ isActive }) => cn('sidebar-item', isActive && 'active')}
                 title={collapsed ? item.label : undefined}
               >
-                <span className="flex-shrink-0 relative">
-                  {item.icon}
-                  {isNotif && unread > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#00B4D8] text-[8px] font-bold flex items-center justify-center text-white">
-                      {unread > 9 ? '9+' : unread}
-                    </span>
-                  )}
-                </span>
+                <span className="flex-shrink-0">{item.icon}</span>
                 {!collapsed && <span className="truncate text-sm">{item.label}</span>}
               </NavLink>
             )
