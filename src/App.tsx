@@ -29,6 +29,7 @@ import { IndustryLayout } from './components/industry/IndustryLayout'
 import { IndustryDashboard, IndustryRequirements, IndustrySection } from './pages/industry/IndustryDashboard'
 import { Vendors } from './pages/industry/Vendors'
 import { IndustryChats } from './pages/industry/IndustryChats'
+import { IndustryQuotations } from './pages/industry/IndustryQuotations'
 
 function RoleProtectedRoute({ accountType, children }: { accountType: 'workshop' | 'industry'; children: React.ReactNode }) {
   const { isAuthenticated, user } = useAuth()
@@ -80,7 +81,7 @@ export default function App() {
                 <Route path="/industry/dashboard" element={<RoleProtectedRoute accountType="industry"><IndustryDashboard /></RoleProtectedRoute>} />
                 <Route path="/industry/requirements" element={<RoleProtectedRoute accountType="industry"><IndustryRequirements /></RoleProtectedRoute>} />
                 <Route path="/industry/requirements/new" element={<RoleProtectedRoute accountType="industry"><IndustryRequirements createMode /></RoleProtectedRoute>} />
-                <Route path="/industry/quotations" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Quotations" description="Compare received quotations by price, delivery time and workshop rating." /></RoleProtectedRoute>} />
+                <Route path="/industry/quotations" element={<RoleProtectedRoute accountType="industry"><IndustryQuotations /></RoleProtectedRoute>} />
                 <Route path="/industry/vendors" element={<RoleProtectedRoute accountType="industry"><Vendors /></RoleProtectedRoute>} />
                 <Route path="/industry/chats" element={<RoleProtectedRoute accountType="industry"><IndustryChats /></RoleProtectedRoute>} />
                 <Route path="/industry/purchase-orders" element={<RoleProtectedRoute accountType="industry"><IndustrySection title="Purchase Orders" description="Create and monitor industry purchase orders." /></RoleProtectedRoute>} />

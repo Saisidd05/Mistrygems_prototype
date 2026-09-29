@@ -1,7 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Building2, CalendarDays, ClipboardList, FileText, IndianRupee, MapPin, Package, RefreshCw } from 'lucide-react'
+import {
+  Building2, CalendarDays, ClipboardList, FileText, IndianRupee,
+  MapPin, Package, RefreshCw, Send, X, Calculator
+} from 'lucide-react'
 import { GlassCard } from '../components/ui/GlassCard'
 import { GlowButton } from '../components/ui/GlowButton'
+import { Modal } from '../components/ui/Modal'
+import { useToast } from '../components/ui/Toast'
+import { formatCurrency } from '../lib/utils'
 
 interface FeedRequirement {
   id: string
@@ -40,10 +46,138 @@ function formatBudget(value?: number) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value)
 }
 
+// ── Quotation Submit Modal ─────────────────────────────────────────────────
+interface QuoteModalProps {
+  requirement: FeedRequirement
+  onClose: () => void
+}
+
+function QuoteModal({ requirement, onClose }: QuoteModalProps) {
+  const { showToast } = useToast()
+  const [description, setDescription] = useState(requirement.jobTitle)
+  const [quantity, setQuantity] = useState(requirement.quantity)
+  const [unitCost, setUnitCost] = useState(0)
+  const [gstRate, setGstRate] = useState(18)
+  const [deliveryDays, setDeliveryDays] = useState(0)
+  const [notes, setNotes] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const subtotal = quantity * unitCost
+  const gstAmount = (subtotal * gstRate) / 100
+  const grandTotal = subtotal + gstAmount
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (unitCost <= 0) {
+      showToast('Please enter a valid unit price.', 'warning')
+      return
+    }
+    setLoading(true)
+    try {
+      const res = await fetch('/api/quotations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ requirementId: requirement.id, description, quantity, unitCost, gstRate, deliveryDays, notes }),
+      })
+      const body = await res.json()
+      if (!res.ok) throw new Error(body.error || 'Failed to submit quotation.')
+      showToast(`✅ Quotation submitted! Industry will be notified via email.`, 'success')
+      onClose()
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Submission failed.', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+      {/* Requirement info */}
+      <div className="p-3 rounded-xl bg-white/5 border border-glass/10 space-y-1">
+        <p className="text-[10px] text-glass-dim uppercase tracking-wider">Requirement</p>
+        <p className="text-sm font-bold text-highlight font-sora">{requirement.jobTitle}</p>
+        <p className="text-[11px] text-glass-dim">{requirement.companyName || 'Industry Account'} · {requirement.category}</p>
+      </div>
+
+      {/* Description */}
+      <div>
+        <label className="block text-xs text-glass-dim mb-1">Scope of Work / Description</label>
+        <textarea
+          className="glass-input resize-none text-xs"
+          rows={2}
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs text-glass-dim mb-1">Quantity (Units)</label>
+          <input type="number" className="glass-input text-xs" min={1} value={quantity} onChange={e => setQuantity(Number(e.target.value))} required />
+        </div>
+        <div>
+          <label className="block text-xs text-glass-dim mb-1">Unit Price (₹)</label>
+          <input type="number" className="glass-input text-xs" min={1} value={unitCost || ''} placeholder="0" onChange={e => setUnitCost(Number(e.target.value))} required />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs text-glass-dim mb-1">GST Rate (%)</label>
+          <select className="glass-select text-xs" value={gstRate} onChange={e => setGstRate(Number(e.target.value))}>
+            <option value={5}>5% – Job Work Special</option>
+            <option value={12}>12% – Standard Job Work</option>
+            <option value={18}>18% – General Manufacturing</option>
+            <option value={28}>28% – Specialized Goods</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-glass-dim mb-1">Delivery Days</label>
+          <input type="number" className="glass-input text-xs" min={1} value={deliveryDays || ''} placeholder="e.g. 14" onChange={e => setDeliveryDays(Number(e.target.value))} />
+        </div>
+      </div>
+
+      {/* Live Total */}
+      {unitCost > 0 && (
+        <div className="rounded-xl bg-white/5 border border-glass/10 p-3 space-y-1.5 text-xs">
+          <div className="flex justify-between text-glass-dim">
+            <span>Subtotal ({quantity} × ₹{unitCost})</span>
+            <span className="font-mono">{formatCurrency(subtotal)}</span>
+          </div>
+          <div className="flex justify-between text-glass-dim">
+            <span>GST ({gstRate}%)</span>
+            <span className="font-mono">{formatCurrency(gstAmount)}</span>
+          </div>
+          <div className="flex justify-between font-bold text-highlight border-t border-glass/10 pt-1.5">
+            <span>Grand Total</span>
+            <span className="font-mono text-emerald-400">{formatCurrency(grandTotal)}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Notes */}
+      <div>
+        <label className="block text-xs text-glass-dim mb-1">Additional Notes (Optional)</label>
+        <textarea className="glass-input resize-none text-xs" rows={2} placeholder="Capacity, certifications, past experience..." value={notes} onChange={e => setNotes(e.target.value)} />
+      </div>
+
+      <div className="flex gap-3 justify-end pt-1">
+        <GlowButton type="button" variant="outline" size="sm" onClick={onClose}>Cancel</GlowButton>
+        <GlowButton type="submit" size="sm" loading={loading} icon={<Send size={14} />}>
+          Submit Quotation
+        </GlowButton>
+      </div>
+    </form>
+  )
+}
+
+// ── Main Feed Component ────────────────────────────────────────────────────
 export function Feed() {
   const [requirements, setRequirements] = useState<FeedRequirement[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [quoting, setQuoting] = useState<FeedRequirement | null>(null)
 
   const loadFeed = useCallback(async () => {
     setLoading(true)
@@ -71,7 +205,7 @@ export function Feed() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Requirement Feed</h1>
-          <p className="page-subtitle">Live industry requirements posted for workshop review and quotation planning.</p>
+          <p className="page-subtitle">Live industry requirements — review and submit quotations directly.</p>
         </div>
         <GlowButton variant="outline" size="sm" icon={<RefreshCw size={15} />} onClick={() => void loadFeed()} loading={loading}>
           Refresh
@@ -96,9 +230,20 @@ export function Feed() {
                 <h2 className="mt-3 text-lg font-bold font-sora text-highlight">{item.jobTitle}</h2>
                 <p className="mt-2 text-sm text-glass leading-relaxed">{item.description}</p>
               </div>
-              <div className="lg:text-right">
-                <p className="flex lg:justify-end items-center gap-2 text-sm font-semibold text-highlight"><Building2 size={15} className="text-accent" />{item.companyName || 'Industry Account'}</p>
-                <p className="mt-1 text-xs text-glass-dim">Posted {formatDate(item.createdAt)}</p>
+              <div className="lg:text-right flex-shrink-0 space-y-2">
+                <p className="flex lg:justify-end items-center gap-2 text-sm font-semibold text-highlight">
+                  <Building2 size={15} className="text-accent" />{item.companyName || 'Industry Account'}
+                </p>
+                <p className="text-xs text-glass-dim">Posted {formatDate(item.createdAt)}</p>
+                {/* Send Quotation Button */}
+                <GlowButton
+                  size="sm"
+                  icon={<Send size={14} />}
+                  onClick={() => setQuoting(item)}
+                  className="w-full lg:w-auto"
+                >
+                  Send Quotation
+                </GlowButton>
               </div>
             </div>
 
@@ -138,6 +283,17 @@ export function Feed() {
           </GlassCard>
         ))}
       </div>
+
+      {/* Quotation Submit Modal */}
+      {quoting && (
+        <Modal
+          open={!!quoting}
+          onClose={() => setQuoting(null)}
+          title={`Submit Quotation — ${quoting.jobTitle}`}
+        >
+          <QuoteModal requirement={quoting} onClose={() => setQuoting(null)} />
+        </Modal>
+      )}
     </div>
   )
 }
