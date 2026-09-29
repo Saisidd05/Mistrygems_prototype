@@ -14,7 +14,7 @@ import type { Task } from '../lib/data'
 const columns: Task['column'][] = ['Pending', 'In Progress', 'Review', 'Completed']
 
 export function Tasks() {
-  const { tasks, addTask, updateTask, deleteTask, moveTask, employees } = useAppData()
+  const { tasks, addTask, updateTask, deleteTask, moveTask, employees, jobs } = useAppData()
   const { showToast } = useToast()
 
   const [openModal, setOpenModal] = useState(false)
@@ -86,6 +86,7 @@ export function Tasks() {
                       </div>
 
                       <h4 className="text-xs font-bold text-highlight mb-1">{task.title}</h4>
+                      <p className="text-[10px] text-accent mb-1">Job: {task.jobName || 'Not linked'}</p>
                       {task.description && <p className="text-[11px] text-glass-dim line-clamp-2 mb-2">{task.description}</p>}
 
                       {task.tags && task.tags.length > 0 && (
@@ -144,6 +145,7 @@ export function Tasks() {
           onSubmit={handleFormSubmit}
           onCancel={() => { setOpenModal(false); setEditingTask(null); }}
           employees={employeeNames}
+          jobs={jobs.map(job => `${job.id} — ${job.description}`)}
         />
       </Modal>
 

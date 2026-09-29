@@ -8,15 +8,17 @@ interface TaskFormProps {
   onCancel: () => void
   loading?: boolean
   employees: string[]
+  jobs: string[]
 }
 
 const priorities: Priority[] = ['High', 'Medium', 'Low']
 const columns: Task['column'][] = ['Pending', 'In Progress', 'Review', 'Completed']
 
-export function TaskForm({ initial, onSubmit, onCancel, loading, employees }: TaskFormProps) {
+export function TaskForm({ initial, onSubmit, onCancel, loading, employees, jobs }: TaskFormProps) {
   const [form, setForm] = useState({
     title: initial?.title || '',
     description: initial?.description || '',
+    jobName: initial?.jobName || '',
     assignee: initial?.assignee || '',
     priority: initial?.priority || 'Medium' as Priority,
     dueDate: initial?.dueDate || new Date().toISOString().split('T')[0],
@@ -42,6 +44,7 @@ export function TaskForm({ initial, onSubmit, onCancel, loading, employees }: Ta
           <label className="block text-xs font-medium text-glass-dim mb-1.5">Task Title *</label>
           <input className="glass-input" placeholder="Set up CNC program" value={form.title} onChange={e => set('title', e.target.value)} required />
         </div>
+        <div className="sm:col-span-2"><label className="block text-xs font-medium text-glass-dim mb-1.5">Related Job <span className="text-red-400">*</span></label><select className="glass-select" value={form.jobName} onChange={e => set('jobName', e.target.value)} required><option value="">Select a job</option>{jobs.map(job => <option key={job}>{job}</option>)}</select></div>
         <div className="sm:col-span-2">
           <label className="block text-xs font-medium text-glass-dim mb-1.5">Description</label>
           <textarea className="glass-input resize-none" rows={2} placeholder="Task details..." value={form.description} onChange={e => set('description', e.target.value)} />

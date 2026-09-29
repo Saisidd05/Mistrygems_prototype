@@ -78,7 +78,7 @@ export function WorkshopChats() {
     }
   }, [])
 
-  useEffect(() => { void loadThreads() }, [loadThreads])
+  useEffect(() => { void loadThreads(); const timer = window.setInterval(() => void loadThreads(), 3000); return () => window.clearInterval(timer) }, [loadThreads])
 
   useEffect(() => {
     const customerId = searchParams.get('customerId')
@@ -115,7 +115,8 @@ export function WorkshopChats() {
     }
 
     void load()
-    return () => { cancelled = true }
+    const refreshTimer = window.setInterval(() => void load(), 2500)
+    return () => { cancelled = true; window.clearInterval(refreshTimer) }
   }, [activeThread])
 
   // ── Auto-scroll ──────────────────────────────────────────────────────────
@@ -314,7 +315,7 @@ export function WorkshopChats() {
                         className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
                           msg.isSelf
                             ? 'rounded-br-sm bg-gradient-to-br from-[#0077B6] to-[#00B4D8] text-white'
-                            : 'rounded-bl-sm bg-white/8 text-glass border border-glass/10'
+                            : 'rounded-bl-sm bg-white/10 text-slate-100 border border-glass/20'
                         }`}
                       >
                         {msg.text}

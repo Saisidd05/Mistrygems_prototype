@@ -230,6 +230,10 @@ export default async function handler(req, res) {
     }
     const existing = await quotations.findOne({ id, industryCompanyId: user.companyId })
     if (!existing) return res.status(404).json({ error: 'Quotation not found.' })
+    if (existing.status === status) {
+      const { _id, ...safeExisting } = existing
+      return res.status(200).json(safeExisting)
+    }
     const result = await quotations.findOneAndUpdate(
       { id, industryCompanyId: user.companyId },
       { $set: { status } },
@@ -252,13 +256,13 @@ export default async function handler(req, res) {
       const customer = {
         id: `CUST-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
         name: existing.industryCompanyName || 'Industry Customer', company: existing.industryCompanyName || 'Industry Customer',
-        email: '', phone: '', city: '', totalJobs: 1, totalRevenue: existing.grandTotal,
+        email: '', phone: '', city: '', totalJobs: 0, totalRevenue: 0,
         status: 'Active', avatar: (existing.industryCompanyName || 'IC').slice(0, 2).toUpperCase(),
-        ownerId: existing.workshopId, createdAt: new Date().toISOString(), sourceQuotationId: existing.id,
+        ownerId: existing.workshopId, createdAt: new Date().toISOString(), industryCompanyId: existing.industryCompanyId,
       }
       await workshopDb.collection('customers').updateOne(
-        { ownerId: existing.workshopId, sourceQuotationId: existing.id },
-        { $setOnInsert: customer }, { upsert: true },
+        { ownerId: existing.workshopId, industryCompanyId: existing.industryCompanyId },
+        { $setOnInsert: customer, $inc: { totalJobs: 1, totalRevenue: existing.grandTotal } }, { upsert: true },
       )
     }
     const { _id, ...safeDoc } = doc

@@ -226,9 +226,7 @@ export function Feed() {
           <h1 className="page-title">Requirement Feed</h1>
           <p className="page-subtitle">Live industry requirements — review and submit quotations directly.</p>
         </div>
-        <GlowButton variant="outline" size="sm" icon={<RefreshCw size={15} />} onClick={() => void loadFeed()} loading={loading}>
-          Refresh
-        </GlowButton>
+        <div className="flex gap-2"><GlowButton variant="outline" size="sm" onClick={() => navigate(-1)}>Back</GlowButton><GlowButton variant="outline" size="sm" icon={<RefreshCw size={15} />} onClick={() => void loadFeed()} loading={loading}>Refresh</GlowButton></div>
       </div>
 
       {error && <GlassCard className="p-4 text-sm text-red-300 border-red-400/30">{error}</GlassCard>}
@@ -297,8 +295,8 @@ export function Feed() {
 
             {(item.drawingFile || item.technicalFile || item.notes) && (
               <div className="mt-4 flex flex-wrap gap-2">
-                {item.drawingFile && <span className="glass-badge"><FileText size={12} /> Drawing: {item.drawingFile}</span>}
-                {item.technicalFile && <span className="glass-badge"><FileText size={12} /> Technical: {item.technicalFile}</span>}
+                {item.drawingFile && <a href={item.drawingFile} target="_blank" rel="noreferrer" className="glass-badge"><FileText size={12} /> Open drawing</a>}
+                {item.technicalFile && <a href={item.technicalFile} target="_blank" rel="noreferrer" className="glass-badge"><FileText size={12} /> Open attachment</a>}
                 {item.notes && <span className="text-xs text-glass-dim">{item.notes}</span>}
               </div>
             )}
@@ -316,7 +314,7 @@ export function Feed() {
           <QuoteModal requirement={quoting} onClose={() => setQuoting(null)} />
         </Modal>
       )}
-      {details && <Modal open={!!details} onClose={() => setDetails(null)} title={details.jobTitle} maxWidth="lg"><div className="space-y-4 text-sm text-glass"><p>{details.description}</p><div className="grid grid-cols-2 gap-3 text-xs"><p>Material: {details.materialSpecification}</p><p>Process: {details.manufacturingProcess}</p><p>Delivery: {formatDate(details.deliveryDate)}</p><p>Location: {details.deliveryLocation}</p></div><div className="grid sm:grid-cols-2 gap-3">{[details.drawingFile, details.technicalFile].filter(Boolean).map((file, index) => <div key={index} className="rounded-xl border border-glass/10 p-3">{typeof file === 'string' && (file.startsWith('data:image') || file.startsWith('http')) ? <img src={file} alt="Requirement attachment" className="w-full max-h-56 object-contain rounded-lg" /> : <p className="text-xs"><ImageIcon size={14} className="inline mr-1" />Attachment: {file}</p>}</div>)}</div>{!details.drawingFile && !details.technicalFile && <p className="text-xs text-glass-dim">No drawings or images attached to this requirement.</p>}</div></Modal>}
+      {details && <Modal open={!!details} onClose={() => setDetails(null)} title={details.jobTitle} maxWidth="lg"><div className="space-y-4 text-sm text-glass"><p>{details.description}</p><div className="grid grid-cols-2 gap-3 text-xs"><p>Material: {details.materialSpecification}</p><p>Process: {details.manufacturingProcess}</p><p>Delivery: {formatDate(details.deliveryDate)}</p><p>Location: {details.deliveryLocation}</p></div><div className="grid sm:grid-cols-2 gap-3">{[details.drawingFile, details.technicalFile].filter(Boolean).map((file, index) => <div key={index} className="rounded-xl border border-glass/10 p-3">{typeof file === 'string' && file.startsWith('data:image') ? <img src={file} alt="Requirement attachment" className="w-full max-h-56 object-contain rounded-lg" /> : <a href={String(file)} target="_blank" rel="noreferrer" className="text-xs text-accent"><ImageIcon size={14} className="inline mr-1" />Open attachment</a>}</div>)}</div>{!details.drawingFile && !details.technicalFile && <p className="text-xs text-glass-dim">No drawings or images attached to this requirement.</p>}</div></Modal>}
     </div>
   )
 }

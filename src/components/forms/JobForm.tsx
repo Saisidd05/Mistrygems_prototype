@@ -23,7 +23,7 @@ export function JobForm({ initial, onSubmit, onCancel, loading, customers, emplo
     assignedTo: initial?.assignedTo || '',
     deadline: initial?.deadline || '',
     status: initial?.status || 'New' as JobStatus,
-    revenue: initial?.revenue || 0,
+    revenue: initial?.revenue ?? '',
     mode: initial?.mode || 'Workshop Procures' as JobMode,
   })
 
@@ -31,7 +31,7 @@ export function JobForm({ initial, onSubmit, onCancel, loading, customers, emplo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(form)
+    onSubmit({ ...form, revenue: Number(form.revenue) || 0 })
   }
 
   return (
@@ -97,7 +97,7 @@ export function JobForm({ initial, onSubmit, onCancel, loading, customers, emplo
             type="number"
             className="glass-input"
             value={form.revenue}
-            onChange={e => set('revenue', Number(e.target.value))}
+            onChange={e => set('revenue', e.target.value === '' ? '' : Number(e.target.value))}
             min={0}
             placeholder="0"
           />
