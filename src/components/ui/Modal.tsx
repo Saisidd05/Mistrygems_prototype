@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
 interface ModalProps {
@@ -29,7 +30,7 @@ export function Modal({ open, onClose, title, children, maxWidth = 'md' }: Modal
 
   const maxWidths = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl' }
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
       className="modal-overlay"
@@ -50,6 +51,7 @@ export function Modal({ open, onClose, title, children, maxWidth = 'md' }: Modal
         )}
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
