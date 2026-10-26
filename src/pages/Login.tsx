@@ -4,6 +4,7 @@ import { Gem, Lock, User, ArrowRight, Mail, CheckCircle2, Building2, Wrench } fr
 import { useAuth, getDashboardPath } from '../context/AuthContext'
 import { GlowButton } from '../components/ui/GlowButton'
 import { AnimatedBackground } from '../components/ui/AnimatedBackground'
+import GoogleLoginButton from '../components/auth/GoogleLoginButton'
 import { Modal } from '../components/ui/Modal'
 
 const GoogleIcon = () => (
@@ -282,18 +283,7 @@ export function Login() {
         </div>
 
         {/* Google Authentication Section */}
-        {isRealGoogleConfigured ? (
-          <div ref={googleButtonRef} className="flex justify-center min-h-[44px]" />
-        ) : (
-          <button
-            type="button"
-            onClick={() => setShowGoogleModal(true)}
-            className="w-full py-2.5 px-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white font-medium text-sm flex items-center justify-center transition-all duration-200 shadow-sm hover:border-accent/40 active:scale-[0.99]"
-          >
-            <GoogleIcon />
-            <span>Sign in with Google</span>
-          </button>
-        )}
+        <GoogleLoginButton accountType={accountType} />
 
         {/* Signup redirection link */}
         <div className="mt-8 text-center border-t border-glass/10 pt-5">
