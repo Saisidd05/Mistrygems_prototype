@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Briefcase, Users, UserCheck, ClipboardList,
+  LayoutDashboard, Briefcase, Users, ClipboardList,
   FileText, BarChart2, LogOut, ChevronLeft,
   ChevronRight, Gem, Package, Receipt, Rss, PlusCircle,
   Truck, FileCheck, MapPin, UserCircle, Building2, MessageCircle
@@ -24,8 +24,6 @@ const workshopNavItems: NavItem[] = [
   { label: 'Industry Feed', path: '/workshop/feed', icon: <Rss size={18} /> },
   { label: 'Jobs', path: '/workshop/jobs', icon: <Briefcase size={18} /> },
   { label: 'Customers', path: '/workshop/customers', icon: <Users size={18} /> },
-  { label: 'Employees', path: '/workshop/employees', icon: <UserCheck size={18} /> },
-  { label: 'Tasks', path: '/workshop/tasks', icon: <ClipboardList size={18} /> },
   { label: 'Quotations', path: '/workshop/quotations', icon: <FileText size={18} /> },
   { label: 'Invoices', path: '/workshop/invoices', icon: <Receipt size={18} /> },
   { label: 'Inventory', path: '/workshop/inventory', icon: <Package size={18} /> },
