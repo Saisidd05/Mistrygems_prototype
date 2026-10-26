@@ -2,19 +2,6 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (config: Record<string, unknown>) => void
-          renderButton: (el: HTMLElement | null, config: Record<string, unknown>) => void
-        }
-      }
-    }
-  }
-}
-
 /**
  * Google Sign-In button using Google Identity Services.
  * Renders the official Google button that opens the real Google account chooser.
