@@ -1,32 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import { Gem, Lock, User, ArrowRight, Mail, CheckCircle2, Building2, Wrench } from 'lucide-react'
+import { Gem, Lock, User, ArrowRight, Mail, Building2, Wrench } from 'lucide-react'
 import { useAuth, getDashboardPath } from '../context/AuthContext'
 import { GlowButton } from '../components/ui/GlowButton'
 import { AnimatedBackground } from '../components/ui/AnimatedBackground'
 import GoogleLoginButton from '../components/auth/GoogleLoginButton'
 import { Modal } from '../components/ui/Modal'
 
-const GoogleIcon = () => (
-  <svg className="w-5 h-5 mr-2.5 shrink-0" viewBox="0 0 24 24">
-    <path
-      fill="#4285F4"
-      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-    />
-    <path
-      fill="#34A853"
-      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-    />
-    <path
-      fill="#FBBC05"
-      d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.62z"
-    />
-    <path
-      fill="#EA4335"
-      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-    />
-  </svg>
-)
+
 
 export function Login() {
   const [searchParams] = useSearchParams()
@@ -42,13 +23,7 @@ export function Login() {
   const [forgotSuccess, setForgotSuccess] = useState('')
   const [forgotLoading, setForgotLoading] = useState(false)
 
-  // Google Modal State
-  const [showGoogleModal, setShowGoogleModal] = useState(false)
-  const [customGoogleEmail, setCustomGoogleEmail] = useState('')
-  const [customGoogleName, setCustomGoogleName] = useState('')
-
-  const googleButtonRef = useRef<HTMLDivElement>(null)
-  const { login, loginWithGoogle, isAuthenticated, user } = useAuth()
+  const { login, isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
 
   // Redirect already-authenticated users to their own dashboard
@@ -58,81 +33,6 @@ export function Login() {
     }
   }, [isAuthenticated, user, navigate])
 
-  const isRealGoogleConfigured = Boolean(
-    import.meta.env.VITE_GOOGLE_CLIENT_ID &&
-    !import.meta.env.VITE_GOOGLE_CLIENT_ID.startsWith('YOUR_')
-  )
-
-  useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
-    if (!clientId || clientId.startsWith('YOUR_')) return
-
-    const renderGoogleButton = () => {
-      if (!window.google || !googleButtonRef.current) return
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: async ({ credential }) => {
-          setError('')
-          setLoading(true)
-          const result = await loginWithGoogle(credential, accountType)
-          setLoading(false)
-          if (!result.success) {
-            setError(result.error || 'Google sign-in failed.')
-          } else if (result.isNewUser && result.googleDetails) {
-            sessionStorage.setItem('mg_google_temp', JSON.stringify(result.googleDetails))
-            navigate('/complete-profile')
-          } else {
-            navigate(result.redirectTo || '/login')
-          }
-        },
-      })
-      window.google.accounts.id.renderButton(googleButtonRef.current, {
-        type: 'standard', theme: 'outline', size: 'large', text: 'continue_with', width: 384,
-      })
-    }
-
-    if (window.google) {
-      renderGoogleButton()
-      return
-    }
-    const script = document.createElement('script')
-    script.src = 'https://accounts.google.com/gsi/client'
-    script.async = true
-    script.onload = renderGoogleButton
-    document.head.appendChild(script)
-    return () => { script.onload = null }
-  }, [loginWithGoogle, navigate, accountType])
-
-  const handleGoogleSignInDemo = async (email: string, name: string, picture?: string) => {
-    setError('')
-    setLoading(true)
-    setShowGoogleModal(false)
-
-    const payload = {
-      sub: `google-${Date.now()}`,
-      email: email.trim().toLowerCase(),
-      name: name.trim(),
-      picture: picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0077B6&color=fff`,
-      email_verified: true,
-    }
-    const demoCredential = 'demo_google_' + btoa(JSON.stringify(payload))
-
-    try {
-      const result = await loginWithGoogle(demoCredential, accountType)
-      setLoading(false)
-      if (!result.success) {
-        setError(result.error || 'Google authentication failed.')
-      } else if (result.isNewUser && result.googleDetails) {
-        sessionStorage.setItem('mg_google_temp', JSON.stringify(result.googleDetails))
-        navigate('/complete-profile')
-      } else {
-        navigate(result.redirectTo || '/login')
-      }
-    } catch (err: unknown) {
-      setLoading(false)
-      setError(err instanceof Error ? err.message : 'Google authentication failed.')
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -296,97 +196,7 @@ export function Login() {
         </div>
       </div>
 
-      {/* Google Auth Modal Fallback */}
-      <Modal open={showGoogleModal} onClose={() => setShowGoogleModal(false)} title="Google Sign-In">
-        <div className="space-y-4 pt-1">
-          <p className="text-xs text-glass-dim leading-relaxed">
-            Select a Google account or enter your email to continue with Google Authentication.
-          </p>
 
-          {/* Quick Preset Accounts */}
-          <div className="space-y-2">
-            <button
-              type="button"
-              onClick={() => handleGoogleSignInDemo('rajesh.mistry@gmail.com', 'Rajesh Mistry')}
-              className="w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-accent/50 flex items-center justify-between text-left transition-all group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">
-                  RM
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-white group-hover:text-accent transition-colors">Rajesh Mistry</div>
-                  <div className="text-[10px] text-glass-dim">rajesh.mistry@gmail.com</div>
-                </div>
-              </div>
-              <CheckCircle2 size={16} className="text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleGoogleSignInDemo('vikram.gems@gmail.com', 'Vikram Sharma')}
-              className="w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-accent/50 flex items-center justify-between text-left transition-all group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-xs">
-                  VS
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-white group-hover:text-accent transition-colors">Vikram Sharma</div>
-                  <div className="text-[10px] text-glass-dim">vikram.gems@gmail.com</div>
-                </div>
-              </div>
-              <CheckCircle2 size={16} className="text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-          </div>
-
-          <div className="relative my-3">
-            <div className="border-t border-glass/10" />
-            <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#0d2240] px-2 text-[9px] text-glass-dim uppercase">or enter custom email</span>
-          </div>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              if (!customGoogleEmail) return
-              const name = customGoogleName || customGoogleEmail.split('@')[0]
-              handleGoogleSignInDemo(customGoogleEmail, name)
-            }}
-            className="space-y-3"
-          >
-            <div>
-              <label className="block text-[11px] text-glass-dim mb-1">Google Email</label>
-              <input
-                type="email"
-                className="glass-input text-xs"
-                placeholder="your.email@gmail.com"
-                value={customGoogleEmail}
-                onChange={e => setCustomGoogleEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] text-glass-dim mb-1">Full Name (Optional)</label>
-              <input
-                type="text"
-                className="glass-input text-xs"
-                placeholder="e.g. Suresh Patel"
-                value={customGoogleName}
-                onChange={e => setCustomGoogleName(e.target.value)}
-              />
-            </div>
-
-            <div className="flex gap-2 justify-end pt-2">
-              <GlowButton type="button" variant="outline" size="sm" onClick={() => setShowGoogleModal(false)}>
-                Cancel
-              </GlowButton>
-              <GlowButton type="submit" size="sm" icon={<ArrowRight size={14} />}>
-                Continue with Google
-              </GlowButton>
-            </div>
-          </form>
-        </div>
-      </Modal>
 
       {/* Forgot Password Modal */}
       <Modal open={showForgotModal} onClose={() => setShowForgotModal(false)} title="Reset Password">
