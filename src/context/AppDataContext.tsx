@@ -1,8 +1,9 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { getAccountType, useAuth } from './AuthContext'
 import { database } from '../lib/database'
 import { generateId } from '../lib/utils'
 import type { Customer, FinishedGood, Invoice, Job, Notification, Quotation, RawMaterial } from '../lib/data'
+import { workshopDemoData } from '../lib/demoData'
 
 interface AppDataContextType {
   jobs: Job[]; addJob: (value: Omit<Job, 'id' | 'createdAt'>) => void; updateJob: (id: string, value: Partial<Job>) => void; deleteJob: (id: string) => void
@@ -24,14 +25,26 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [jobs, setJobs] = useState<Job[]>([]); const [customers, setCustomers] = useState<Customer[]>([])
   const [notifications, setNotifications] = useState<Notification[]>([]); const [invoices, setInvoices] = useState<Invoice[]>([])
   const [rawMaterials, setRawMaterials] = useState<RawMaterial[]>([]); const [finishedGoods, setFinishedGoods] = useState<FinishedGood[]>([]); const [quotations, setQuotations] = useState<Quotation[]>([])
+  const demoSeeded = useRef(false)
 
   useEffect(() => {
     if (!isAuthenticated || getAccountType(user) !== 'workshop') { setJobs([]); setCustomers([]); setNotifications([]); setInvoices([]); setRawMaterials([]); setFinishedGoods([]); setQuotations([]); return }
     let active = true; setLoading(true)
-    const load = () => Promise.all([
+    const load = (): Promise<void> => Promise.all([
       database.list<Job>('jobs'), database.list<Customer>('customers'),
       database.list<Notification>('notifications'), database.list<Invoice>('invoices'), database.list<RawMaterial>('rawMaterials'), database.list<FinishedGood>('finishedGoods'), database.list<Quotation>('quotations'),
-    ]).then(([nextJobs, nextCustomers, nextNotifications, nextInvoices, nextMaterials, nextGoods, nextQuotations]) => {
+    ]).then(async ([nextJobs, nextCustomers, nextNotifications, nextInvoices, nextMaterials, nextGoods, nextQuotations]) => {
+      if (!nextJobs.length && !nextCustomers.length && !demoSeeded.current) {
+        demoSeeded.current = true
+        const demo = workshopDemoData()
+        await Promise.all([
+          ...demo.jobs.map(item => database.create('jobs', item)), ...demo.customers.map(item => database.create('customers', item)),
+          ...demo.notifications.map(item => database.create('notifications', item)), ...demo.invoices.map(item => database.create('invoices', item)),
+          ...demo.rawMaterials.map(item => database.create('rawMaterials', item)), ...demo.finishedGoods.map(item => database.create('finishedGoods', item)),
+          ...demo.quotations.map(item => database.create('quotations', item)),
+        ])
+        return load()
+      }
       if (!active) return; setJobs(nextJobs); setCustomers(nextCustomers); setNotifications(nextNotifications); setInvoices(nextInvoices); setRawMaterials(nextMaterials); setFinishedGoods(nextGoods); setQuotations(nextQuotations)
     }).catch(error => console.error('Unable to load private workspace data:', error)).finally(() => active && setLoading(false))
     void load()

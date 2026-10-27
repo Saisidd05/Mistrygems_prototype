@@ -1,5 +1,6 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { getAccountType, useAuth } from './AuthContext'
+import { industryDemoRequirements } from '../lib/demoData'
 
 export interface IndustryRequirement {
   id: string; jobTitle: string; description: string; category: string; materialSpecification: string; manufacturingProcess: string; quantity: number; unit: string; certifications: string; deliveryDate: string; deliveryLocation: string; budget?: number; notes?: string; drawingFile?: string; technicalFile?: string; status: 'Open' | 'Closed' | 'Matched' | 'In Production'; createdAt: string; quotationsReceived: number; assignedWorkshop?: string
@@ -19,7 +20,18 @@ const IndustryDataContext = createContext<IndustryDataValue | undefined>(undefin
 
 export function IndustryDataProvider({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated } = useAuth(); const [requirements, setRequirements] = useState<IndustryRequirement[]>([]); const [loading, setLoading] = useState(false)
-  const refresh = useCallback(async () => { setLoading(true); try { setRequirements(await api<IndustryRequirement[]>('industryRequirements')) } catch (error) { console.error(error); setRequirements([]) } finally { setLoading(false) } }, [])
+  const demoSeeded = useRef(false)
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    try {
+      const records = await api<IndustryRequirement[]>('industryRequirements')
+      if (!records.length && !demoSeeded.current) {
+        demoSeeded.current = true
+        const seeded = await Promise.all(industryDemoRequirements.map(document => api<IndustryRequirement>('industryRequirements', { method: 'POST', body: JSON.stringify({ document }) })))
+        setRequirements(seeded)
+      } else setRequirements(records)
+    } catch (error) { console.error(error); setRequirements([]) } finally { setLoading(false) }
+  }, [])
   useEffect(() => { if (isAuthenticated && getAccountType(user) === 'industry') void refresh(); else setRequirements([]) }, [isAuthenticated, user, refresh])
   const createRequirement = useCallback(async (value: Omit<IndustryRequirement, 'id' | 'createdAt' | 'status' | 'quotationsReceived'>) => { const created = await api<IndustryRequirement>('industryRequirements', { method: 'POST', body: JSON.stringify({ document: { ...value, id: makeId(), status: 'Open', quotationsReceived: 0 } }) }); setRequirements(current => [created, ...current]) }, [])
   const updateRequirement = useCallback(async (id: string, value: Partial<IndustryRequirement>) => { const updated = await api<IndustryRequirement>('industryRequirements', { method: 'PUT', body: JSON.stringify({ id, updates: value }) }); setRequirements(current => current.map(item => item.id === id ? updated : item)) }, [])
