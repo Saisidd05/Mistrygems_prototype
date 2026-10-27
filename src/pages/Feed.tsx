@@ -51,30 +51,56 @@ function formatBudget(value?: number) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value)
 }
 
+function attachmentMimeType(file: string) {
+  const dataMime = file.match(/^data:([^;,]+)/i)?.[1]
+  if (dataMime) return dataMime
+  const raw = file.replace(/\s/g, '')
+  if (raw.startsWith('JVBER')) return 'application/pdf'
+  if (raw.startsWith('iVBOR')) return 'image/png'
+  if (raw.startsWith('/9j/')) return 'image/jpeg'
+  if (raw.startsWith('R0lGOD')) return 'image/gif'
+  if (raw.startsWith('UklGR')) return 'image/webp'
+  if (raw.startsWith('UEsDB')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  return 'application/octet-stream'
+}
+
+function attachmentSource(file: string) {
+  if (/^(data:|blob:|https?:\/\/)/i.test(file)) return file
+  return `data:${attachmentMimeType(file)};base64,${file.replace(/\s/g, '')}`
+}
+
 function isImageAttachment(file: string) {
-  return file.startsWith('data:image/') || /\.(avif|gif|jpe?g|png|svg|webp)(?:$|[?#])/i.test(file)
+  return attachmentMimeType(file).startsWith('image/') || /\.(avif|gif|jpe?g|png|svg|webp)(?:$|[?#])/i.test(file)
+}
+
+function attachmentExtension(mimeType: string) {
+  const extensions: Record<string, string> = {
+    'application/pdf': 'pdf', 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp',
+    'application/msword': 'doc', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  }
+  return extensions[mimeType] || 'bin'
 }
 
 async function downloadAttachment(file: string, label: string) {
   try {
-    const response = await fetch(file)
+    const response = await fetch(attachmentSource(file))
     if (!response.ok) throw new Error('Unable to fetch attachment')
     const blob = await response.blob()
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = label
+    link.download = `${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'attachment'}.${attachmentExtension(blob.type || attachmentMimeType(file))}`
     document.body.appendChild(link)
     link.click()
     link.remove()
     URL.revokeObjectURL(url)
   } catch {
-    window.open(file, '_blank', 'noopener,noreferrer')
+    window.open(attachmentSource(file), '_blank', 'noopener,noreferrer')
   }
 }
 
 function AttachmentAction({ file, label, onPreview }: { file: string; label: string; onPreview: (file: string, label: string) => void }) {
-  const open = () => isImageAttachment(file) ? onPreview(file, label) : void downloadAttachment(file, label)
+  const open = () => isImageAttachment(file) ? onPreview(attachmentSource(file), label) : void downloadAttachment(file, label)
   return <button type="button" onClick={open} className="glass-badge"><FileText size={12} /> {label}</button>
 }
 
@@ -342,7 +368,7 @@ export function Feed() {
           <QuoteModal requirement={quoting} onClose={() => setQuoting(null)} />
         </Modal>
       )}
-      {details && <Modal open={!!details} onClose={() => setDetails(null)} title={details.jobTitle} maxWidth="lg"><div className="space-y-4 text-sm text-glass"><p>{details.description}</p><div className="grid grid-cols-2 gap-3 text-xs"><p>Material: {details.materialSpecification}</p><p>Process: {details.manufacturingProcess}</p><p>Delivery: {formatDate(details.deliveryDate)}</p><p>Location: {details.deliveryLocation}</p></div><div className="grid sm:grid-cols-2 gap-3">{[details.drawingFile, details.technicalFile].filter(Boolean).map((file, index) => <div key={index} className="rounded-xl border border-glass/10 p-3">{typeof file === 'string' && isImageAttachment(file) ? <img src={file} alt="Requirement attachment" className="w-full max-h-56 object-contain rounded-lg" /> : <button type="button" onClick={() => void downloadAttachment(String(file), `requirement-attachment-${index + 1}`)} className="text-xs text-accent"><Download size={14} className="inline mr-1" />Download attachment</button>}</div>)}</div>{!details.drawingFile && !details.technicalFile && <p className="text-xs text-glass-dim">No drawings or images attached to this requirement.</p>}</div></Modal>}
+      {details && <Modal open={!!details} onClose={() => setDetails(null)} title={details.jobTitle} maxWidth="lg"><div className="space-y-4 text-sm text-glass"><p>{details.description}</p><div className="grid grid-cols-2 gap-3 text-xs"><p>Material: {details.materialSpecification}</p><p>Process: {details.manufacturingProcess}</p><p>Delivery: {formatDate(details.deliveryDate)}</p><p>Location: {details.deliveryLocation}</p></div><div className="grid sm:grid-cols-2 gap-3">{[details.drawingFile, details.technicalFile].filter(Boolean).map((file, index) => <div key={index} className="rounded-xl border border-glass/10 p-3">{typeof file === 'string' && isImageAttachment(file) ? <img src={attachmentSource(file)} alt="Requirement attachment" className="w-full max-h-56 object-contain rounded-lg" /> : <button type="button" onClick={() => void downloadAttachment(String(file), `requirement-attachment-${index + 1}`)} className="text-xs text-accent"><Download size={14} className="inline mr-1" />Download attachment</button>}</div>)}</div>{!details.drawingFile && !details.technicalFile && <p className="text-xs text-glass-dim">No drawings or images attached to this requirement.</p>}</div></Modal>}
       {attachmentPreview && <Modal open={!!attachmentPreview} onClose={() => setAttachmentPreview(null)} title={attachmentPreview.label} maxWidth="lg"><div className="space-y-4"><img src={attachmentPreview.file} alt={attachmentPreview.label} className="w-full max-h-[70vh] object-contain rounded-lg" /><GlowButton size="sm" icon={<Download size={14} />} onClick={() => void downloadAttachment(attachmentPreview.file, attachmentPreview.label)}>Download image</GlowButton></div></Modal>}
     </div>
   )
