@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Briefcase, Users, ClipboardList,
   FileText, BarChart2, LogOut, ChevronLeft,
-  ChevronRight, Gem, Package, Receipt, Rss, PlusCircle,
+  ChevronRight, Package, Receipt, Rss, PlusCircle,
   Truck, FileCheck, MapPin, UserCircle, Building2, MessageCircle
 } from 'lucide-react'
 import { getAccountType, useAuth } from '../../context/AuthContext'
@@ -115,9 +115,7 @@ export function Sidebar() {
       >
         {/* Logo */}
         <div className={cn('flex items-center gap-3 px-4 py-5 border-b border-glass/10', collapsed && 'justify-center px-2')}>
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-[#0077B6] to-[#00B4D8] shadow-glow-sm">
-            {isIndustry ? <Building2 size={16} className="text-white" /> : <Gem size={16} className="text-white" />}
-          </div>
+          <img src="/logo-icon.png" alt="Mistry Gems" className="w-9 h-9 object-contain flex-shrink-0" />
           {!collapsed && (
             <div>
               <p className="text-sm font-bold font-sora gradient-text-bright leading-tight">Mistry Gems</p>
