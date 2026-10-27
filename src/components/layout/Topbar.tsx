@@ -116,7 +116,7 @@ export function Topbar() {
           </button>
 
           {showProfile && (
-            <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-[#0096C7] bg-[#0077B6] p-1 shadow-xl z-50">
+            <div className="absolute right-0 top-full w-48 rounded-xl border border-[#0096C7] bg-[#0077B6] p-1 shadow-xl z-50">
               <div className="px-3 py-2 border-b border-white/20">
                 <p className="text-xs font-semibold text-white">{user?.name}</p>
                 <p className="text-[10px] text-cyan-100">{isIndustry ? (user?.workshopName || 'Industry Account') : user?.role}</p>
