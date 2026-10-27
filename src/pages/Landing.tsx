@@ -197,7 +197,7 @@ export function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 mt-10 border-t border-[#1d4f73] bg-[linear-gradient(115deg,#071827,#0b2940)] pt-10 pb-6 px-6 text-xs text-slate-300">
+      <footer className="relative z-10 mt-10 border-t border-glass/10 bg-transparent pt-10 pb-6 px-6 text-xs text-glass-dim">
         <div className="max-w-6xl mx-auto">
 
           {/* 3-column grid */}
@@ -224,20 +224,20 @@ export function Landing() {
 
             {/* Quick Navigation */}
             <div className="space-y-2">
-              <h4 className="font-bold text-[#67e8f9] font-sora text-xs tracking-wider mb-3">Quick Navigation</h4>
+              <h4 className="font-bold text-accent font-sora text-xs tracking-wider mb-3">Quick Navigation</h4>
               <div className="flex flex-col items-start gap-2 text-[11px]">
-                <a href="#features" className="hover:text-[#67e8f9] transition-colors">Features</a>
-                <a href="#workflow" className="hover:text-[#67e8f9] transition-colors">How It Works</a>
-                <a href="#testimonials" className="hover:text-[#67e8f9] transition-colors">Testimonials</a>
-                <button type="button" onClick={() => navigate('/login')} className="font-semibold text-[#67e8f9] hover:text-white transition-colors">Sign In / Register</button>
+                <a href="#features" className="hover:text-highlight transition-colors">Features</a>
+                <a href="#workflow" className="hover:text-highlight transition-colors">How It Works</a>
+                <a href="#testimonials" className="hover:text-highlight transition-colors">Testimonials</a>
+                <button type="button" onClick={() => navigate('/login')} className="font-semibold text-accent hover:text-highlight transition-colors">Sign In / Register</button>
               </div>
             </div>
           </div>
 
           {/* Bottom Bar */}
-          <div className="border-t border-slate-500/30 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="border-t border-glass/10 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-[10px]">© {new Date().getFullYear()} Lynklathe Solutions. All rights reserved.</p>
-            <p className="text-[10px] font-semibold text-slate-200">Agni College Of Technology, Chennai</p>
+            <p className="text-[10px] font-semibold text-glass">Agni College Of Technology, Chennai</p>
           </div>
 
         </div>
