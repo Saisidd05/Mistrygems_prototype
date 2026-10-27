@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import { Gem, Mail, Lock, User, Building, MapPin, ArrowRight } from 'lucide-react'
+import { Mail, Lock, User, Building, MapPin, ArrowRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { GlowButton } from '../components/ui/GlowButton'
 import { AnimatedBackground } from '../components/ui/AnimatedBackground'
@@ -115,9 +115,7 @@ export default function Signup() {
 
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#0077B6] to-[#00B4D8] shadow-glow mb-3">
-            <Gem size={28} className="text-white" />
-          </div>
+          <img src="/logo-icon.png" alt="Mistry Gems" className="h-16 w-16 object-contain mb-2" />
           <h1 className="text-2xl font-bold font-sora gradient-text-bright">Create {accountLabel} Account</h1>
           <p className="text-xs text-glass-dim mt-1">Set up your smart {accountType} management platform</p>
         </div>

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Gem, ArrowRight, Shield, Activity, ChevronRight,
+  ArrowRight, Shield, Activity, ChevronRight,
   TrendingUp, FileText, Bell, Sparkles, Star, Briefcase, Truck
 } from 'lucide-react'
 import { GlowButton } from '../components/ui/GlowButton'
@@ -18,9 +18,7 @@ export function Landing() {
       {/* ── Navbar ── */}
       <nav className="fixed top-0 inset-x-0 z-50 glass-nav px-6 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#0077B6] to-[#00B4D8] flex items-center justify-center shadow-glow">
-            <Gem size={18} className="text-white" />
-          </div>
+          <img src="/logo-icon.png" alt="Mistry Gems" className="w-10 h-10 object-contain" />
           <span className="text-base font-bold font-sora gradient-text-bright">Mistry Gems</span>
         </div>
 
@@ -208,9 +206,7 @@ export function Landing() {
             {/* Brand */}
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0077B6] to-[#00B4D8] flex items-center justify-center shadow-glow-sm">
-                  <Gem size={16} className="text-white" />
-                </div>
+                <img src="/logo-icon.png" alt="Mistry Gems" className="w-10 h-10 object-contain" />
                 <div>
                   <p className="font-bold text-highlight font-sora text-sm">Mistry Gems</p>
                   <p className="text-[10px]">Workflow Management Platform</p>
@@ -237,6 +233,7 @@ export function Landing() {
             {/* Contact */}
             <div className="space-y-2">
               <h4 className="font-bold text-highlight font-sora text-xs uppercase tracking-wider mb-3">Contact</h4>
+              <img src="/logo.png" alt="Mistry Gems logo" className="h-16 w-auto object-contain object-left mb-3" />
               <div className="space-y-1.5 text-[11px]">
                 <p>
                   <span className="text-glass-dim">Email: </span>

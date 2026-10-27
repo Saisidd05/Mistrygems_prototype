@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Gem, ArrowRight, Building, MapPin, User as UserIcon } from 'lucide-react'
+import { ArrowRight, Building, MapPin, User as UserIcon } from 'lucide-react'
 import { GoogleDetails, useAuth } from '../context/AuthContext'
 import { GlowButton } from '../components/ui/GlowButton'
 import { AnimatedBackground } from '../components/ui/AnimatedBackground'
@@ -86,9 +86,7 @@ export function ProfileCompletion() {
       <AnimatedBackground />
       <div className="w-full max-w-md glass-card p-8 relative z-10 shadow-glass-lg border-glass-bright">
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#0077B6] to-[#00B4D8] shadow-glow mb-4">
-            <Gem size={28} className="text-white" />
-          </div>
+          <img src="/logo-icon.png" alt="Mistry Gems" className="h-16 w-16 object-contain mb-3" />
           <h1 className="text-2xl font-bold font-sora gradient-text-bright">Complete Profile</h1>
           <p className="text-xs text-glass-dim mt-1">
             Almost there! Set up your {googleData.accountType === 'industry' ? 'industry' : 'workshop'} account
