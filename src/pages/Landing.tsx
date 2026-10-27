@@ -197,7 +197,7 @@ export function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-glass/10 pt-10 pb-6 px-6 text-xs text-glass-dim">
+      <footer className="mt-10 border-t border-emerald-300/20 bg-[linear-gradient(115deg,rgba(5,34,24,.98),rgba(9,66,39,.94))] pt-10 pb-6 px-6 text-xs text-emerald-50/75">
         <div className="max-w-6xl mx-auto">
 
           {/* 3-column grid */}
@@ -205,62 +205,39 @@ export function Landing() {
 
             {/* Brand */}
             <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <img src="/logo-icon.png" alt="Mistry Gems" className="w-10 h-10 object-contain" />
-                <div>
-                  <p className="font-bold text-highlight font-sora text-sm">Mistry Gems</p>
-                  <p className="text-[10px]">Workflow Management Platform</p>
-                </div>
-              </div>
+              <img src="/logo.png" alt="Mistry Gems" className="h-14 w-auto max-w-[190px] object-contain object-left" />
               <p className="leading-relaxed text-[11px] max-w-xs">
                 Empowering manufacturing MSMEs with intelligent workflow automation, digitalizing operations from job creation to final dispatch.
               </p>
             </div>
 
-            {/* Headquarters Address */}
+            {/* Headquarters & Contact */}
             <div className="space-y-2">
-              <h4 className="font-bold text-highlight font-sora text-xs uppercase tracking-wider mb-3">Headquarters</h4>
-              <p className="font-semibold text-glass text-[11px]">Mistry Gems — IT Department</p>
+              <h4 className="font-bold text-amber-300 font-sora text-xs tracking-wider mb-3">📍 Headquarters &amp; Contact</h4>
+              <p className="font-semibold text-white text-[11px]">Lynklathe Solutions</p>
               <p className="leading-relaxed text-[11px]">
                 Agni College of Technology<br />
                 Vels College Road, Thalambur<br />
-                Navalur IT Corridor<br />
-                Chennai — 600 130<br />
-                Tamil Nadu, India
+                Navalur, OMR Chennai – 600130
               </p>
             </div>
 
-            {/* Contact */}
+            {/* Quick Navigation */}
             <div className="space-y-2">
-              <h4 className="font-bold text-highlight font-sora text-xs uppercase tracking-wider mb-3">Contact</h4>
-              <img src="/logo.png" alt="Mistry Gems logo" className="h-16 w-auto object-contain object-left mb-3" />
-              <div className="space-y-1.5 text-[11px]">
-                <p>
-                  <span className="text-glass-dim">Email: </span>
-                  <a href="mailto:team@mistrygems.app" className="text-accent hover:text-highlight transition-colors">
-                    team@mistrygems.app
-                  </a>
-                </p>
-                <p>
-                  <span className="text-glass-dim">Support: </span>
-                  <a href="mailto:support@mistrygems.app" className="text-accent hover:text-highlight transition-colors">
-                    support@mistrygems.app
-                  </a>
-                </p>
-                <p className="pt-1">
-                  <span className="text-glass-dim">Platform: </span>
-                  <span className="text-glass">Industry 4.0 MSME Solution</span>
-                </p>
+              <h4 className="font-bold text-amber-300 font-sora text-xs tracking-wider mb-3">Quick Navigation</h4>
+              <div className="flex flex-col items-start gap-2 text-[11px]">
+                <a href="#features" className="hover:text-amber-200 transition-colors">Features</a>
+                <a href="#workflow" className="hover:text-amber-200 transition-colors">How It Works</a>
+                <a href="#testimonials" className="hover:text-amber-200 transition-colors">Testimonials</a>
+                <button type="button" onClick={() => navigate('/login')} className="font-semibold text-amber-300 hover:text-amber-200 transition-colors">Sign In / Register</button>
               </div>
             </div>
           </div>
 
           {/* Bottom Bar */}
-          <div className="border-t border-glass/10 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p className="text-[10px]">© {new Date().getFullYear()} Mistry Gems. All rights reserved.</p>
-            <p className="text-[10px] gradient-text font-semibold">
-              🛠️ Built with ❤️ by Team Mistry Gems
-            </p>
+          <div className="border-t border-emerald-100/20 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p className="text-[10px]">© {new Date().getFullYear()} Lynklathe Solutions. All rights reserved.</p>
+            <p className="text-[10px] font-semibold text-emerald-50/80">Agni College Of Technology, Chennai</p>
           </div>
 
         </div>
