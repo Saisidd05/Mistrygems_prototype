@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef } from 'react'
 export function useChatNotifications(senderName: string | null) {
   const seenIds = useRef<Set<string>>(new Set())
   const permissionRef = useRef<NotificationPermission>('default')
+  const initializedRef = useRef(false)
 
   // Ask for permission as soon as a chat is opened
   useEffect(() => {
@@ -35,12 +36,20 @@ export function useChatNotifications(senderName: string | null) {
       if (!('Notification' in window)) return
       if (permissionRef.current !== 'granted') return
 
+      // The first response is existing chat history, not a new alert.
+      if (!initializedRef.current) {
+        messages.forEach(msg => seenIds.current.add(msg.id))
+        initializedRef.current = true
+        return
+      }
+
       for (const msg of messages) {
         if (seenIds.current.has(msg.id)) continue
         seenIds.current.add(msg.id)
 
-        // Only notify for messages from the other person & when window is blurred
-        if (!msg.isSelf && !document.hasFocus()) {
+        // Always alert for messages from the other person. The browser decides
+        // how prominently to surface the notification while the app is focused.
+        if (!msg.isSelf) {
           const title = senderName ? `New message from ${senderName}` : 'New message'
           const body = msg.text.length > 80 ? msg.text.slice(0, 80) + '…' : msg.text
 
@@ -72,6 +81,7 @@ export function useChatNotifications(senderName: string | null) {
   /** Call when switching threads so we don't re-notify old messages */
   const resetSeen = useCallback(() => {
     seenIds.current.clear()
+    initializedRef.current = false
   }, [])
 
   return { notifyNewMessages, resetSeen }

@@ -181,7 +181,7 @@ export function IndustryChats() {
     }
 
     void load()
-    const refreshTimer = window.setInterval(() => void load(), 500)
+    const refreshTimer = window.setInterval(() => void load(), 250)
     return () => { cancelled = true; window.clearInterval(refreshTimer); resetSeen() }
   }, [activeWorkshop, notifyNewMessages, resetSeen])
 

@@ -156,7 +156,7 @@ export function WorkshopChats() {
     }
 
     void load()
-    const refreshTimer = window.setInterval(() => void load(), 500)
+    const refreshTimer = window.setInterval(() => void load(), 250)
     return () => { cancelled = true; window.clearInterval(refreshTimer); resetSeen() }
   }, [activeThread, notifyNewMessages, resetSeen])
 

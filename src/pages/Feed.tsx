@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Building2, CalendarDays, ClipboardList, FileText, IndianRupee,
-  MapPin, Package, RefreshCw, Send, MessageCircle, Image as ImageIcon, Info
+  MapPin, Package, RefreshCw, Send, MessageCircle, Info, Download
 } from 'lucide-react'
 import { GlassCard } from '../components/ui/GlassCard'
 import { GlowButton } from '../components/ui/GlowButton'
@@ -49,6 +49,33 @@ function formatDate(value: string) {
 function formatBudget(value?: number) {
   if (!value) return 'Budget not shared'
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value)
+}
+
+function isImageAttachment(file: string) {
+  return file.startsWith('data:image/') || /\.(avif|gif|jpe?g|png|svg|webp)(?:$|[?#])/i.test(file)
+}
+
+async function downloadAttachment(file: string, label: string) {
+  try {
+    const response = await fetch(file)
+    if (!response.ok) throw new Error('Unable to fetch attachment')
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = label
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  } catch {
+    window.open(file, '_blank', 'noopener,noreferrer')
+  }
+}
+
+function AttachmentAction({ file, label, onPreview }: { file: string; label: string; onPreview: (file: string, label: string) => void }) {
+  const open = () => isImageAttachment(file) ? onPreview(file, label) : void downloadAttachment(file, label)
+  return <button type="button" onClick={open} className="glass-badge"><FileText size={12} /> {label}</button>
 }
 
 // ── Quotation Submit Modal ─────────────────────────────────────────────────
@@ -191,6 +218,7 @@ export function Feed() {
   const [error, setError] = useState('')
   const [quoting, setQuoting] = useState<FeedRequirement | null>(null)
   const [details, setDetails] = useState<FeedRequirement | null>(null)
+  const [attachmentPreview, setAttachmentPreview] = useState<{ file: string; label: string } | null>(null)
   const [submitted, setSubmitted] = useState<SubmittedQuotation[]>([])
   const previousStatuses = useRef<Record<string, string>>({})
 
@@ -295,8 +323,8 @@ export function Feed() {
 
             {(item.drawingFile || item.technicalFile || item.notes) && (
               <div className="mt-4 flex flex-wrap gap-2">
-                {item.drawingFile && <a href={item.drawingFile} target="_blank" rel="noreferrer" className="glass-badge"><FileText size={12} /> Open drawing</a>}
-                {item.technicalFile && <a href={item.technicalFile} target="_blank" rel="noreferrer" className="glass-badge"><FileText size={12} /> Open attachment</a>}
+                {item.drawingFile && <AttachmentAction file={item.drawingFile} label="Open drawing" onPreview={(file, label) => setAttachmentPreview({ file, label })} />}
+                {item.technicalFile && <AttachmentAction file={item.technicalFile} label="Open attachment" onPreview={(file, label) => setAttachmentPreview({ file, label })} />}
                 {item.notes && <span className="text-xs text-glass-dim">{item.notes}</span>}
               </div>
             )}
@@ -314,7 +342,8 @@ export function Feed() {
           <QuoteModal requirement={quoting} onClose={() => setQuoting(null)} />
         </Modal>
       )}
-      {details && <Modal open={!!details} onClose={() => setDetails(null)} title={details.jobTitle} maxWidth="lg"><div className="space-y-4 text-sm text-glass"><p>{details.description}</p><div className="grid grid-cols-2 gap-3 text-xs"><p>Material: {details.materialSpecification}</p><p>Process: {details.manufacturingProcess}</p><p>Delivery: {formatDate(details.deliveryDate)}</p><p>Location: {details.deliveryLocation}</p></div><div className="grid sm:grid-cols-2 gap-3">{[details.drawingFile, details.technicalFile].filter(Boolean).map((file, index) => <div key={index} className="rounded-xl border border-glass/10 p-3">{typeof file === 'string' && file.startsWith('data:image') ? <img src={file} alt="Requirement attachment" className="w-full max-h-56 object-contain rounded-lg" /> : <a href={String(file)} target="_blank" rel="noreferrer" className="text-xs text-accent"><ImageIcon size={14} className="inline mr-1" />Open attachment</a>}</div>)}</div>{!details.drawingFile && !details.technicalFile && <p className="text-xs text-glass-dim">No drawings or images attached to this requirement.</p>}</div></Modal>}
+      {details && <Modal open={!!details} onClose={() => setDetails(null)} title={details.jobTitle} maxWidth="lg"><div className="space-y-4 text-sm text-glass"><p>{details.description}</p><div className="grid grid-cols-2 gap-3 text-xs"><p>Material: {details.materialSpecification}</p><p>Process: {details.manufacturingProcess}</p><p>Delivery: {formatDate(details.deliveryDate)}</p><p>Location: {details.deliveryLocation}</p></div><div className="grid sm:grid-cols-2 gap-3">{[details.drawingFile, details.technicalFile].filter(Boolean).map((file, index) => <div key={index} className="rounded-xl border border-glass/10 p-3">{typeof file === 'string' && isImageAttachment(file) ? <img src={file} alt="Requirement attachment" className="w-full max-h-56 object-contain rounded-lg" /> : <button type="button" onClick={() => void downloadAttachment(String(file), `requirement-attachment-${index + 1}`)} className="text-xs text-accent"><Download size={14} className="inline mr-1" />Download attachment</button>}</div>)}</div>{!details.drawingFile && !details.technicalFile && <p className="text-xs text-glass-dim">No drawings or images attached to this requirement.</p>}</div></Modal>}
+      {attachmentPreview && <Modal open={!!attachmentPreview} onClose={() => setAttachmentPreview(null)} title={attachmentPreview.label} maxWidth="lg"><div className="space-y-4"><img src={attachmentPreview.file} alt={attachmentPreview.label} className="w-full max-h-[70vh] object-contain rounded-lg" /><GlowButton size="sm" icon={<Download size={14} />} onClick={() => void downloadAttachment(attachmentPreview.file, attachmentPreview.label)}>Download image</GlowButton></div></Modal>}
     </div>
   )
 }
