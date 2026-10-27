@@ -24,7 +24,6 @@ const pageNames: Record<string, string> = {
 
   // Industry routes
   '/industry/dashboard': 'Industry Dashboard',
-  '/industry/requirements/new': 'Post Requirement',
   '/industry/requirements': 'My Requirements',
   '/industry/quotations': 'Quotations',
   '/industry/purchase-orders': 'Purchase Orders',

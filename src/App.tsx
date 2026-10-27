@@ -74,7 +74,7 @@ export default function App() {
                 {/* Industry routes: dedicated layout, navigation and pages. */}
                 <Route path="/industry/dashboard" element={<RoleProtectedRoute accountType="industry"><IndustryDashboard /></RoleProtectedRoute>} />
                 <Route path="/industry/requirements" element={<RoleProtectedRoute accountType="industry"><IndustryRequirements /></RoleProtectedRoute>} />
-                <Route path="/industry/requirements/new" element={<RoleProtectedRoute accountType="industry"><IndustryRequirements createMode /></RoleProtectedRoute>} />
+                <Route path="/industry/requirements/new" element={<Navigate to="/industry/requirements" replace />} />
                 <Route path="/industry/quotations" element={<RoleProtectedRoute accountType="industry"><IndustryQuotations /></RoleProtectedRoute>} />
                 <Route path="/industry/vendors" element={<RoleProtectedRoute accountType="industry"><Vendors /></RoleProtectedRoute>} />
                 <Route path="/industry/chats" element={<RoleProtectedRoute accountType="industry"><IndustryChats /></RoleProtectedRoute>} />
