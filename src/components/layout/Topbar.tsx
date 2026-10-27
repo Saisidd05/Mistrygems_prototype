@@ -98,7 +98,7 @@ export function Topbar() {
         </div>
 
         {/* Profile */}
-        <div className="relative">
+        <div className="relative" onMouseLeave={() => setShowProfile(false)}>
           <button
             onClick={() => setShowProfile(s => !s)}
             className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-white/5 transition-all"
