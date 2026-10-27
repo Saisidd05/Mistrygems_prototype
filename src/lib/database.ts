@@ -1,13 +1,11 @@
 export type DatabaseCollection =
   | 'customers'
-  | 'employees'
   | 'finishedGoods'
   | 'invoices'
   | 'jobs'
   | 'notifications'
   | 'quotations'
   | 'rawMaterials'
-  | 'tasks'
 
 const endpoint = (collection: DatabaseCollection) =>
   `/api/data?collection=${encodeURIComponent(collection)}`

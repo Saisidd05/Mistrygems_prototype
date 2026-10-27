@@ -83,7 +83,7 @@ export function Settings() {
             <h3 className="text-sm font-bold font-sora text-highlight mb-2 flex items-center gap-2">
               <Shield size={18} className="text-accent" /> Role & Permissions
             </h3>
-            <p className="text-xs text-glass-dim">Role-based Access Control (RBAC) is active across Owner, Manager, and Employee tiers.</p>
+            <p className="text-xs text-glass-dim">Role-based Access Control (RBAC) is active across Owner and Manager tiers.</p>
           </div>
         </GlassCard>
       </div>

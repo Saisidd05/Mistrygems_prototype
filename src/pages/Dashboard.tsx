@@ -2,14 +2,14 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Briefcase, IndianRupee, Clock, CheckCircle2, Plus, ArrowRight,
-  TrendingUp, Activity, AlertCircle, FileText, ChevronRight
+  TrendingUp, AlertCircle, FileText, ChevronRight
 } from 'lucide-react'
 import { useAppData } from '../context/AppDataContext'
 import { useAuth } from '../context/AuthContext'
 import { StatCard, GlassCard } from '../components/ui/GlassCard'
 import { GlowButton } from '../components/ui/GlowButton'
 import { StatusBadge } from '../components/ui/StatusBadge'
-import { RevenueChart, StatusPieChart, PerformanceChart } from '../components/ui/Charts'
+import { RevenueChart, StatusPieChart } from '../components/ui/Charts'
 import { Modal } from '../components/ui/Modal'
 import { JobForm } from '../components/forms/JobForm'
 import { useToast } from '../components/ui/Toast'
@@ -17,7 +17,7 @@ import { formatCurrency, formatDate } from '../lib/utils'
 import type { Job } from '../lib/data'
 
 export function Dashboard() {
-  const { jobs, customers, employees, addJob } = useAppData()
+  const { jobs, customers, addJob } = useAppData()
   const { user } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
@@ -36,10 +36,7 @@ export function Dashboard() {
   }, [])
   const statusColors: Record<string, string> = { New: '#94A3B8', 'In Progress': '#00B4D8', 'Quality Check': '#0077B6', Completed: '#10B981', Invoiced: '#8B5CF6', Procuring: '#F59E0B', Approved: '#00B4D8', Quoted: '#0077B6' }
   const statusData = Object.entries(jobs.reduce<Record<string, number>>((counts, job) => ({ ...counts, [job.status]: (counts[job.status] || 0) + 1 }), {})).map(([name, value]) => ({ name, value, color: statusColors[name] || '#94A3B8' }))
-  const performanceData = employees.map(employee => ({ name: employee.name.split(' ')[0], performance: employee.performance }))
-
   const customerNames = customers.map(c => c.name)
-  const employeeNames = employees.map(e => e.name)
 
   const handleCreateJob = (data: Omit<Job, 'id' | 'createdAt'>) => {
     addJob(data)
@@ -93,10 +90,10 @@ export function Dashboard() {
           color="green"
         />
         <StatCard
-          label="Team Capacity"
-          value={`${employees.filter(e => e.status === 'Active').length} Active`}
-          icon={<Activity size={20} className="text-amber-400" />}
-          sub={`${employees.length} Total Workforce`}
+          label="Total Customers"
+          value={customers.length}
+          icon={<Briefcase size={20} className="text-amber-400" />}
+          sub="Customer accounts"
           color="amber"
         />
       </div>
@@ -120,9 +117,9 @@ export function Dashboard() {
         </GlassCard>
       </div>
 
-      {/* Recent Active Jobs & Performance */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <GlassCard className="p-5 lg:col-span-2">
+      {/* Recent Active Jobs */}
+      <div className="grid grid-cols-1 gap-6">
+        <GlassCard className="p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold font-sora text-highlight flex items-center gap-2">
               <Briefcase size={16} className="text-accent" /> Active Jobs Overview
@@ -160,12 +157,6 @@ export function Dashboard() {
           </div>
         </GlassCard>
 
-        <GlassCard className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold font-sora text-highlight">Top Performers</h3>
-          </div>
-          {performanceData.length ? <PerformanceChart data={performanceData} /> : <p className="py-20 text-center text-sm text-glass-dim">No team members yet.</p>}
-        </GlassCard>
       </div>
 
       {/* New Job Modal */}
@@ -174,7 +165,6 @@ export function Dashboard() {
           onSubmit={handleCreateJob}
           onCancel={() => setOpenNewJobModal(false)}
           customers={customerNames}
-          employees={employeeNames}
         />
       </Modal>
 
@@ -198,10 +188,6 @@ export function Dashboard() {
               <div>
                 <span className="text-glass-dim block">Priority</span>
                 <StatusBadge status={selectedJob.priority} />
-              </div>
-              <div>
-                <span className="text-glass-dim block">Assigned Operator</span>
-                <span className="text-glass font-medium">{selectedJob.assignedTo || 'Unassigned'}</span>
               </div>
               <div>
                 <span className="text-glass-dim block">Deadline</span>

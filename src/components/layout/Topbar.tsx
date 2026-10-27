@@ -16,8 +16,6 @@ const pageNames: Record<string, string> = {
   '/workshop/feed': 'Industry Feed',
   '/workshop/jobs': 'Job Management',
   '/workshop/customers': 'Customers',
-  '/workshop/employees': 'Employees',
-  '/workshop/tasks': 'Task Board',
   '/workshop/quotations': 'Quotations',
   '/workshop/invoices': 'Invoices',
   '/workshop/inventory': 'Inventory',

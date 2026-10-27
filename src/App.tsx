@@ -15,8 +15,6 @@ import { ProfileCompletion } from './pages/ProfileCompletion'
 import { Dashboard } from './pages/Dashboard'
 import { Jobs } from './pages/Jobs'
 import { Customers } from './pages/Customers'
-import { Employees } from './pages/Employees'
-import { Tasks } from './pages/Tasks'
 import { Quotations } from './pages/Quotations'
 import { Invoices } from './pages/Invoices'
 import { Inventory } from './pages/Inventory'
@@ -66,8 +64,6 @@ export default function App() {
                 <Route path="/workshop/feed" element={<RoleProtectedRoute accountType="workshop"><Feed /></RoleProtectedRoute>} />
                 <Route path="/workshop/jobs" element={<RoleProtectedRoute accountType="workshop"><Jobs /></RoleProtectedRoute>} />
                 <Route path="/workshop/customers" element={<RoleProtectedRoute accountType="workshop"><Customers /></RoleProtectedRoute>} />
-                <Route path="/workshop/employees" element={<RoleProtectedRoute accountType="workshop"><Employees /></RoleProtectedRoute>} />
-                <Route path="/workshop/tasks" element={<RoleProtectedRoute accountType="workshop"><Tasks /></RoleProtectedRoute>} />
                 <Route path="/workshop/quotations" element={<RoleProtectedRoute accountType="workshop"><Quotations /></RoleProtectedRoute>} />
                 <Route path="/workshop/invoices" element={<RoleProtectedRoute accountType="workshop"><Invoices /></RoleProtectedRoute>} />
                 <Route path="/workshop/inventory" element={<RoleProtectedRoute accountType="workshop"><Inventory /></RoleProtectedRoute>} />
@@ -94,8 +90,6 @@ export default function App() {
                 <Route path="/feed" element={<LegacyWorkshopRedirect path="feed" />} />
                 <Route path="/jobs" element={<LegacyWorkshopRedirect path="jobs" />} />
                 <Route path="/customers" element={<LegacyWorkshopRedirect path="customers" />} />
-                <Route path="/employees" element={<LegacyWorkshopRedirect path="employees" />} />
-                <Route path="/tasks" element={<LegacyWorkshopRedirect path="tasks" />} />
                 <Route path="/quotations" element={<LegacyWorkshopRedirect path="quotations" />} />
                 <Route path="/invoices" element={<LegacyWorkshopRedirect path="invoices" />} />
                 <Route path="/inventory" element={<LegacyWorkshopRedirect path="inventory" />} />

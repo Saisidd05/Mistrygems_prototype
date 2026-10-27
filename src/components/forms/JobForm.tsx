@@ -12,15 +12,13 @@ interface JobFormProps {
   onCancel: () => void
   loading?: boolean
   customers: string[]
-  employees: string[]
 }
 
-export function JobForm({ initial, onSubmit, onCancel, loading, customers, employees }: JobFormProps) {
+export function JobForm({ initial, onSubmit, onCancel, loading, customers }: JobFormProps) {
   const [form, setForm] = useState({
     customer: initial?.customer || '',
     description: initial?.description || '',
     priority: initial?.priority || 'Medium' as Priority,
-    assignedTo: initial?.assignedTo || '',
     deadline: initial?.deadline || '',
     status: initial?.status || 'New' as JobStatus,
     revenue: initial?.revenue ?? '',
@@ -69,14 +67,6 @@ export function JobForm({ initial, onSubmit, onCancel, loading, customers, emplo
           <label className="block text-xs font-medium text-glass-dim mb-1.5">Status</label>
           <select className="glass-select" value={form.status} onChange={e => set('status', e.target.value)}>
             {statuses.map(s => <option key={s}>{s}</option>)}
-          </select>
-        </div>
-        {/* Assigned To */}
-        <div>
-          <label className="block text-xs font-medium text-glass-dim mb-1.5">Assigned To</label>
-          <select className="glass-select" value={form.assignedTo} onChange={e => set('assignedTo', e.target.value)}>
-            <option value="">Select employee</option>
-            {employees.map(e => <option key={e}>{e}</option>)}
           </select>
         </div>
         {/* Deadline */}

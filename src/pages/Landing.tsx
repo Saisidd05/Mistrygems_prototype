@@ -1,8 +1,8 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Gem, ArrowRight, Shield, Activity, CheckCircle2, ChevronRight,
-  TrendingUp, Users, FileText, Bell, Sparkles, Star, Briefcase, Truck
+  Gem, ArrowRight, Shield, Activity, ChevronRight,
+  TrendingUp, FileText, Bell, Sparkles, Star, Briefcase, Truck
 } from 'lucide-react'
 import { GlowButton } from '../components/ui/GlowButton'
 import { GlassCard } from '../components/ui/GlassCard'
@@ -120,9 +120,7 @@ export function Landing() {
           {[
             { title: 'Job Management', desc: 'Live tables & Kanban boards for manufacturing orders.', icon: <Briefcase size={20} className="text-accent" /> },
             { title: 'GST Quotations', desc: 'Precise quotations with automated tax calculation.', icon: <FileText size={20} className="text-accent" /> },
-            { title: 'Task Assignment', desc: 'Assign tasks to workers with priorities & deadlines.', icon: <CheckCircle2 size={20} className="text-accent" /> },
             { title: 'Workflow Tracking', desc: 'Monitor production from raw material to dispatch.', icon: <Activity size={20} className="text-accent" /> },
-            { title: 'Team Management', desc: 'Track staff, performance and assigned job counts.', icon: <Users size={20} className="text-accent" /> },
             { title: 'Reports & Analytics', desc: 'Revenue trends and completed job velocity charts.', icon: <TrendingUp size={20} className="text-accent" /> },
             { title: 'Notifications', desc: 'Instant alerts for status transitions & quality checks.', icon: <Bell size={20} className="text-accent" /> },
             { title: 'Customer Directory', desc: 'Central directory of clients and order histories.', icon: <Shield size={20} className="text-accent" /> },
@@ -145,7 +143,7 @@ export function Landing() {
             <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-semibold">
               {[
                 'Customer Request', 'Create Job', 'GST Quotation',
-                'Assign Operator', 'Work In Progress', 'Quality Check', 'Dispatch & Invoice'
+                'Work In Progress', 'Quality Check', 'Dispatch & Invoice'
               ].map((step, i, arr) => (
                 <React.Fragment key={step}>
                   <span className="px-3 py-1.5 rounded-xl bg-[#0077B6]/20 border border-[#00B4D8]/30 text-highlight whitespace-nowrap">{step}</span>
@@ -169,7 +167,7 @@ export function Landing() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             { name: 'Ramesh Agarwal', role: 'Manufacturing Owner', company: 'Shree Auto Parts', text: 'Replaced 5 WhatsApp groups and spreadsheets. Job delivery speed increased dramatically.' },
-            { name: 'Dinesh Mehta', role: 'Production Manager', company: 'Bharat Fabricators', text: 'Real-time task tracking eliminated production confusion across shift changes.' },
+            { name: 'Dinesh Mehta', role: 'Production Manager', company: 'Bharat Fabricators', text: 'Real-time workflow visibility eliminated production confusion across shift changes.' },
             { name: 'Sunil Verma', role: 'Workshop Supervisor', company: 'Precision Engineers', text: 'Instant GST quotation generation saves hours every week. A must-have for MSMEs.' },
           ].map(t => (
             <GlassCard key={t.name} className="p-5 space-y-3 flex flex-col justify-between">

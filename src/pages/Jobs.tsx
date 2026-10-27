@@ -17,7 +17,7 @@ import type { Job, JobStatus, Priority } from '../lib/data'
 const statuses: JobStatus[] = ['New', 'Quoted', 'Approved', 'Procuring', 'In Progress', 'Quality Check', 'Completed', 'Invoiced']
 
 export function Jobs() {
-  const { jobs, customers, employees, addJob, updateJob, deleteJob } = useAppData()
+  const { jobs, customers, addJob, updateJob, deleteJob } = useAppData()
   const { showToast } = useToast()
 
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table')
@@ -31,7 +31,6 @@ export function Jobs() {
   const [viewingJob, setViewingJob] = useState<Job | null>(null)
 
   const customerNames = customers.map(c => c.name)
-  const employeeNames = employees.map(e => e.name)
 
   const filteredJobs = jobs.filter(j => {
     const matchSearch = j.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -141,7 +140,6 @@ export function Jobs() {
                 <th>Description</th>
                 <th>Status</th>
                 <th>Priority</th>
-                <th>Assigned To</th>
                 <th>Deadline</th>
                 <th>Revenue</th>
                 <th className="text-right">Actions</th>
@@ -150,7 +148,7 @@ export function Jobs() {
             <tbody>
               {filteredJobs.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-8 text-glass-dim">No jobs match your filter.</td>
+                  <td colSpan={8} className="text-center py-8 text-glass-dim">No jobs match your filter.</td>
                 </tr>
               ) : (
                 filteredJobs.map(job => (
@@ -160,7 +158,6 @@ export function Jobs() {
                     <td className="max-w-xs truncate text-xs">{job.description}</td>
                     <td><StatusBadge status={job.status} dot /></td>
                     <td><StatusBadge status={job.priority} /></td>
-                    <td className="text-xs">{job.assignedTo || 'Unassigned'}</td>
                     <td className="text-xs">{formatDate(job.deadline)}</td>
                     <td className="font-semibold text-highlight">{formatCurrency(job.revenue)}</td>
                     <td className="text-right">
@@ -222,7 +219,6 @@ export function Jobs() {
           onSubmit={handleFormSubmit}
           onCancel={() => { setOpenModal(false); setEditingJob(null); }}
           customers={customerNames}
-          employees={employeeNames}
         />
       </Modal>
 
@@ -255,10 +251,6 @@ export function Jobs() {
               <div>
                 <span className="text-glass-dim block">Priority</span>
                 <StatusBadge status={viewingJob.priority} />
-              </div>
-              <div>
-                <span className="text-glass-dim block">Assigned Operator</span>
-                <span className="text-glass font-medium">{viewingJob.assignedTo || 'Unassigned'}</span>
               </div>
               <div>
                 <span className="text-glass-dim block">Deadline</span>

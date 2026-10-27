@@ -5,14 +5,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'mistry-gems-local-secret-key-12345
 
 const allowedCollections = new Set([
   'customers',
-  'employees',
   'finishedGoods',
   'invoices',
   'jobs',
   'notifications',
   'quotations',
   'rawMaterials',
-  'tasks',
   'industryRequirements',
   'industryQuotations',
   'industryPurchaseOrders',
