@@ -197,7 +197,7 @@ export function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="mt-10 border-t border-emerald-300/20 bg-[linear-gradient(115deg,rgba(5,34,24,.98),rgba(9,66,39,.94))] pt-10 pb-6 px-6 text-xs text-emerald-50/75">
+      <footer className="relative z-10 mt-10 border-t border-emerald-300/20 bg-[linear-gradient(115deg,rgba(5,34,24,.98),rgba(9,66,39,.94))] pt-10 pb-6 px-6 text-xs text-emerald-50/75">
         <div className="max-w-6xl mx-auto">
 
           {/* 3-column grid */}
