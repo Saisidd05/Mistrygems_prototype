@@ -13,6 +13,11 @@ const api = async <T,>(collection: Collection, init?: RequestInit): Promise<T> =
   if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.error || 'Industry data request failed.') }
   return response.status === 204 ? undefined as T : response.json()
 }
+const removeLegacyRequirement = async (id: string) => {
+  const saved = localStorage.getItem('mistry-auth'); const token = saved ? JSON.parse(saved)?.token : ''
+  const response = await fetch(`/api/industry-data?collection=requirements&id=${encodeURIComponent(id)}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+  if (!response.ok && response.status !== 404) throw new Error('Unable to update seeded requirement records.')
+}
 const makeId = () => `REQ-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
 
 interface IndustryDataValue { requirements: IndustryRequirement[]; loading: boolean; createRequirement: (value: Omit<IndustryRequirement, 'id' | 'createdAt' | 'status' | 'quotationsReceived'>) => Promise<void>; updateRequirement: (id: string, value: Partial<IndustryRequirement>) => Promise<void>; deleteRequirement: (id: string) => Promise<void> }
@@ -25,9 +30,10 @@ export function IndustryDataProvider({ children }: { children: React.ReactNode }
     setLoading(true)
     try {
       const records = await api<IndustryRequirement[]>('industryRequirements')
-      const hasTamilDemoData = records.some(item => item.id.startsWith('DEMO-'))
-      if (!hasTamilDemoData && !demoSeeded.current) {
+      const hasSeededRecords = records.some(item => item.id === 'REQ-1001')
+      if (!hasSeededRecords && !demoSeeded.current) {
         demoSeeded.current = true
+        await Promise.all(records.filter(item => item.id.startsWith('DEMO-')).map(item => removeLegacyRequirement(item.id)))
         const seeded = await Promise.all(industryDemoRequirements.map(document => api<IndustryRequirement>('industryRequirements', { method: 'POST', body: JSON.stringify({ document }) })))
         setRequirements(seeded)
       } else setRequirements(records)

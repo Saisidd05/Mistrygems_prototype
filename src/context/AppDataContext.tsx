@@ -34,11 +34,18 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       database.list<Job>('jobs'), database.list<Customer>('customers'),
       database.list<Notification>('notifications'), database.list<Invoice>('invoices'), database.list<RawMaterial>('rawMaterials'), database.list<FinishedGood>('finishedGoods'), database.list<Quotation>('quotations'),
     ]).then(async ([nextJobs, nextCustomers, nextNotifications, nextInvoices, nextMaterials, nextGoods, nextQuotations]) => {
-      const hasTamilDemoData = nextCustomers.some(item => item.id.startsWith('DEMO-'))
-      if (!hasTamilDemoData && !demoSeeded.current) {
+      const hasSeededRecords = nextCustomers.some(item => item.id === 'CUST-1001')
+      if (!hasSeededRecords && !demoSeeded.current) {
         demoSeeded.current = true
         const demo = workshopDemoData()
         await Promise.all([
+          ...nextJobs.filter(item => item.id.startsWith('DEMO-')).map(item => database.remove('jobs', item.id)),
+          ...nextCustomers.filter(item => item.id.startsWith('DEMO-')).map(item => database.remove('customers', item.id)),
+          ...nextNotifications.filter(item => item.id.startsWith('DEMO-')).map(item => database.remove('notifications', item.id)),
+          ...nextInvoices.filter(item => item.id.startsWith('DEMO-')).map(item => database.remove('invoices', item.id)),
+          ...nextMaterials.filter(item => item.id.startsWith('DEMO-')).map(item => database.remove('rawMaterials', item.id)),
+          ...nextGoods.filter(item => item.id.startsWith('DEMO-')).map(item => database.remove('finishedGoods', item.id)),
+          ...nextQuotations.filter(item => item.id.startsWith('DEMO-')).map(item => database.remove('quotations', item.id)),
           ...demo.jobs.map(item => database.create('jobs', item)), ...demo.customers.map(item => database.create('customers', item)),
           ...demo.notifications.map(item => database.create('notifications', item)), ...demo.invoices.map(item => database.create('invoices', item)),
           ...demo.rawMaterials.map(item => database.create('rawMaterials', item)), ...demo.finishedGoods.map(item => database.create('finishedGoods', item)),
