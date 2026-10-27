@@ -197,7 +197,7 @@ export function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 mt-10 border-t border-emerald-300/20 bg-[linear-gradient(115deg,rgba(5,34,24,.98),rgba(9,66,39,.94))] pt-10 pb-6 px-6 text-xs text-emerald-50/75">
+      <footer className="relative z-10 mt-10 border-t border-[#1d4f73] bg-[linear-gradient(115deg,#071827,#0b2940)] pt-10 pb-6 px-6 text-xs text-slate-300">
         <div className="max-w-6xl mx-auto">
 
           {/* 3-column grid */}
@@ -213,7 +213,7 @@ export function Landing() {
 
             {/* Headquarters & Contact */}
             <div className="space-y-2">
-              <h4 className="font-bold text-amber-300 font-sora text-xs tracking-wider mb-3">📍 Headquarters &amp; Contact</h4>
+              <h4 className="font-bold text-[#67e8f9] font-sora text-xs tracking-wider mb-3">📍 Headquarters &amp; Contact</h4>
               <p className="font-semibold text-white text-[11px]">Lynklathe Solutions</p>
               <p className="leading-relaxed text-[11px]">
                 Agni College of Technology<br />
@@ -224,20 +224,20 @@ export function Landing() {
 
             {/* Quick Navigation */}
             <div className="space-y-2">
-              <h4 className="font-bold text-amber-300 font-sora text-xs tracking-wider mb-3">Quick Navigation</h4>
+              <h4 className="font-bold text-[#67e8f9] font-sora text-xs tracking-wider mb-3">Quick Navigation</h4>
               <div className="flex flex-col items-start gap-2 text-[11px]">
-                <a href="#features" className="hover:text-amber-200 transition-colors">Features</a>
-                <a href="#workflow" className="hover:text-amber-200 transition-colors">How It Works</a>
-                <a href="#testimonials" className="hover:text-amber-200 transition-colors">Testimonials</a>
-                <button type="button" onClick={() => navigate('/login')} className="font-semibold text-amber-300 hover:text-amber-200 transition-colors">Sign In / Register</button>
+                <a href="#features" className="hover:text-[#67e8f9] transition-colors">Features</a>
+                <a href="#workflow" className="hover:text-[#67e8f9] transition-colors">How It Works</a>
+                <a href="#testimonials" className="hover:text-[#67e8f9] transition-colors">Testimonials</a>
+                <button type="button" onClick={() => navigate('/login')} className="font-semibold text-[#67e8f9] hover:text-white transition-colors">Sign In / Register</button>
               </div>
             </div>
           </div>
 
           {/* Bottom Bar */}
-          <div className="border-t border-emerald-100/20 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="border-t border-slate-500/30 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-[10px]">© {new Date().getFullYear()} Lynklathe Solutions. All rights reserved.</p>
-            <p className="text-[10px] font-semibold text-emerald-50/80">Agni College Of Technology, Chennai</p>
+            <p className="text-[10px] font-semibold text-slate-200">Agni College Of Technology, Chennai</p>
           </div>
 
         </div>
