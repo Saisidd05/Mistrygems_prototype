@@ -315,6 +315,53 @@
   position: relative;
 }
 
+@media (max-width: 1023px) {
+  .main-content {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .page-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .page-content {
+    padding: 0.875rem;
+  }
+
+  .page-title {
+    font-size: 1.35rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.8125rem;
+  }
+
+  .modal-box {
+    max-height: calc(100dvh - 1.5rem);
+    padding: 1rem;
+  }
+}
+
+@media (pointer: coarse) {
+  body,
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    cursor: auto !important;
+  }
+
+  .custom-cursor-ring,
+  .custom-cursor-dot,
+  .cursor-ripple {
+    display: none;
+  }
+}
+
 /* Desktop auto-hide dock trigger: intentionally invisible, never occupies layout space. */
 .sidebar-edge-trigger {
   display: none;

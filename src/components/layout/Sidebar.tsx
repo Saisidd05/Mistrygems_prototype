@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Briefcase, Users, ClipboardList,
-  FileText, BarChart2, LogOut, ChevronLeft,
-  ChevronRight, Package, Receipt, Rss,
+  LayoutDashboard, Briefcase, Users, ClipboardList, X,
+  FileText, BarChart2, LogOut, Package, Receipt, Rss,
   Truck, FileCheck, MapPin, UserCircle, Building2, MessageCircle
 } from 'lucide-react'
 import { getAccountType, useAuth } from '../../context/AuthContext'
 import { useSidebar } from '../../context/SidebarContext'
-import { useAppData } from '../../context/AppDataContext'
 import { cn } from '../../lib/utils'
 
 interface NavItem {
@@ -46,23 +44,24 @@ const industryNavItems: NavItem[] = [
 
 export function Sidebar() {
   const location = useLocation()
-  const { collapsed, toggle } = useSidebar()
+  const { collapsed, mobileOpen, closeMobile } = useSidebar()
   const [desktop, setDesktop] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px) and (pointer: fine)').matches)
   const [dockOpen, setDockOpen] = useState(false)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { user, logout } = useAuth()
-  const { notifications } = useAppData()
   const navigate = useNavigate()
 
   const isIndustry = getAccountType(user) === 'industry' || location.pathname.startsWith('/industry')
   const navItems = isIndustry ? industryNavItems : workshopNavItems
 
   const handleLogout = () => {
+    closeMobile()
     logout()
     navigate('/login')
   }
 
   const handleBrandClick = () => {
+    closeMobile()
     navigate(isIndustry ? '/industry/dashboard' : '/workshop/dashboard')
   }
 
@@ -100,6 +99,14 @@ export function Sidebar() {
 
   return (
     <>
+      {mobileOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-[#03045E]/75 backdrop-blur-sm lg:hidden"
+          onClick={closeMobile}
+          aria-label="Close navigation menu"
+        />
+      )}
       <div
         className="sidebar-edge-trigger"
         onMouseEnter={revealDock}
@@ -108,8 +115,9 @@ export function Sidebar() {
       />
       <aside
         className={cn(
-          'relative flex flex-col h-screen transition-all duration-300 z-50 glass-surface border-r border-glass/10',
-          'lg:fixed lg:top-0 lg:left-0 lg:w-[264px] lg:transition-[transform,opacity,box-shadow] lg:duration-[360ms] lg:ease-in-out lg:will-change-transform',
+          'fixed inset-y-0 left-0 z-50 h-[100dvh] w-72 flex-col border-r border-glass/10 glass-surface transition-all duration-300',
+          mobileOpen ? '!flex !translate-x-0 shadow-2xl' : 'hidden -translate-x-full',
+          'lg:fixed lg:flex lg:top-0 lg:left-0 lg:w-[264px] lg:transition-[transform,opacity,box-shadow] lg:duration-[360ms] lg:ease-in-out lg:will-change-transform',
           collapsed ? 'w-16' : 'w-60'
         )}
         style={desktop ? { transform: dockOpen ? 'translate3d(0,0,0)' : 'translate3d(-100%,0,0)', opacity: dockOpen ? 1 : 0, boxShadow: dockOpen ? '0 0 34px rgba(0,180,216,.32)' : 'none' } : undefined}
@@ -130,6 +138,15 @@ export function Sidebar() {
               <p className="text-[10px] text-glass-dim">{isIndustry ? 'Industry Portal' : 'Workflow Platform'}</p>
             </div>
           )}
+        </button>
+
+        <button
+          type="button"
+          onClick={closeMobile}
+          className="absolute right-3 top-4 rounded-lg p-2 text-glass-dim hover:bg-white/10 hover:text-highlight lg:hidden"
+          aria-label="Close navigation menu"
+        >
+          <X size={18} />
         </button>
 
         {/* User Info */}
@@ -159,6 +176,7 @@ export function Sidebar() {
               <NavLink
                 key={item.path}
                 to={item.path}
+                onClick={closeMobile}
                 className={({ isActive }) => cn('sidebar-item', isActive && 'active')}
                 title={collapsed ? item.label : undefined}
               >
@@ -181,14 +199,6 @@ export function Sidebar() {
           </button>
         </div>
 
-        {/* Collapse Toggle */}
-        <button
-          onClick={toggle}
-          className="absolute -right-3 top-20 w-6 h-6 rounded-full glass-card flex items-center justify-center text-glass hover:text-highlight transition-all hover:shadow-glow-sm z-10 lg:hidden"
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
-        </button>
       </aside>
     </>
   )

@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  Briefcase, IndianRupee, Clock, CheckCircle2, Plus, ArrowRight,
-  TrendingUp, AlertCircle, FileText, ChevronRight
+  Briefcase, IndianRupee, CheckCircle2, Plus, TrendingUp, ChevronRight
 } from 'lucide-react'
 import { useAppData } from '../context/AppDataContext'
 import { useAuth } from '../context/AuthContext'
@@ -47,17 +46,17 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-card p-6 border-glass-bright">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-card p-4 sm:p-6 border-glass-bright">
         <div>
           <span className="glass-badge mb-2">Welcome Back, {user?.name}</span>
-          <h1 className="text-2xl font-bold font-sora gradient-text-bright">Workshop Command Center</h1>
+          <h1 className="text-xl sm:text-2xl font-bold font-sora gradient-text-bright">Workshop Command Center</h1>
           <p className="text-xs text-glass-dim mt-1">Real-time production pipeline and key business operational metrics.</p>
         </div>
-        <div className="flex gap-3">
-          <GlowButton variant="outline" size="sm" onClick={() => navigate('/workshop/reports')}>
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <GlowButton variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => navigate('/workshop/reports')}>
             View Reports
           </GlowButton>
-          <GlowButton size="sm" icon={<Plus size={16} />} onClick={() => setOpenNewJobModal(true)}>
+          <GlowButton size="sm" className="w-full sm:w-auto" icon={<Plus size={16} />} onClick={() => setOpenNewJobModal(true)}>
             Create New Job
           </GlowButton>
         </div>
@@ -172,7 +171,7 @@ export function Dashboard() {
       <Modal open={!!selectedJob} onClose={() => setSelectedJob(null)} title={`Job Details: ${selectedJob?.id}`}>
         {selectedJob && (
           <div className="space-y-4 text-xs">
-            <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-glass/10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-glass/10">
               <div>
                 <span className="text-glass-dim block">Customer</span>
                 <span className="text-highlight font-semibold text-sm">{selectedJob.customer}</span>
