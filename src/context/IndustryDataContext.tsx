@@ -25,7 +25,8 @@ export function IndustryDataProvider({ children }: { children: React.ReactNode }
     setLoading(true)
     try {
       const records = await api<IndustryRequirement[]>('industryRequirements')
-      if (!records.length && !demoSeeded.current) {
+      const hasTamilDemoData = records.some(item => item.id.startsWith('DEMO-'))
+      if (!hasTamilDemoData && !demoSeeded.current) {
         demoSeeded.current = true
         const seeded = await Promise.all(industryDemoRequirements.map(document => api<IndustryRequirement>('industryRequirements', { method: 'POST', body: JSON.stringify({ document }) })))
         setRequirements(seeded)

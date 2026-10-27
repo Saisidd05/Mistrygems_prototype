@@ -34,7 +34,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       database.list<Job>('jobs'), database.list<Customer>('customers'),
       database.list<Notification>('notifications'), database.list<Invoice>('invoices'), database.list<RawMaterial>('rawMaterials'), database.list<FinishedGood>('finishedGoods'), database.list<Quotation>('quotations'),
     ]).then(async ([nextJobs, nextCustomers, nextNotifications, nextInvoices, nextMaterials, nextGoods, nextQuotations]) => {
-      if (!nextJobs.length && !nextCustomers.length && !demoSeeded.current) {
+      const hasTamilDemoData = nextCustomers.some(item => item.id.startsWith('DEMO-'))
+      if (!hasTamilDemoData && !demoSeeded.current) {
         demoSeeded.current = true
         const demo = workshopDemoData()
         await Promise.all([
