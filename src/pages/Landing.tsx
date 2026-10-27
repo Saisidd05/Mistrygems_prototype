@@ -35,7 +35,7 @@ export function Landing() {
 
         <div className="flex items-center gap-2">
           <GlowButton variant="outline" size="sm" onClick={() => navigate('/login')}>Log In</GlowButton>
-          <GlowButton size="sm" onClick={() => navigate('/login')}>Get Started</GlowButton>
+          <GlowButton size="sm" onClick={() => navigate('/signup')}>Get Started</GlowButton>
         </div>
       </nav>
 
@@ -60,7 +60,7 @@ export function Landing() {
 
         {/* CTA Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-4">
-          <GlowButton size="lg" icon={<ArrowRight size={18} />} onClick={() => navigate('/login')}>
+          <GlowButton size="lg" icon={<ArrowRight size={18} />} onClick={() => navigate('/signup')}>
             Get Started Free
           </GlowButton>
           <GlowButton variant="outline" size="lg" onClick={() => navigate('/login')}>
