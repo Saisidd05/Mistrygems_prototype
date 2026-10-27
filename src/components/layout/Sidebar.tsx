@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Briefcase, Users, ClipboardList,
   FileText, BarChart2, LogOut, ChevronLeft,
-  ChevronRight, Package, Receipt, Rss, PlusCircle,
+  ChevronRight, Package, Receipt, Rss,
   Truck, FileCheck, MapPin, UserCircle, Building2, MessageCircle
 } from 'lucide-react'
 import { getAccountType, useAuth } from '../../context/AuthContext'
@@ -33,7 +33,6 @@ const workshopNavItems: NavItem[] = [
 
 const industryNavItems: NavItem[] = [
   { label: 'Dashboard', path: '/industry/dashboard', icon: <LayoutDashboard size={18} /> },
-  { label: 'Post Requirement', path: '/industry/requirements/new', icon: <PlusCircle size={18} /> },
   { label: 'My Requirements', path: '/industry/requirements', icon: <ClipboardList size={18} /> },
   { label: 'Quotations', path: '/industry/quotations', icon: <FileText size={18} /> },
   { label: 'Purchase Orders', path: '/industry/purchase-orders', icon: <Receipt size={18} /> },
