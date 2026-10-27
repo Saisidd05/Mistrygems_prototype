@@ -63,6 +63,10 @@ export function Sidebar() {
     navigate('/login')
   }
 
+  const handleBrandClick = () => {
+    navigate(isIndustry ? '/industry/dashboard' : '/workshop/dashboard')
+  }
+
   const revealDock = () => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current)
     closeTimer.current = null
@@ -114,7 +118,12 @@ export function Sidebar() {
         onMouseLeave={queueClose}
       >
         {/* Logo */}
-        <div className={cn('flex items-center gap-3 px-4 py-5 border-b border-glass/10', collapsed && 'justify-center px-2')}>
+        <button
+          type="button"
+          onClick={handleBrandClick}
+          className={cn('flex w-full items-center gap-3 px-4 py-5 border-b border-glass/10 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent', collapsed && 'justify-center px-2')}
+          aria-label={isIndustry ? 'Go to industry dashboard' : 'Go to workshop dashboard'}
+        >
           <img src="/logo-icon.png" alt="Mistry Gems" className="w-9 h-9 object-contain flex-shrink-0" />
           {!collapsed && (
             <div>
@@ -122,7 +131,7 @@ export function Sidebar() {
               <p className="text-[10px] text-glass-dim">{isIndustry ? 'Industry Portal' : 'Workflow Platform'}</p>
             </div>
           )}
-        </div>
+        </button>
 
         {/* User Info */}
         {!collapsed && user && (

@@ -17,10 +17,15 @@ export function Landing() {
 
       {/* ── Navbar ── */}
       <nav className="fixed top-0 inset-x-0 z-50 glass-nav px-6 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => window.location.assign('/')}
+          className="flex items-center gap-3 rounded-md text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          aria-label="Refresh home page"
+        >
           <img src="/logo-icon.png" alt="Mistry Gems" className="w-10 h-10 object-contain" />
           <span className="text-base font-bold font-sora gradient-text-bright">Mistry Gems</span>
-        </div>
+        </button>
 
         <div className="hidden md:flex items-center gap-6 text-xs font-semibold text-glass">
           <a href="#features" className="hover:text-highlight transition-colors">Features</a>
@@ -205,7 +210,14 @@ export function Landing() {
 
             {/* Brand */}
             <div className="space-y-3">
-              <img src="/logo.png" alt="Mistry Gems" className="h-14 w-auto max-w-[190px] object-contain object-left" />
+              <button
+                type="button"
+                onClick={() => window.location.assign('/')}
+                className="block rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                aria-label="Refresh home page"
+              >
+                <img src="/logo.png" alt="Mistry Gems" className="h-14 w-auto max-w-[190px] object-contain object-left" />
+              </button>
               <p className="leading-relaxed text-[11px] max-w-xs">
                 Empowering manufacturing MSMEs with intelligent workflow automation, digitalizing operations from job creation to final dispatch.
               </p>
